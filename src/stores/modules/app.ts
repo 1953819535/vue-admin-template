@@ -4,6 +4,7 @@ import themes from '@/themes/tweakcn-themes.json'
 
 export type ThemeMode = 'light' | 'dark' | 'system'
 export type ThemeName = string
+export type LayoutType = 'sidebar' | 'top-nav'
 
 // 所有可用主题
 export const availableThemes = themes.map(t => ({
@@ -18,6 +19,12 @@ export const useAppStore = defineStore('app', () => {
 
   // 明暗模式
   const mode = ref<ThemeMode>('system')
+
+  // 布局类型
+  const layout = ref<LayoutType>('sidebar')
+
+  // 内容区域全屏
+  const contentFullscreen = ref(false)
 
   // 系统暗色模式状态
   const systemIsDark = ref(
@@ -98,20 +105,40 @@ export const useAppStore = defineStore('app', () => {
     setMode(isDark.value ? 'light' : 'dark')
   }
 
+  // 设置布局
+  const setLayout = (newLayout: LayoutType) => {
+    layout.value = newLayout
+  }
+
+  // 切换内容全屏
+  const toggleContentFullscreen = () => {
+    contentFullscreen.value = !contentFullscreen.value
+  }
+
+  // 设置内容全屏
+  const setContentFullscreen = (value: boolean) => {
+    contentFullscreen.value = value
+  }
+
   return {
     currentTheme,
     mode,
+    layout,
+    contentFullscreen,
     resolvedMode,
     isDark,
     themeData,
     availableThemes,
     setThemeName,
     setMode,
+    setLayout,
+    toggleContentFullscreen,
+    setContentFullscreen,
     toggleTheme,
     applyTheme,
   }
 }, {
   persist: {
-    pick: ['currentTheme', 'mode']
+    pick: ['currentTheme', 'mode', 'layout']
   }
 })
