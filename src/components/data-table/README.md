@@ -17,18 +17,18 @@ pnpm dlx shadcn-vue@latest add checkbox
 
 ```vue
 <script setup lang="ts">
-import { DataTable } from '@/components/data-table'
+import { DataTable } from "@/components/data-table";
 
 const columns = [
-  { key: 'id', title: 'ID', width: 80 },
-  { key: 'name', title: '用户名' },
-  { key: 'email', title: '邮箱' },
-]
+  { key: "id", title: "ID", width: 80 },
+  { key: "name", title: "用户名" },
+  { key: "email", title: "邮箱" },
+];
 
 const data = [
-  { id: 1, name: '张三', email: 'zhangsan@example.com' },
-  { id: 2, name: '李四', email: 'lisi@example.com' },
-]
+  { id: 1, name: "张三", email: "zhangsan@example.com" },
+  { id: 2, name: "李四", email: "lisi@example.com" },
+];
 </script>
 
 <template>
@@ -42,18 +42,18 @@ const data = [
 
 ```vue
 <script setup lang="ts">
-import { DataTable } from '@/components/data-table'
+import { DataTable } from "@/components/data-table";
 
 const columns = [
-  { key: 'name', title: '用户名' },
-  { key: 'status', title: '状态', slot: 'status' },
-  { key: 'action', title: '操作', slot: 'action' },
-]
+  { key: "name", title: "用户名" },
+  { key: "status", title: "状态", slot: "status" },
+  { key: "action", title: "操作", slot: "action" },
+];
 
 const data = [
-  { id: 1, name: '张三', status: 'active' },
-  { id: 2, name: '李四', status: 'inactive' },
-]
+  { id: 1, name: "张三", status: "active" },
+  { id: 2, name: "李四", status: "inactive" },
+];
 </script>
 
 <template>
@@ -61,7 +61,7 @@ const data = [
     <!-- 状态列自定义 -->
     <template #cell-status="{ value }">
       <span :class="value === 'active' ? 'text-green-600' : 'text-gray-400'">
-        {{ value === 'active' ? '启用' : '禁用' }}
+        {{ value === "active" ? "启用" : "禁用" }}
       </span>
     </template>
 
@@ -79,12 +79,12 @@ const data = [
 
 ```vue
 <script setup lang="ts">
-import { DataTable, DataTableColumn } from '@/components/data-table'
+import { DataTable, DataTableColumn } from "@/components/data-table";
 
 const data = [
-  { id: 1, name: '张三', email: 'zhangsan@example.com' },
-  { id: 2, name: '李四', email: 'lisi@example.com' },
-]
+  { id: 1, name: "张三", email: "zhangsan@example.com" },
+  { id: 2, name: "李四", email: "lisi@example.com" },
+];
 </script>
 
 <template>
@@ -92,7 +92,7 @@ const data = [
     <DataTableColumn key="id" title="ID" :width="80" />
     <DataTableColumn key="name" title="用户名" />
     <DataTableColumn key="email" title="邮箱" />
-    
+
     <!-- 带插槽的列 -->
     <DataTableColumn key="action" title="操作">
       <template #default="{ row }">
@@ -109,21 +109,25 @@ const data = [
 
 ```vue
 <script setup lang="ts">
-import { h } from 'vue'
-import { DataTable } from '@/components/data-table'
+import { h } from "vue";
+import { DataTable } from "@/components/data-table";
 
 const columns = [
-  { key: 'name', title: '用户名' },
+  { key: "name", title: "用户名" },
   {
-    key: 'status',
-    title: '状态',
+    key: "status",
+    title: "状态",
     customRender: ({ value }) => {
-      return h('span', {
-        class: value === 'active' ? 'text-green-600' : 'text-gray-400'
-      }, value === 'active' ? '启用' : '禁用')
-    }
+      return h(
+        "span",
+        {
+          class: value === "active" ? "text-green-600" : "text-gray-400",
+        },
+        value === "active" ? "启用" : "禁用",
+      );
+    },
   },
-]
+];
 </script>
 
 <template>
@@ -137,11 +141,9 @@ const columns = [
 
 ```vue
 <script setup lang="ts">
-import { Icon } from '@iconify/vue'
+import { Icon } from "@iconify/vue";
 
-const columns = [
-  { key: 'name', title: '用户名', headerSlot: 'name' },
-]
+const columns = [{ key: "name", title: "用户名", headerSlot: "name" }];
 </script>
 
 <template>
@@ -160,19 +162,20 @@ const columns = [
 
 ```vue
 <script setup lang="ts">
-import { h } from 'vue'
-import { Icon } from '@iconify/vue'
+import { h } from "vue";
+import { Icon } from "@iconify/vue";
 
 const columns = [
   {
-    key: 'email',
-    title: '邮箱',
-    headerRender: () => h('div', { class: 'flex items-center gap-1' }, [
-      h(Icon, { icon: 'lucide:mail', class: 'size-4' }),
-      '邮箱'
-    ])
+    key: "email",
+    title: "邮箱",
+    headerRender: () =>
+      h("div", { class: "flex items-center gap-1" }, [
+        h(Icon, { icon: "lucide:mail", class: "size-4" }),
+        "邮箱",
+      ]),
   },
-]
+];
 </script>
 
 <template>
@@ -186,21 +189,21 @@ const columns = [
 
 ```vue
 <script setup lang="ts">
-import { ref } from 'vue'
-import { DataTable } from '@/components/data-table'
+import { ref } from "vue";
+import { DataTable } from "@/components/data-table";
 
-const selectedRowKeys = ref<(string | number)[]>([])
+const selectedRowKeys = ref<(string | number)[]>([]);
 
 const rowSelection = {
   enabled: true,
   getCheckboxProps: (row) => ({
-    disabled: row.role === 'admin', // 禁用某些行的选择
+    disabled: row.role === "admin", // 禁用某些行的选择
   }),
-}
+};
 
 function handleChange(keys: (string | number)[], rows: any[]) {
-  selectedRowKeys.value = keys
-  console.log('选中的行:', rows)
+  selectedRowKeys.value = keys;
+  console.log("选中的行:", rows);
 }
 </script>
 
@@ -220,10 +223,10 @@ function handleChange(keys: (string | number)[], rows: any[]) {
 
 ```vue
 <script setup lang="ts">
-import { DataTable } from '@/components/data-table'
+import { DataTable } from "@/components/data-table";
 
 function handleClick(row: any, index: number) {
-  console.log('点击行:', row)
+  console.log("点击行:", row);
 }
 </script>
 
@@ -231,12 +234,14 @@ function handleClick(row: any, index: number) {
   <DataTable
     :data="data"
     :columns="columns"
-    :custom-row="(row, index) => ({
-      onClick: () => handleClick(row, index),
-      onDblclick: () => console.log('双击', row),
-      onMouseenter: () => console.log('鼠标进入', row),
-      onMouseleave: () => console.log('鼠标离开', row),
-    })"
+    :custom-row="
+      (row, index) => ({
+        onClick: () => handleClick(row, index),
+        onDblclick: () => console.log('双击', row),
+        onMouseenter: () => console.log('鼠标进入', row),
+        onMouseleave: () => console.log('鼠标离开', row),
+      })
+    "
   />
 </template>
 ```
@@ -245,42 +250,42 @@ function handleClick(row: any, index: number) {
 
 ### DataTable Props
 
-| 属性 | 类型 | 默认值 | 说明 |
-|------|------|--------|------|
-| data | `T[]` | `[]` | 数据源 |
-| columns | `ColumnConfig[]` | `[]` | 列配置 |
-| loading | `boolean` | `false` | 加载状态 |
-| rowKey | `string \| ((row: T) => string \| number)` | `'id'` | 行唯一标识 |
-| emptyText | `string` | `'暂无数据'` | 空数据提示 |
-| size | `'sm' \| 'md' \| 'lg'` | `'md'` | 表格大小 |
-| showHeader | `boolean` | `true` | 是否显示表头 |
-| bordered | `boolean` | `false` | 是否显示边框 |
-| rowSelection | `RowSelection<T>` | - | 行选择配置 |
-| customRow | `RowEvents<T> \| ((row: T, index: number) => RowEvents<T>)` | - | 行事件配置 |
+| 属性         | 类型                                                        | 默认值       | 说明         |
+| ------------ | ----------------------------------------------------------- | ------------ | ------------ |
+| data         | `T[]`                                                       | `[]`         | 数据源       |
+| columns      | `ColumnConfig[]`                                            | `[]`         | 列配置       |
+| loading      | `boolean`                                                   | `false`      | 加载状态     |
+| rowKey       | `string \| ((row: T) => string \| number)`                  | `'id'`       | 行唯一标识   |
+| emptyText    | `string`                                                    | `'暂无数据'` | 空数据提示   |
+| size         | `'sm' \| 'md' \| 'lg'`                                      | `'md'`       | 表格大小     |
+| showHeader   | `boolean`                                                   | `true`       | 是否显示表头 |
+| bordered     | `boolean`                                                   | `false`      | 是否显示边框 |
+| rowSelection | `RowSelection<T>`                                           | -            | 行选择配置   |
+| customRow    | `RowEvents<T> \| ((row: T, index: number) => RowEvents<T>)` | -            | 行事件配置   |
 
 ### DataTableColumn Props
 
-| 属性 | 类型 | 默认值 | 说明 |
-|------|------|--------|------|
-| key | `string` | - | 字段名（必填） |
-| title | `string` | - | 列标题（必填） |
-| width | `number \| string` | - | 列宽 |
-| align | `'left' \| 'center' \| 'right'` | `'left'` | 对齐方式 |
+| 属性  | 类型                            | 默认值   | 说明           |
+| ----- | ------------------------------- | -------- | -------------- |
+| key   | `string`                        | -        | 字段名（必填） |
+| title | `string`                        | -        | 列标题（必填） |
+| width | `number \| string`              | -        | 列宽           |
+| align | `'left' \| 'center' \| 'right'` | `'left'` | 对齐方式       |
 
 ### ColumnConfig
 
 ```typescript
 interface ColumnConfig<T = any> {
-  key: string                    // 字段名
-  title: string                  // 列标题
-  width?: number | string        // 列宽
-  align?: 'left' | 'center' | 'right'
+  key: string; // 字段名
+  title: string; // 列标题
+  width?: number | string; // 列宽
+  align?: "left" | "center" | "right";
   // 单元格
-  slot?: string                  // 单元格插槽名
-  customRender?: (ctx: CellContext) => VNode | string
+  slot?: string; // 单元格插槽名
+  customRender?: (ctx: CellContext) => VNode | string;
   // 表头
-  headerSlot?: string            // 表头插槽名
-  headerRender?: (ctx: HeaderContext) => VNode | string
+  headerSlot?: string; // 表头插槽名
+  headerRender?: (ctx: HeaderContext) => VNode | string;
 }
 ```
 
@@ -288,10 +293,10 @@ interface ColumnConfig<T = any> {
 
 ```typescript
 interface RowSelection<T = any> {
-  enabled?: boolean                                          // 是否启用行选择
-  selectedRowKeys?: (string | number)[]                      // 受控选中的行
-  onChange?: (keys: (string | number)[], rows: T[]) => void  // 选择变化回调
-  getCheckboxProps?: (row: T) => { disabled?: boolean }      // 复选框属性
+  enabled?: boolean; // 是否启用行选择
+  selectedRowKeys?: (string | number)[]; // 受控选中的行
+  onChange?: (keys: (string | number)[], rows: T[]) => void; // 选择变化回调
+  getCheckboxProps?: (row: T) => { disabled?: boolean }; // 复选框属性
 }
 ```
 
@@ -299,10 +304,10 @@ interface RowSelection<T = any> {
 
 ```typescript
 interface RowEvents<T = any> {
-  onClick?: (row: T, index: number, event: MouseEvent) => void
-  onDblclick?: (row: T, index: number, event: MouseEvent) => void
-  onMouseenter?: (row: T, index: number, event: MouseEvent) => void
-  onMouseleave?: (row: T, index: number, event: MouseEvent) => void
+  onClick?: (row: T, index: number, event: MouseEvent) => void;
+  onDblclick?: (row: T, index: number, event: MouseEvent) => void;
+  onMouseenter?: (row: T, index: number, event: MouseEvent) => void;
+  onMouseleave?: (row: T, index: number, event: MouseEvent) => void;
 }
 ```
 
@@ -310,29 +315,29 @@ interface RowEvents<T = any> {
 
 ```typescript
 interface CellContext<T = any> {
-  value: any        // 单元格值
-  row: T            // 行数据
-  index: number     // 行索引
+  value: any; // 单元格值
+  row: T; // 行数据
+  index: number; // 行索引
 }
 
 interface HeaderContext<T = any> {
-  column: ColumnConfig<T>  // 列配置
-  index: number            // 列索引
+  column: ColumnConfig<T>; // 列配置
+  index: number; // 列索引
 }
 ```
 
 ### 插槽
 
-| 插槽名 | 参数 | 说明 |
-|--------|------|------|
-| `cell-{key}` | `CellContext` | 自定义单元格，key 为列的 key |
-| `header-{key}` | `HeaderContext` | 自定义表头，key 为列的 key |
-| `default` | - | DataTableColumn 子组件 |
+| 插槽名         | 参数            | 说明                         |
+| -------------- | --------------- | ---------------------------- |
+| `cell-{key}`   | `CellContext`   | 自定义单元格，key 为列的 key |
+| `header-{key}` | `HeaderContext` | 自定义表头，key 为列的 key   |
+| `default`      | -               | DataTableColumn 子组件       |
 
 ### 事件
 
-| 事件名 | 参数 | 说明 |
-|--------|------|------|
+| 事件名                   | 参数                           | 说明             |
+| ------------------------ | ------------------------------ | ---------------- |
 | `update:selectedRowKeys` | `(keys: (string \| number)[])` | 行选择变化时触发 |
 
 ## 示例
@@ -357,11 +362,4 @@ src/components/data-table/
 ├── DataTable.vue         # 主组件
 ├── DataTableColumn.vue   # 列配置组件
 ├── README.md             # 本文档
-└── examples/             # 示例文件
-    ├── basic.vue
-    ├── custom-cell.vue
-    ├── column-component.vue
-    ├── custom-header.vue
-    ├── mixed.vue
-    └── full-features.vue
 ```
