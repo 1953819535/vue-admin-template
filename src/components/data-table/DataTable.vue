@@ -7,6 +7,7 @@ import type {
   RowEvents,
 } from "./types";
 import { computed, ref, useSlots } from "vue";
+import { cn } from "@/lib/utils";
 import { Icon } from "@iconify/vue";
 import {
   Table,
@@ -24,8 +25,6 @@ defineSlots<
   {
     // 空数据插槽
     empty: () => any;
-    // 默认插槽用于 DataTableColumn 子组件
-    default: () => any;
   } & {
     // 动态单元格插槽 cell-{key}
     [K in `cell-${string}`]?: (ctx: CellContext<T>) => any;
@@ -63,67 +62,9 @@ const selectedKeys = computed(() => {
   return internalSelectedRowKeys.value;
 });
 
-// 收集子组件定义的列
-const columnChildren = computed(() => {
-  if (!slots.default) return [];
-  let children = slots.default();
-  if (!children) return [];
-
-  // 处理 Fragment 的情况
-  if (!Array.isArray(children)) {
-    children = [children];
-  }
-
-  // 递归提取所有 VNode（处理嵌套 Fragment）
-  function flattenVNodes(vnodes: any[]): any[] {
-    const result: any[] = [];
-    for (const vnode of vnodes) {
-      if (!vnode) continue;
-      // 如果是 Fragment，递归处理
-      if (
-        vnode.type?.toString() === "Symbol(Fragment)" &&
-        Array.isArray(vnode.children)
-      ) {
-        result.push(...flattenVNodes(vnode.children));
-      } else {
-        result.push(vnode);
-      }
-    }
-    return result;
-  }
-
-  const flatChildren = flattenVNodes(children);
-
-  // 过滤并提取 DataTableColumn 子组件
-  return flatChildren
-    .filter((child: any) => {
-      if (!child) return false;
-      const childProps = child.props;
-      // 检查是否是 DataTableColumn（通过检查必需的 props）
-      return (
-        childProps &&
-        typeof childProps === "object" &&
-        "key" in childProps &&
-        "title" in childProps
-      );
-    })
-    .map((child: any) => {
-      const { key, title, width, align } = child.props || {};
-      const columnSlots = child.children || {};
-      return {
-        key,
-        title,
-        width,
-        align,
-        slots: columnSlots,
-      } as ColumnConfig & { slots: any };
-    });
-});
-
-// 合并列配置：优先使用子组件，其次使用 props
+// 合并列配置
 const mergedColumns = computed(() => {
-  const cols =
-    columnChildren.value.length > 0 ? columnChildren.value : props.columns;
+  const cols = props.columns;
 
   // 如果启用行选择，添加选择列
   if (props.rowSelection?.enabled) {
@@ -141,42 +82,12 @@ const mergedColumns = computed(() => {
   return cols;
 });
 
-// 表格大小样式
-const sizeClass = computed(() => {
-  switch (props.size) {
-    case "sm":
-      return "text-sm";
-    case "lg":
-      return "text-base";
-    default:
-      return "text-sm";
-  }
-});
-
-// 单元格内边距
-const cellPaddingClass = computed(() => {
-  switch (props.size) {
-    case "sm":
-      return "py-2 px-3";
-    case "lg":
-      return "py-4 px-6";
-    default:
-      return "py-3 px-4";
-  }
-});
-
-// 边框样式 - 外层容器
-const borderClass = computed(() => {
-  return "rounded-md border border-border";
-});
-
-// 边框样式 - 单元格
-const cellBorderClass = computed(() => {
-  if (props.bordered) {
-    return "border border-border";
-  }
-  return "";
-});
+// 表格大小样式映射
+const SIZE_STYLES = {
+  sm: { text: "text-sm", padding: "py-2 px-3" },
+  md: { text: "", padding: "py-3 px-4" },
+  lg: { text: "text-base", padding: "py-4 px-6" },
+} as const;
 
 // 获取行 key
 function getRowKey(row: T, index: number): string | number {
@@ -189,18 +100,6 @@ function getRowKey(row: T, index: number): string | number {
 // 获取单元格值
 function getCellValue(row: T, key: string): any {
   return (row as any)[key];
-}
-
-// 获取对齐样式
-function getAlignClass(align?: "left" | "center" | "right"): string {
-  switch (align) {
-    case "center":
-      return "text-center";
-    case "right":
-      return "text-right";
-    default:
-      return "text-left";
-  }
 }
 
 // 获取列宽样式
@@ -332,101 +231,86 @@ function handleSelectAll(checked: boolean) {
 }
 
 // 渲染表头
-function renderHeader(column: ColumnConfig & { slots?: any }, index: number) {
+function renderHeader(column: ColumnConfig, index: number) {
   const ctx: HeaderContext = { column, index };
 
-  // 1. 优先使用子组件的 header slot
-  if (column.slots?.header) {
-    return column.slots.header(ctx);
-  }
-
-  // 2. 其次使用 headerRender
+  // 1. 使用 headerRender
   if (column.headerRender) {
     return column.headerRender(ctx);
   }
 
-  // 3. 再次使用父组件传入的 header-{key} slot
+  // 2. 使用 header-{key} slot
   const slotName = `header-${column.key}`;
   if (slots[slotName as keyof typeof slots]) {
     return (slots[slotName as keyof typeof slots] as any)(ctx);
   }
 
-  // 4. 默认渲染 title
+  // 3. 默认渲染 title
   return column.title;
 }
 
 // 渲染单元格内容
-function renderCell(
-  column: ColumnConfig & { slots?: any },
-  row: T,
-  index: number,
-) {
+function renderCell(column: ColumnConfig, row: T, index: number) {
   const value = getCellValue(row, column.key);
   const ctx: CellContext = { value, row, index };
 
-  // 1. 优先使用子组件的 default slot
-  if (column.slots?.default) {
-    return column.slots.default(ctx);
-  }
-
-  // 2. 其次使用 customRender
+  // 1. 使用 customRender
   if (column.customRender) {
     return column.customRender(ctx);
   }
 
-  // 3. 再次使用父组件传入的 cell-{key} slot
+  // 2. 使用 cell-{key} slot
   const slotName = `cell-${column.key}`;
   if (slots[slotName as keyof typeof slots]) {
     return (slots[slotName as keyof typeof slots] as any)(ctx);
   }
 
-  // 4. 默认渲染值
+  // 3. 默认渲染值
   return value;
 }
 </script>
 
 <template>
-  <div :class="['relative overflow-x-auto', borderClass, sizeClass]">
+  <div class="relative rounded-md border overflow-hidden">
     <!-- 加载遮罩 -->
     <div
-      v-if="loading"
-      class="absolute inset-0 bg-background/80 backdrop-blur-sm flex items-center justify-center z-10 rounded-md"
+      v-if="props.loading"
+      class="absolute inset-0 bg-background/80 backdrop-blur-sm flex items-center justify-center z-10"
     >
-      <div class="flex items-center gap-2 text-muted-foreground">
-        <Icon icon="lucide:loader-2" class="size-5 animate-spin" />
-        <span>加载中...</span>
-      </div>
+      <Icon
+        icon="lucide:loader-2"
+        class="size-5 animate-spin text-muted-foreground"
+      />
     </div>
 
-    <Table :class="{ 'border-separate border-spacing-0': bordered }">
+    <Table :class="SIZE_STYLES[props.size].text">
       <!-- 表头 -->
-      <TableHeader v-if="showHeader">
-        <TableRow :class="[cellBorderClass]">
+      <TableHeader v-if="props.showHeader">
+        <TableRow :class="props.bordered && 'border-b'">
           <TableHead
             v-for="(column, index) in mergedColumns"
             :key="column.key"
-            :class="[
-              getAlignClass(column.align),
-              cellPaddingClass,
-              cellBorderClass,
-            ]"
+            :class="
+              cn(
+                column.align === 'center' && 'text-center',
+                column.align === 'right' && 'text-right',
+                SIZE_STYLES[props.size].padding,
+                props.bordered &&
+                  index < mergedColumns.length - 1 &&
+                  'border-r',
+              )
+            "
             :style="{ width: getWidthStyle(column.width) }"
           >
             <!-- 选择列表头 -->
-            <template v-if="column.key === '__selection__'">
-              <Checkbox
-                :model-value="isAllSelected()"
-                :indeterminate="isIndeterminate()"
-                @update:model-value="
-                  (value: boolean | 'indeterminate') =>
-                    handleSelectAll(value === true)
-                "
-              />
-            </template>
+            <Checkbox
+              v-if="column.key === '__selection__'"
+              :model-value="isAllSelected()"
+              :indeterminate="isIndeterminate()"
+              @update:model-value="(v) => handleSelectAll(v === true)"
+            />
             <!-- 普通列表头 -->
-            <template v-else>
-              <component :is="() => renderHeader(column, Number(index))" />
-            </template>
+            <component v-else :is="() => renderHeader(column, Number(index))" />
           </TableHead>
         </TableRow>
       </TableHeader>
@@ -436,7 +320,6 @@ function renderCell(
         <TableRow v-if="data.length === 0">
           <TableCell :colspan="mergedColumns.length" class="p-6">
             <Empty class="border-0">
-              <!-- 使用自定义插槽或默认内容 -->
               <template v-if="slots.empty">
                 <component :is="slots.empty" />
               </template>
@@ -453,42 +336,46 @@ function renderCell(
         <!-- 数据行 -->
         <TableRow
           v-else
-          v-for="(row, index) in data"
-          :key="getRowKey(row, index)"
-          :class="[
-            cellPaddingClass,
-            cellBorderClass,
-            {
-              'bg-muted/50': isRowSelected(row, index),
-              'cursor-pointer': !!getRowEvents(row, index).onClick,
-              'hover:bg-muted/30': !!getRowEvents(row, index).onClick,
-            },
-          ]"
-          @click="handleRowClick(row, index, $event)"
-          @dblclick="handleRowDblclick(row, index, $event)"
-          @mouseenter="handleMouseenter(row, index, $event)"
-          @mouseleave="handleMouseleave(row, index, $event)"
+          v-for="(row, rowIndex) in data"
+          :key="getRowKey(row, rowIndex)"
+          :class="
+            cn(
+              SIZE_STYLES[props.size].padding,
+              props.bordered && rowIndex < data.length - 1 && 'border-b',
+              isRowSelected(row, rowIndex) && 'bg-muted/50',
+              getRowEvents(row, rowIndex).onClick &&
+                'cursor-pointer hover:bg-muted/30',
+            )
+          "
+          @click="handleRowClick(row, rowIndex, $event)"
+          @dblclick="handleRowDblclick(row, rowIndex, $event)"
+          @mouseenter="handleMouseenter(row, rowIndex, $event)"
+          @mouseleave="handleMouseleave(row, rowIndex, $event)"
         >
           <TableCell
-            v-for="column in mergedColumns"
+            v-for="(column, colIndex) in mergedColumns"
             :key="column.key"
-            :class="[getAlignClass(column.align), cellBorderClass]"
+            :class="
+              cn(
+                column.align === 'center' && 'text-center',
+                column.align === 'right' && 'text-right',
+                props.bordered &&
+                  colIndex < mergedColumns.length - 1 &&
+                  'border-r',
+              )
+            "
           >
             <!-- 选择列 -->
-            <template v-if="column.key === '__selection__'">
-              <Checkbox
-                :model-value="isRowSelected(row, index)"
-                :disabled="isRowDisabled(row)"
-                @update:model-value="
-                  (value: boolean | 'indeterminate') =>
-                    handleRowSelect(row, index, value === true)
-                "
-              />
-            </template>
+            <Checkbox
+              v-if="column.key === '__selection__'"
+              :model-value="isRowSelected(row, rowIndex)"
+              :disabled="isRowDisabled(row)"
+              @update:model-value="
+                (v) => handleRowSelect(row, rowIndex, v === true)
+              "
+            />
             <!-- 普通列 -->
-            <template v-else>
-              <component :is="() => renderCell(column, row, index)" />
-            </template>
+            <component v-else :is="() => renderCell(column, row, rowIndex)" />
           </TableCell>
         </TableRow>
       </TableBody>

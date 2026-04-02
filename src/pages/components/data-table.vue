@@ -6,6 +6,17 @@
 import { ref, computed } from "vue";
 import { Icon } from "@iconify/vue";
 import { DataTable } from "@/components/data-table";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import type { RowSelection, ColumnConfig } from "@/components/data-table";
 
 interface User {
@@ -98,7 +109,6 @@ const columns = computed<ColumnConfig<User>[]>(() => [
   {
     key: "name",
     title: "用户名",
-    headerSlot: "name",
     align: "center",
   },
   {
@@ -115,13 +125,11 @@ const columns = computed<ColumnConfig<User>[]>(() => [
   {
     key: "role",
     title: "角色",
-    slot: "role",
     align: "center",
   },
   {
     key: "status",
     title: "状态",
-    slot: "status",
     align: "center",
   },
   {
@@ -133,7 +141,6 @@ const columns = computed<ColumnConfig<User>[]>(() => [
     title: "操作",
     width: 120,
     align: "center",
-    slot: "action",
   },
 ]);
 
@@ -147,7 +154,7 @@ const rowSelection = computed<RowSelection<User>>(() => ({
 }));
 
 // 行事件
-function getRowEvents(row: User, index: number) {
+function getRowEvents(row: User, _index: number) {
   if (!enableRowClick.value) return {};
   return {
     onClick: () => {
@@ -193,45 +200,47 @@ meta:
         <h3 class="font-semibold text-sm">基础配置</h3>
 
         <div class="flex items-center gap-2">
-          <label class="text-sm w-20">表格大小</label>
-          <select
-            v-model="size"
-            class="flex-1 px-2 py-1.5 border rounded text-sm bg-background"
-          >
-            <option value="sm">小</option>
-            <option value="md">中</option>
-            <option value="lg">大</option>
-          </select>
+          <Label class="w-20">表格大小</Label>
+          <Select v-model="size">
+            <SelectTrigger class="w-full">
+              <SelectValue placeholder="选择大小" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="sm">小</SelectItem>
+              <SelectItem value="md">中</SelectItem>
+              <SelectItem value="lg">大</SelectItem>
+            </SelectContent>
+          </Select>
         </div>
 
-        <label class="flex items-center gap-2 text-sm">
-          <input type="checkbox" v-model="showHeader" class="rounded" />
-          显示表头
-        </label>
+        <div class="flex items-center gap-2">
+          <Checkbox v-model="showHeader" />
+          <Label>显示表头</Label>
+        </div>
 
-        <label class="flex items-center gap-2 text-sm">
-          <input type="checkbox" v-model="bordered" class="rounded" />
-          显示边框
-        </label>
+        <div class="flex items-center gap-2">
+          <Checkbox v-model="bordered" />
+          <Label>显示边框</Label>
+        </div>
 
-        <label class="flex items-center gap-2 text-sm">
-          <input type="checkbox" v-model="loading" class="rounded" />
-          加载状态
-        </label>
+        <div class="flex items-center gap-2">
+          <Checkbox v-model="loading" />
+          <Label>加载状态</Label>
+        </div>
 
-        <label class="flex items-center gap-2 text-sm">
-          <input type="checkbox" v-model="showEmpty" class="rounded" />
-          空数据状态
-        </label>
+        <div class="flex items-center gap-2">
+          <Checkbox v-model="showEmpty" />
+          <Label>空数据状态</Label>
+        </div>
       </div>
 
       <div class="space-y-4">
         <h3 class="font-semibold text-sm">行选择</h3>
 
-        <label class="flex items-center gap-2 text-sm">
-          <input type="checkbox" v-model="enableSelection" class="rounded" />
-          启用行选择
-        </label>
+        <div class="flex items-center gap-2">
+          <Checkbox v-model="enableSelection" />
+          <Label>启用行选择</Label>
+        </div>
 
         <p class="text-xs text-muted-foreground">* 管理员角色的行禁用选择</p>
 
@@ -240,21 +249,18 @@ meta:
           <span class="font-medium">{{ selectedRowKeys.length }}</span> 项
         </div>
 
-        <button
-          class="px-3 py-1.5 text-sm border rounded hover:bg-muted"
-          @click="clearSelection"
-        >
+        <Button variant="outline" size="sm" @click="clearSelection">
           清空选择
-        </button>
+        </Button>
       </div>
 
       <div class="space-y-4">
         <h3 class="font-semibold text-sm">行事件</h3>
 
-        <label class="flex items-center gap-2 text-sm">
-          <input type="checkbox" v-model="enableRowClick" class="rounded" />
-          启用行点击
-        </label>
+        <div class="flex items-center gap-2">
+          <Checkbox v-model="enableRowClick" />
+          <Label>启用行点击</Label>
+        </div>
 
         <div v-if="clickedRow" class="p-3 bg-background rounded border text-sm">
           <div class="text-muted-foreground mb-1">点击的行:</div>
@@ -282,11 +288,7 @@ meta:
         <div class="flex flex-col items-center gap-3 py-8">
           <Icon icon="lucide:users" class="size-12 text-muted-foreground/50" />
           <div class="text-muted-foreground">暂无用户数据</div>
-          <button
-            class="px-3 py-1.5 text-sm bg-primary text-primary-foreground rounded hover:bg-primary/90"
-          >
-            添加用户
-          </button>
+          <Button size="sm">添加用户</Button>
         </div>
       </template>
       <!-- 表头自定义: 用户名 -->
@@ -299,43 +301,32 @@ meta:
 
       <!-- 单元格: 角色 -->
       <template #cell-role="{ value }">
-        <span
-          :class="[
-            'px-2 py-1 rounded text-xs font-medium',
-            value === 'admin'
-              ? 'bg-primary text-primary-foreground'
-              : 'bg-secondary text-secondary-foreground',
-          ]"
-        >
+        <Badge :variant="value === 'admin' ? 'default' : 'secondary'">
           {{ value === "admin" ? "管理员" : "用户" }}
-        </span>
+        </Badge>
       </template>
 
       <!-- 单元格: 状态 -->
       <template #cell-status="{ value }">
-        <span
-          :class="[
-            'inline-flex items-center gap-1.5 px-2 py-1 rounded text-xs',
+        <Badge
+          :variant="value === 'active' ? 'default' : 'outline'"
+          :class="
             value === 'active'
-              ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400'
-              : 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400',
-          ]"
+              ? 'bg-green-500'
+              : 'text-red-600 border-red-300 dark:border-red-500'
+          "
         >
-          <span
-            :class="[
-              'w-1.5 h-1.5 rounded-full',
-              value === 'active' ? 'bg-green-500' : 'bg-red-500',
-            ]"
-          />
           {{ value === "active" ? "正常" : "禁用" }}
-        </span>
+        </Badge>
       </template>
 
       <!-- 单元格: 操作 -->
-      <template #cell-action="{ row }">
+      <template #cell-action>
         <div class="flex items-center justify-center gap-2">
-          <button class="text-primary hover:underline text-sm">编辑</button>
-          <button class="text-destructive hover:underline text-sm">删除</button>
+          <Button variant="link" size="sm">编辑</Button>
+          <Button variant="link" size="sm" class="text-destructive"
+            >删除</Button
+          >
         </div>
       </template>
     </DataTable>

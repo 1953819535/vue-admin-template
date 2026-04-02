@@ -35,11 +35,9 @@ export interface ColumnConfig<T = any> {
   title: string
   width?: number | string
   align?: 'left' | 'center' | 'right'
-  // 单元格
-  slot?: string
+  // 单元格渲染
   customRender?: (ctx: CellContext<T>) => VNode | string
-  // 表头
-  headerSlot?: string
+  // 表头渲染
   headerRender?: (ctx: HeaderContext<T>) => VNode | string
 }
 
@@ -60,12 +58,4 @@ export interface DataTableProps<T = any> {
   rowSelection?: RowSelection<T>
   // 行事件
   customRow?: RowEvents<T> | ((row: T, index: number) => RowEvents<T>)
-}
-
-// DataTableColumn Props
-export interface DataTableColumnProps {
-  key: string
-  title: string
-  width?: number | string
-  align?: 'left' | 'center' | 'right'
 }

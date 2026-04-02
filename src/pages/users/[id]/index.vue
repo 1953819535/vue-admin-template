@@ -1,5 +1,7 @@
 <script setup lang="ts">
 import { useRoute } from "vue-router";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 
 const route = useRoute();
 const userId = route.params.id;
@@ -55,7 +57,9 @@ meta:
         </div>
         <div>
           <label class="text-sm text-muted-foreground">状态</label>
-          <div class="font-medium text-green-600">活跃</div>
+          <div class="font-medium">
+            <Badge class="bg-green-500">活跃</Badge>
+          </div>
         </div>
         <div>
           <label class="text-sm text-muted-foreground">注册时间</label>
@@ -64,15 +68,10 @@ meta:
       </div>
 
       <div class="pt-4 border-t flex gap-4">
-        <RouterLink
-          :to="`/users/${user.id}/edit`"
-          class="px-4 py-2 bg-primary text-primary-foreground rounded-md hover:opacity-90"
-        >
-          编辑用户
+        <RouterLink :to="`/users/${user.id}/edit`">
+          <Button>编辑用户</Button>
         </RouterLink>
-        <button class="px-4 py-2 border rounded-md hover:bg-muted">
-          禁用账户
-        </button>
+        <Button variant="outline">禁用账户</Button>
       </div>
     </div>
   </div>

@@ -46,8 +46,8 @@ import { DataTable } from "@/components/data-table";
 
 const columns = [
   { key: "name", title: "用户名" },
-  { key: "status", title: "状态", slot: "status" },
-  { key: "action", title: "操作", slot: "action" },
+  { key: "status", title: "状态" },
+  { key: "action", title: "操作" },
 ];
 
 const data = [
@@ -73,37 +73,7 @@ const data = [
 </template>
 ```
 
-### 方式三：DataTableColumn 子组件
-
-使用子组件声明式定义列，更直观。
-
-```vue
-<script setup lang="ts">
-import { DataTable, DataTableColumn } from "@/components/data-table";
-
-const data = [
-  { id: 1, name: "张三", email: "zhangsan@example.com" },
-  { id: 2, name: "李四", email: "lisi@example.com" },
-];
-</script>
-
-<template>
-  <DataTable :data="data">
-    <DataTableColumn key="id" title="ID" :width="80" />
-    <DataTableColumn key="name" title="用户名" />
-    <DataTableColumn key="email" title="邮箱" />
-
-    <!-- 带插槽的列 -->
-    <DataTableColumn key="action" title="操作">
-      <template #default="{ row }">
-        <button @click="handleEdit(row)">编辑</button>
-      </template>
-    </DataTableColumn>
-  </DataTable>
-</template>
-```
-
-### 方式四：customRender 渲染函数
+### 方式三：customRender 渲染函数
 
 使用渲染函数自定义单元格，适合复杂逻辑。
 
@@ -143,7 +113,7 @@ const columns = [
 <script setup lang="ts">
 import { Icon } from "@iconify/vue";
 
-const columns = [{ key: "name", title: "用户名", headerSlot: "name" }];
+const columns = [{ key: "name", title: "用户名" }];
 </script>
 
 <template>
@@ -259,18 +229,9 @@ function handleClick(row: any, index: number) {
 | emptyText    | `string`                                                    | `'暂无数据'` | 空数据提示   |
 | size         | `'sm' \| 'md' \| 'lg'`                                      | `'md'`       | 表格大小     |
 | showHeader   | `boolean`                                                   | `true`       | 是否显示表头 |
-| bordered     | `boolean`                                                   | `false`      | 是否显示边框 |
+| bordered     | `boolean`                                                   | `false'`     | 是否显示边框 |
 | rowSelection | `RowSelection<T>`                                           | -            | 行选择配置   |
 | customRow    | `RowEvents<T> \| ((row: T, index: number) => RowEvents<T>)` | -            | 行事件配置   |
-
-### DataTableColumn Props
-
-| 属性  | 类型                            | 默认值   | 说明           |
-| ----- | ------------------------------- | -------- | -------------- |
-| key   | `string`                        | -        | 字段名（必填） |
-| title | `string`                        | -        | 列标题（必填） |
-| width | `number \| string`              | -        | 列宽           |
-| align | `'left' \| 'center' \| 'right'` | `'left'` | 对齐方式       |
 
 ### ColumnConfig
 
@@ -281,10 +242,8 @@ interface ColumnConfig<T = any> {
   width?: number | string; // 列宽
   align?: "left" | "center" | "right";
   // 单元格
-  slot?: string; // 单元格插槽名
   customRender?: (ctx: CellContext) => VNode | string;
   // 表头
-  headerSlot?: string; // 表头插槽名
   headerRender?: (ctx: HeaderContext) => VNode | string;
 }
 ```
@@ -332,26 +291,13 @@ interface HeaderContext<T = any> {
 | -------------- | --------------- | ---------------------------- |
 | `cell-{key}`   | `CellContext`   | 自定义单元格，key 为列的 key |
 | `header-{key}` | `HeaderContext` | 自定义表头，key 为列的 key   |
-| `default`      | -               | DataTableColumn 子组件       |
+| `empty`        | -               | 自定义空数据状态             |
 
 ### 事件
 
 | 事件名                   | 参数                           | 说明             |
 | ------------------------ | ------------------------------ | ---------------- |
 | `update:selectedRowKeys` | `(keys: (string \| number)[])` | 行选择变化时触发 |
-
-## 示例
-
-完整示例见 [examples/](./examples/) 目录：
-
-- [基础表格](./examples/basic.vue)
-- [自定义单元格](./examples/custom-cell.vue)
-- [子组件模式](./examples/column-component.vue)
-- [表头自定义](./examples/custom-header.vue)
-- [混合模式](./examples/mixed.vue)
-- [完整功能](./examples/full-features.vue)
-
-**在线演示**：访问 `/components/data-table` 查看所有示例
 
 ## 文件结构
 
@@ -360,6 +306,5 @@ src/components/data-table/
 ├── index.ts              # 导出
 ├── types.ts              # 类型定义
 ├── DataTable.vue         # 主组件
-├── DataTableColumn.vue   # 列配置组件
 ├── README.md             # 本文档
 ```
