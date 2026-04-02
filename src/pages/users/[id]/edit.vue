@@ -1,8 +1,25 @@
 <script setup lang="ts">
-import { useRoute } from "vue-router";
+import { ref } from 'vue'
+import { useRoute } from 'vue-router'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import { Button } from '@/components/ui/button'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
 
-const route = useRoute();
-const userId = route.params.id;
+const route = useRoute()
+const userId = route.params.id
+
+const username = ref('张三')
+const email = ref('zhangsan@example.com')
+const role = ref('admin')
+const status = ref('active')
 </script>
 
 <route lang="yaml">
@@ -24,59 +41,68 @@ meta:
       </RouterLink>
     </div>
 
-    <form class="space-y-4 p-6 border rounded-lg bg-card">
-      <div>
-        <label class="block text-sm font-medium mb-1">用户名</label>
-        <input
-          type="text"
-          class="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
-          value="张三"
-        />
-      </div>
+    <Card>
+      <CardHeader>
+        <CardTitle>用户信息</CardTitle>
+      </CardHeader>
+      <CardContent>
+        <form class="space-y-4">
+          <div class="space-y-2">
+            <Label for="username">用户名</Label>
+            <Input
+              id="username"
+              v-model="username"
+              type="text"
+            />
+          </div>
 
-      <div>
-        <label class="block text-sm font-medium mb-1">邮箱</label>
-        <input
-          type="email"
-          class="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
-          value="zhangsan@example.com"
-        />
-      </div>
+          <div class="space-y-2">
+            <Label for="email">邮箱</Label>
+            <Input
+              id="email"
+              v-model="email"
+              type="email"
+            />
+          </div>
 
-      <div>
-        <label class="block text-sm font-medium mb-1">角色</label>
-        <select
-          class="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
-        >
-          <option value="user">普通用户</option>
-          <option value="admin" selected>管理员</option>
-        </select>
-      </div>
+          <div class="space-y-2">
+            <Label for="role">角色</Label>
+            <Select v-model="role">
+              <SelectTrigger>
+                <SelectValue placeholder="选择角色" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="user">普通用户</SelectItem>
+                <SelectItem value="admin">管理员</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
 
-      <div>
-        <label class="block text-sm font-medium mb-1">状态</label>
-        <select
-          class="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
-        >
-          <option value="active" selected>活跃</option>
-          <option value="inactive">禁用</option>
-        </select>
-      </div>
+          <div class="space-y-2">
+            <Label for="status">状态</Label>
+            <Select v-model="status">
+              <SelectTrigger>
+                <SelectValue placeholder="选择状态" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="active">活跃</SelectItem>
+                <SelectItem value="inactive">禁用</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
 
-      <div class="pt-4 flex gap-4">
-        <button
-          type="submit"
-          class="px-4 py-2 bg-primary text-primary-foreground rounded-md hover:opacity-90"
-        >
-          保存修改
-        </button>
-        <RouterLink
-          to="/users"
-          class="px-4 py-2 border rounded-md hover:bg-muted"
-        >
-          取消
-        </RouterLink>
-      </div>
-    </form>
+          <div class="pt-4 flex gap-4">
+            <Button type="submit">
+              保存修改
+            </Button>
+            <RouterLink to="/users">
+              <Button variant="outline">
+                取消
+              </Button>
+            </RouterLink>
+          </div>
+        </form>
+      </CardContent>
+    </Card>
   </div>
 </template>

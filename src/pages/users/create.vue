@@ -1,4 +1,21 @@
 <script setup lang="ts">
+import { ref } from 'vue'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import { Button } from '@/components/ui/button'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
+
+const username = ref('')
+const email = ref('')
+const role = ref('user')
+const password = ref('')
 </script>
 
 <route lang="yaml">
@@ -20,58 +37,67 @@ meta:
       </RouterLink>
     </div>
 
-    <form class="space-y-4 p-6 border rounded-lg bg-card">
-      <div>
-        <label class="block text-sm font-medium mb-1">用户名</label>
-        <input
-          type="text"
-          class="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
-          placeholder="请输入用户名"
-        />
-      </div>
+    <Card>
+      <CardHeader>
+        <CardTitle>用户信息</CardTitle>
+      </CardHeader>
+      <CardContent>
+        <form class="space-y-4">
+          <div class="space-y-2">
+            <Label for="username">用户名</Label>
+            <Input
+              id="username"
+              v-model="username"
+              type="text"
+              placeholder="请输入用户名"
+            />
+          </div>
 
-      <div>
-        <label class="block text-sm font-medium mb-1">邮箱</label>
-        <input
-          type="email"
-          class="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
-          placeholder="请输入邮箱"
-        />
-      </div>
+          <div class="space-y-2">
+            <Label for="email">邮箱</Label>
+            <Input
+              id="email"
+              v-model="email"
+              type="email"
+              placeholder="请输入邮箱"
+            />
+          </div>
 
-      <div>
-        <label class="block text-sm font-medium mb-1">角色</label>
-        <select
-          class="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
-        >
-          <option value="user">普通用户</option>
-          <option value="admin">管理员</option>
-        </select>
-      </div>
+          <div class="space-y-2">
+            <Label for="role">角色</Label>
+            <Select v-model="role">
+              <SelectTrigger>
+                <SelectValue placeholder="选择角色" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="user">普通用户</SelectItem>
+                <SelectItem value="admin">管理员</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
 
-      <div>
-        <label class="block text-sm font-medium mb-1">初始密码</label>
-        <input
-          type="password"
-          class="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
-          placeholder="请输入初始密码"
-        />
-      </div>
+          <div class="space-y-2">
+            <Label for="password">初始密码</Label>
+            <Input
+              id="password"
+              v-model="password"
+              type="password"
+              placeholder="请输入初始密码"
+            />
+          </div>
 
-      <div class="pt-4 flex gap-4">
-        <button
-          type="submit"
-          class="px-4 py-2 bg-primary text-primary-foreground rounded-md hover:opacity-90"
-        >
-          创建用户
-        </button>
-        <RouterLink
-          to="/users"
-          class="px-4 py-2 border rounded-md hover:bg-muted"
-        >
-          取消
-        </RouterLink>
-      </div>
-    </form>
+          <div class="pt-4 flex gap-4">
+            <Button type="submit">
+              创建用户
+            </Button>
+            <RouterLink to="/users">
+              <Button variant="outline">
+                取消
+              </Button>
+            </RouterLink>
+          </div>
+        </form>
+      </CardContent>
+    </Card>
   </div>
 </template>

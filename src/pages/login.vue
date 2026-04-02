@@ -1,7 +1,15 @@
 <script setup lang="ts">
+import { ref } from 'vue'
 import { useRouter } from 'vue-router'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import { Button } from '@/components/ui/button'
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 
 const router = useRouter()
+
+const username = ref('')
+const password = ref('')
 
 const handleLogin = (e: Event) => {
   e.preventDefault()
@@ -17,35 +25,39 @@ meta:
 
 <template>
   <div class="min-h-screen flex items-center justify-center bg-muted/30">
-    <div class="w-full max-w-md p-8 bg-card rounded-lg shadow-lg border">
-      <h2 class="text-2xl font-bold text-center mb-6">登录</h2>
-      <form class="space-y-4" @submit="handleLogin">
-        <div>
-          <label class="block text-sm font-medium mb-1">用户名</label>
-          <input
-            type="text"
-            class="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
-            placeholder="请输入用户名"
-          />
-        </div>
-        <div>
-          <label class="block text-sm font-medium mb-1">密码</label>
-          <input
-            type="password"
-            class="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
-            placeholder="请输入密码"
-          />
-        </div>
-        <button
-          type="submit"
-          class="w-full bg-primary text-primary-foreground py-2 rounded-md hover:opacity-90"
-        >
-          登录
-        </button>
-      </form>
-      <p class="text-center mt-4 text-sm text-muted-foreground">
-        使用 blank 布局（无侧边栏）
-      </p>
-    </div>
+    <Card class="w-full max-w-md">
+      <CardHeader class="text-center">
+        <CardTitle class="text-2xl">登录</CardTitle>
+        <CardDescription>请输入您的账号信息</CardDescription>
+      </CardHeader>
+      <CardContent>
+        <form class="space-y-4" @submit="handleLogin">
+          <div class="space-y-2">
+            <Label for="username">用户名</Label>
+            <Input
+              id="username"
+              v-model="username"
+              type="text"
+              placeholder="请输入用户名"
+            />
+          </div>
+          <div class="space-y-2">
+            <Label for="password">密码</Label>
+            <Input
+              id="password"
+              v-model="password"
+              type="password"
+              placeholder="请输入密码"
+            />
+          </div>
+          <Button type="submit" class="w-full">
+            登录
+          </Button>
+        </form>
+        <p class="text-center mt-4 text-sm text-muted-foreground">
+          使用 blank 布局（无侧边栏）
+        </p>
+      </CardContent>
+    </Card>
   </div>
 </template>

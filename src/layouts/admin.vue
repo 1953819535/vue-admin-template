@@ -24,6 +24,12 @@ const navGroups = [
     ]
   },
   {
+    title: '组件示例',
+    items: [
+      { title: 'DataTable', to: '/components/data-table' },
+    ]
+  },
+  {
     title: '系统设置',
     items: [
       { title: '基本信息', to: '/system' },
