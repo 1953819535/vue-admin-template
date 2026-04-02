@@ -6,7 +6,7 @@ const router = useRouter()
 const handleLogin = (e: Event) => {
   e.preventDefault()
   // 模拟登录逻辑
-  router.push('/dashboard')
+  router.push('/')
 }
 </script>
 
