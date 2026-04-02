@@ -13,11 +13,4 @@ app.use(router)
 const appStore = useAppStore()
 appStore.applyTheme()
 
-// 监听系统主题变化
-window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => {
-  if (appStore.theme === 'system') {
-    appStore.applyTheme()
-  }
-})
-
 app.mount('#app')

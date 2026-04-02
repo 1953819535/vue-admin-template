@@ -1,0 +1,146 @@
+{
+  "modern-minimal": {
+    "title": "现代极简",
+    "description": "简洁现代的设计风格，低饱和度配色"
+  },
+  "t3-chat": {
+    "title": "T3 聊天",
+    "description": "T3 Stack 社区风格，清新蓝紫色调"
+  },
+  "twitter": {
+    "title": "推特风格",
+    "description": "仿 Twitter/X 的蓝白配色方案"
+  },
+  "mocha-mousse": {
+    "title": "摩卡慕斯",
+    "description": "温暖棕色调，咖啡色系配色"
+  },
+  "bubblegum": {
+    "title": "泡泡糖",
+    "description": "粉色系少女风格，甜美的糖果色调"
+  },
+  "doom-64": {
+    "title": "毁灭战士",
+    "description": "复古游戏风格，暗黑橙红配色"
+  },
+  "catppuccin": {
+    "title": "Catppuccin",
+    "description": "柔和 pastel 色调，温暖的深色模式"
+  },
+  "graphite": {
+    "title": "石墨",
+    "description": "灰色调工业风，沉稳的配色方案"
+  },
+  "perpetuity": {
+    "title": "永恒",
+    "description": "永恒经典的黑金配色"
+  },
+  "kodama-grove": {
+    "title": "树灵森林",
+    "description": "森林绿色系，自然清新的配色"
+  },
+  "cosmic-night": {
+    "title": "宇宙之夜",
+    "description": "深邃星空风格，紫蓝深色主题"
+  },
+  "tangerine": {
+    "title": "蜜柑",
+    "description": "活力橙色系，明亮温暖的配色"
+  },
+  "quantum-rose": {
+    "title": "量子玫瑰",
+    "description": "玫瑰粉紫色系，科技感配色"
+  },
+  "nature": {
+    "title": "自然",
+    "description": "大地色系，贴近自然的配色方案"
+  },
+  "bold-tech": {
+    "title": "科技粗犷",
+    "description": "硬朗科技风格，高对比度配色"
+  },
+  "elegant-luxury": {
+    "title": "优雅奢华",
+    "description": "奢华金色系，高端典雅配色"
+  },
+  "amber-minimal": {
+    "title": "琥珀极简",
+    "description": "琥珀黄极简风格，温暖明亮"
+  },
+  "supabase": {
+    "title": "Supabase",
+    "description": "Supabase 官方风格，绿色品牌配色"
+  },
+  "neo-brutalism": {
+    "title": "新粗野主义",
+    "description": "粗野主义风格，高对比粗线条设计"
+  },
+  "solar-dusk": {
+    "title": "日落黄昏",
+    "description": "黄昏橙红色系，温暖渐变配色"
+  },
+  "claymorphism": {
+    "title": "黏土拟物",
+    "description": "黏土质感风格，柔和立体效果"
+  },
+  "cyberpunk": {
+    "title": "赛博朋克",
+    "description": "霓虹色彩、高对比度、未来科幻感"
+  },
+  "pastel-dreams": {
+    "title": "梦幻粉彩",
+    "description": "柔和 pastel 系，梦幻般的配色"
+  },
+  "clean-slate": {
+    "title": "纯净 slate",
+    "description": "干净 slate 系，简洁专业配色"
+  },
+  "caffeine": {
+    "title": "咖啡因",
+    "description": "咖啡色系，提神的暖色调"
+  },
+  "ocean-breeze": {
+    "title": "海洋微风",
+    "description": "海蓝色系，清爽凉爽的配色"
+  },
+  "retro-arcade": {
+    "title": "复古街机",
+    "description": "80年代街机风格，复古霓虹配色"
+  },
+  "midnight-bloom": {
+    "title": "午夜绽放",
+    "description": "深夜花卉风格，神秘紫粉色调"
+  },
+  "candyland": {
+    "title": "糖果乐园",
+    "description": "多彩糖果色系，童趣活泼配色"
+  },
+  "northern-lights": {
+    "title": "北极光",
+    "description": "极光绿色系，神秘梦幻的配色"
+  },
+  "vintage-paper": {
+    "title": "复古纸张",
+    "description": "老旧纸张风格，米黄复古色调"
+  },
+  "sunset-horizon": {
+    "title": "日落地平线",
+    "description": "日落渐变风格，橙红紫色调"
+  },
+  "starry-night": {
+    "title": "星夜",
+    "description": "梵高星夜风格，深邃蓝黄配色"
+  },
+  "claude": {
+    "title": "Claude",
+    "description": "Anthropic Claude 官方风格配色"
+  },
+  "vercel": {
+    "title": "Vercel",
+    "description": "Vercel 官方黑白极简风格"
+  },
+  "mono": {
+    "title": "单色",
+    "description": "纯黑白配色，极致简洁风格"
+  }
+}
