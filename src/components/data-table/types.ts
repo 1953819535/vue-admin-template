@@ -16,6 +16,7 @@ export interface HeaderContext<T = any> {
 // 行选择配置
 export interface RowSelection<T = any> {
   enabled?: boolean
+  type?: 'single' | 'multiple'  // 单选或多选
   selectedRowKeys?: (string | number)[]
   onChange?: (selectedRowKeys: (string | number)[], selectedRows: T[]) => void
   getCheckboxProps?: (row: T) => { disabled?: boolean }
@@ -49,7 +50,7 @@ export interface DataTableProps<T = any> {
   rowKey?: string | ((row: T) => string | number)
   emptyText?: string
   // 表格大小
-  size?: 'sm' | 'md' | 'lg'
+  size?: 'xs' | 'sm' | 'md' | 'lg'
   // 显示表头
   showHeader?: boolean
   // 边框

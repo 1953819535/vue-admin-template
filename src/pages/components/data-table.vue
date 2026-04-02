@@ -75,7 +75,7 @@ const data = ref<User[]>([
 // ========== 配置项 ==========
 
 // 表格大小
-const size = ref<"sm" | "md" | "lg">("md");
+const size = ref<"xs" | "sm" | "md" | "lg">("md");
 
 // 显示表头
 const showHeader = ref(true);
@@ -91,6 +91,7 @@ const showEmpty = ref(false);
 
 // 行选择
 const enableSelection = ref(true);
+const selectionType = ref<"single" | "multiple">("multiple");
 const selectedRowKeys = ref<(string | number)[]>([]);
 
 // 行点击
@@ -147,6 +148,7 @@ const columns = computed<ColumnConfig<User>[]>(() => [
 // 行选择配置（受控模式）
 const rowSelection = computed<RowSelection<User>>(() => ({
   enabled: enableSelection.value,
+  type: selectionType.value,
   selectedRowKeys: selectedRowKeys.value,
   getCheckboxProps: (row) => ({
     disabled: row.role === "admin",
@@ -206,6 +208,7 @@ meta:
               <SelectValue placeholder="选择大小" />
             </SelectTrigger>
             <SelectContent>
+              <SelectItem value="xs">超小</SelectItem>
               <SelectItem value="sm">小</SelectItem>
               <SelectItem value="md">中</SelectItem>
               <SelectItem value="lg">大</SelectItem>
@@ -240,6 +243,19 @@ meta:
         <div class="flex items-center gap-2">
           <Checkbox v-model="enableSelection" />
           <Label>启用行选择</Label>
+        </div>
+
+        <div class="flex items-center gap-2">
+          <Label class="w-20">选择模式</Label>
+          <Select v-model="selectionType">
+            <SelectTrigger class="w-full">
+              <SelectValue placeholder="选择模式" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="multiple">多选</SelectItem>
+              <SelectItem value="single">单选</SelectItem>
+            </SelectContent>
+          </Select>
         </div>
 
         <p class="text-xs text-muted-foreground">* 管理员角色的行禁用选择</p>
@@ -343,7 +359,10 @@ meta:
   :show-header="{{ showHeader }}"
   :bordered="{{ bordered }}"
   :loading="{{ loading }}"
-  :row-selection="{ enabled: {{ enableSelection }} }"
+  :row-selection="{
+    enabled: {{ enableSelection }},
+    type: '{{ selectionType }}'
+  }"
   :custom-row="getRowEvents"
 /&gt;</code></pre>
     </div>

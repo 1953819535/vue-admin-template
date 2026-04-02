@@ -6,7 +6,7 @@ import type {
   HeaderContext,
   RowEvents,
 } from "./types";
-import { computed, ref, useSlots } from "vue";
+import { computed, ref, useSlots, watch } from "vue";
 import { cn } from "@/lib/utils";
 import { Icon } from "@iconify/vue";
 import {
@@ -18,6 +18,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Checkbox } from "@/components/ui/checkbox";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Empty, EmptyMedia, EmptyDescription } from "@/components/ui/empty";
 
 // 定义插槽类型
@@ -84,6 +85,7 @@ const mergedColumns = computed(() => {
 
 // 表格大小样式映射
 const SIZE_STYLES = {
+  xs: { text: "text-xs", padding: "py-1 px-1.5" },
   sm: { text: "text-sm", padding: "py-2 px-3" },
   md: { text: "", padding: "py-3 px-4" },
   lg: { text: "text-base", padding: "py-4 px-6" },
@@ -116,28 +118,14 @@ function getRowEvents(row: T, index: number): RowEvents<T> {
   return props.customRow || {};
 }
 
-// 处理行点击
-function handleRowClick(row: T, index: number, event: MouseEvent) {
-  const events = getRowEvents(row, index);
-  events.onClick?.(row, index, event);
-}
-
-// 处理行双击
-function handleRowDblclick(row: T, index: number, event: MouseEvent) {
-  const events = getRowEvents(row, index);
-  events.onDblclick?.(row, index, event);
-}
-
-// 处理鼠标进入
-function handleMouseenter(row: T, index: number, event: MouseEvent) {
-  const events = getRowEvents(row, index);
-  events.onMouseenter?.(row, index, event);
-}
-
-// 处理鼠标离开
-function handleMouseleave(row: T, index: number, event: MouseEvent) {
-  const events = getRowEvents(row, index);
-  events.onMouseleave?.(row, index, event);
+// 行事件处理器
+function handleRowEvent(
+  type: keyof RowEvents<T>,
+  row: T,
+  index: number,
+  event: MouseEvent,
+) {
+  getRowEvents(row, index)[type]?.(row, index, event);
 }
 
 // 判断行是否选中
@@ -151,83 +139,89 @@ function isRowDisabled(row: T): boolean {
   return props.rowSelection?.getCheckboxProps?.(row)?.disabled ?? false;
 }
 
-// 处理行选择
-function handleRowSelect(row: T, index: number, checked: boolean) {
-  const key = getRowKey(row, index);
-  let newSelectedKeys: (string | number)[];
+// 是否单选模式
+const isSingleSelect = computed(() => props.rowSelection?.type === "single");
 
-  if (checked) {
-    newSelectedKeys = [...selectedKeys.value, key];
-  } else {
-    newSelectedKeys = selectedKeys.value.filter((k) => k !== key);
+// 监听模式切换：多选切单选时清空已选择
+watch(isSingleSelect, (newVal, oldVal) => {
+  if (newVal && !oldVal && selectedKeys.value.length > 1) {
+    // 多选切单选，且选中项超过1个，清空选择
+    updateSelection([]);
   }
+});
 
+// 可选择的行
+const selectableRows = computed(() =>
+  props.data.filter((row) => !isRowDisabled(row)),
+);
+
+// 可选择行的 keys
+const selectableKeys = computed(() =>
+  selectableRows.value.map((row, index) => getRowKey(row, index)),
+);
+
+// 是否全选
+const isAllSelected = computed(() => {
+  if (selectableRows.value.length === 0) return false;
+  return selectableRows.value.every((row, index) => isRowSelected(row, index));
+});
+
+// 是否部分选中
+const isIndeterminate = computed(() => {
+  if (selectableRows.value.length === 0) return false;
+  const selectedCount = selectableRows.value.filter((row, index) =>
+    isRowSelected(row, index),
+  ).length;
+  return selectedCount > 0 && selectedCount < selectableRows.value.length;
+});
+
+// 更新选择状态（公共逻辑）
+function updateSelection(newSelectedKeys: (string | number)[]) {
   // 非受控模式更新内部状态
   if (props.rowSelection?.selectedRowKeys === undefined) {
     internalSelectedRowKeys.value = newSelectedKeys;
   }
 
-  // 触发事件
   emit("update:selectedRowKeys", newSelectedKeys);
 
-  // 获取选中的行数据
   const selectedRows = props.data.filter((r, i) =>
     newSelectedKeys.includes(getRowKey(r, i)),
   );
   props.rowSelection?.onChange?.(newSelectedKeys, selectedRows);
 }
 
-// 判断是否全选
-function isAllSelected(): boolean {
-  const selectableRows = props.data.filter((row) => !isRowDisabled(row));
-  if (selectableRows.length === 0) return false;
-  return selectableRows.every((row, index) => isRowSelected(row, index));
-}
+// 处理行选择
+function handleRowSelect(row: T, index: number, checked: boolean) {
+  const key = getRowKey(row, index);
 
-// 判断是否部分选中
-function isIndeterminate(): boolean {
-  const selectableRows = props.data.filter((row) => !isRowDisabled(row));
-  if (selectableRows.length === 0) return false;
-  const selectedCount = selectableRows.filter((row, index) =>
-    isRowSelected(row, index),
-  ).length;
-  return selectedCount > 0 && selectedCount < selectableRows.length;
+  if (isSingleSelect.value) {
+    // 单选模式：直接替换为当前选中项（互斥逻辑）
+    updateSelection(checked ? [key] : []);
+  } else {
+    // 多选模式：添加或移除
+    const newSelectedKeys = checked
+      ? [...selectedKeys.value, key]
+      : selectedKeys.value.filter((k) => k !== key);
+    updateSelection(newSelectedKeys);
+  }
 }
 
 // 处理全选
 function handleSelectAll(checked: boolean) {
-  let newSelectedKeys: (string | number)[];
-
   if (checked) {
     // 选中所有可选的行
-    newSelectedKeys = [
-      ...selectedKeys.value,
-      ...props.data
-        .filter(
-          (row, index) => !isRowDisabled(row) && !isRowSelected(row, index),
-        )
-        .map((row, index) => getRowKey(row, index)),
-    ];
+    const newKeys = new Set(selectedKeys.value);
+    selectableKeys.value.forEach((key) => newKeys.add(key));
+    updateSelection([...newKeys]);
   } else {
-    // 取消选中所有可选的行
-    const disabledKeys = props.data
-      .filter((row) => isRowDisabled(row))
-      .map((row, index) => getRowKey(row, index));
-    newSelectedKeys = selectedKeys.value.filter((k) =>
-      disabledKeys.includes(k),
+    // 取消选中所有可选的行，保留禁用行的选中状态
+    const disabledKeys = new Set(
+      props.data
+        .filter((row) => isRowDisabled(row))
+        .map((row, index) => getRowKey(row, index)),
     );
+    updateSelection(selectedKeys.value.filter((k) => disabledKeys.has(k)));
   }
-
-  if (props.rowSelection?.selectedRowKeys === undefined) {
-    internalSelectedRowKeys.value = newSelectedKeys;
-  }
-
-  emit("update:selectedRowKeys", newSelectedKeys);
-
-  const selectedRows = props.data.filter((r, i) =>
-    newSelectedKeys.includes(getRowKey(r, i)),
-  );
-  props.rowSelection?.onChange?.(newSelectedKeys, selectedRows);
 }
 
 // 渲染表头
@@ -284,7 +278,6 @@ function renderCell(column: ColumnConfig, row: T, index: number) {
     </div>
 
     <Table :class="SIZE_STYLES[props.size].text">
-      <!-- 表头 -->
       <TableHeader v-if="props.showHeader">
         <TableRow :class="props.bordered && 'border-b'">
           <TableHead
@@ -292,9 +285,13 @@ function renderCell(column: ColumnConfig, row: T, index: number) {
             :key="column.key"
             :class="
               cn(
-                column.align === 'center' && 'text-center',
-                column.align === 'right' && 'text-right',
                 SIZE_STYLES[props.size].padding,
+                column.key === '__selection__'
+                  ? 'w-12 text-center'
+                  : cn(
+                      column.align === 'center' && 'text-center',
+                      column.align === 'right' && 'text-right',
+                    ),
                 props.bordered &&
                   index < mergedColumns.length - 1 &&
                   'border-r',
@@ -302,13 +299,18 @@ function renderCell(column: ColumnConfig, row: T, index: number) {
             "
             :style="{ width: getWidthStyle(column.width) }"
           >
-            <!-- 选择列表头 -->
-            <Checkbox
+            <!-- 选择列表头：多选显示全选框，单选留空 -->
+            <div
               v-if="column.key === '__selection__'"
-              :model-value="isAllSelected()"
-              :indeterminate="isIndeterminate()"
-              @update:model-value="(v) => handleSelectAll(v === true)"
-            />
+              class="flex items-center justify-center"
+            >
+              <Checkbox
+                v-if="!isSingleSelect"
+                :model-value="isAllSelected"
+                :indeterminate="isIndeterminate"
+                @update:model-value="(v) => handleSelectAll(v === true)"
+              />
+            </div>
             <!-- 普通列表头 -->
             <component v-else :is="() => renderHeader(column, Number(index))" />
           </TableHead>
@@ -347,33 +349,54 @@ function renderCell(column: ColumnConfig, row: T, index: number) {
                 'cursor-pointer hover:bg-muted/30',
             )
           "
-          @click="handleRowClick(row, rowIndex, $event)"
-          @dblclick="handleRowDblclick(row, rowIndex, $event)"
-          @mouseenter="handleMouseenter(row, rowIndex, $event)"
-          @mouseleave="handleMouseleave(row, rowIndex, $event)"
+          @click="handleRowEvent('onClick', row, rowIndex, $event)"
+          @dblclick="handleRowEvent('onDblclick', row, rowIndex, $event)"
+          @mouseenter="handleRowEvent('onMouseenter', row, rowIndex, $event)"
+          @mouseleave="handleRowEvent('onMouseleave', row, rowIndex, $event)"
         >
           <TableCell
             v-for="(column, colIndex) in mergedColumns"
             :key="column.key"
             :class="
               cn(
-                column.align === 'center' && 'text-center',
-                column.align === 'right' && 'text-right',
+                SIZE_STYLES[props.size].padding,
+                column.key === '__selection__'
+                  ? 'w-12 text-center'
+                  : cn(
+                      column.align === 'center' && 'text-center',
+                      column.align === 'right' && 'text-right',
+                    ),
                 props.bordered &&
                   colIndex < mergedColumns.length - 1 &&
                   'border-r',
               )
             "
           >
-            <!-- 选择列 -->
-            <Checkbox
+            <!-- 选择列：单选用 RadioGroup，多选用 Checkbox -->
+            <div
               v-if="column.key === '__selection__'"
-              :model-value="isRowSelected(row, rowIndex)"
-              :disabled="isRowDisabled(row)"
-              @update:model-value="
-                (v) => handleRowSelect(row, rowIndex, v === true)
-              "
-            />
+              class="flex items-center justify-center"
+            >
+              <!-- 单选模式：每行一个 RadioGroup -->
+              <RadioGroup
+                v-if="isSingleSelect"
+                :model-value="isRowSelected(row, rowIndex) ? getRowKey(row, rowIndex).toString() : undefined"
+                @update:model-value="(val) => val && handleRowSelect(row, rowIndex, true)"
+              >
+                <RadioGroupItem
+                  :value="getRowKey(row, rowIndex).toString()"
+                  :disabled="isRowDisabled(row)"
+                  @click.stop
+                />
+              </RadioGroup>
+              <!-- 多选模式 -->
+              <Checkbox
+                v-else
+                :model-value="isRowSelected(row, rowIndex)"
+                :disabled="isRowDisabled(row)"
+                @update:model-value="(v) => handleRowSelect(row, rowIndex, v === true)"
+              />
+            </div>
             <!-- 普通列 -->
             <component v-else :is="() => renderCell(column, row, rowIndex)" />
           </TableCell>

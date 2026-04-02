@@ -75,11 +75,10 @@ const data = [
 
 ### 方式三：customRender 渲染函数
 
-使用渲染函数自定义单元格，适合复杂逻辑。
+使用 JSX 自定义单元格，适合复杂逻辑。
 
 ```vue
-<script setup lang="ts">
-import { h } from "vue";
+<script setup lang="tsx">
 import { DataTable } from "@/components/data-table";
 
 const columns = [
@@ -87,15 +86,11 @@ const columns = [
   {
     key: "status",
     title: "状态",
-    customRender: ({ value }) => {
-      return h(
-        "span",
-        {
-          class: value === "active" ? "text-green-600" : "text-gray-400",
-        },
-        value === "active" ? "启用" : "禁用",
-      );
-    },
+    customRender: ({ value }) => (
+      <span class={value === "active" ? "text-green-600" : "text-gray-400"}>
+        {value === "active" ? "启用" : "禁用"}
+      </span>
+    ),
   },
 ];
 </script>
@@ -107,7 +102,7 @@ const columns = [
 
 ## 表头自定义
 
-### 方式一：headerSlot 插槽
+### 方式一：插槽
 
 ```vue
 <script setup lang="ts">
@@ -131,19 +126,20 @@ const columns = [{ key: "name", title: "用户名" }];
 ### 方式二：headerRender 渲染函数
 
 ```vue
-<script setup lang="ts">
-import { h } from "vue";
+<script setup lang="tsx">
 import { Icon } from "@iconify/vue";
+import { DataTable } from "@/components/data-table";
 
 const columns = [
   {
     key: "email",
     title: "邮箱",
-    headerRender: () =>
-      h("div", { class: "flex items-center gap-1" }, [
-        h(Icon, { icon: "lucide:mail", class: "size-4" }),
-        "邮箱",
-      ]),
+    headerRender: () => (
+      <div class="flex items-center gap-1">
+        <Icon icon="lucide:mail" class="size-4" />
+        邮箱
+      </div>
+    ),
   },
 ];
 </script>
@@ -157,6 +153,8 @@ const columns = [
 
 启用行选择功能，支持单选和多选。
 
+### 多选模式
+
 ```vue
 <script setup lang="ts">
 import { ref } from "vue";
@@ -166,14 +164,44 @@ const selectedRowKeys = ref<(string | number)[]>([]);
 
 const rowSelection = {
   enabled: true,
+  type: "multiple" as const, // 多选模式（默认）
   getCheckboxProps: (row) => ({
     disabled: row.role === "admin", // 禁用某些行的选择
   }),
 };
 
-function handleChange(keys: (string | number)[], rows: any[]) {
+function handleChange(keys: (string | number)[]) {
   selectedRowKeys.value = keys;
-  console.log("选中的行:", rows);
+}
+</script>
+
+<template>
+  <DataTable
+    :data="data"
+    :columns="columns"
+    :row-selection="rowSelection"
+    @update:selected-row-keys="handleChange"
+  />
+</template>
+```
+
+### 单选模式
+
+```vue
+<script setup lang="ts">
+import { ref } from "vue";
+import { DataTable } from "@/components/data-table";
+
+const selectedRowKeys = ref<(string | number)[]>([]);
+
+const rowSelection = {
+  enabled: true,
+  type: "single" as const, // 单选模式
+};
+
+function handleChange(keys: (string | number)[]) {
+  selectedRowKeys.value = keys;
+  console.log("选中:", keys[0]);
 }
 </script>
 
@@ -227,9 +255,9 @@ function handleClick(row: any, index: number) {
 | loading      | `boolean`                                                   | `false`      | 加载状态     |
 | rowKey       | `string \| ((row: T) => string \| number)`                  | `'id'`       | 行唯一标识   |
 | emptyText    | `string`                                                    | `'暂无数据'` | 空数据提示   |
-| size         | `'sm' \| 'md' \| 'lg'`                                      | `'md'`       | 表格大小     |
+| size         | `'xs' \| 'sm' \| 'md' \| 'lg'`                              | `'md'`       | 表格大小     |
 | showHeader   | `boolean`                                                   | `true`       | 是否显示表头 |
-| bordered     | `boolean`                                                   | `false'`     | 是否显示边框 |
+| bordered     | `boolean`                                                   | `false`      | 是否显示边框 |
 | rowSelection | `RowSelection<T>`                                           | -            | 行选择配置   |
 | customRow    | `RowEvents<T> \| ((row: T, index: number) => RowEvents<T>)` | -            | 行事件配置   |
 
@@ -241,9 +269,9 @@ interface ColumnConfig<T = any> {
   title: string; // 列标题
   width?: number | string; // 列宽
   align?: "left" | "center" | "right";
-  // 单元格
+  // 单元格渲染
   customRender?: (ctx: CellContext) => VNode | string;
-  // 表头
+  // 表头渲染
   headerRender?: (ctx: HeaderContext) => VNode | string;
 }
 ```
@@ -253,6 +281,7 @@ interface ColumnConfig<T = any> {
 ```typescript
 interface RowSelection<T = any> {
   enabled?: boolean; // 是否启用行选择
+  type?: "single" | "multiple"; // 选择模式：单选或多选
   selectedRowKeys?: (string | number)[]; // 受控选中的行
   onChange?: (keys: (string | number)[], rows: T[]) => void; // 选择变化回调
   getCheckboxProps?: (row: T) => { disabled?: boolean }; // 复选框属性
