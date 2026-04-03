@@ -7,6 +7,7 @@ import type {
   HeaderContext,
   RowEvents,
   SortInfo,
+  ExpandableConfig,
 } from "./types";
 import { computed, ref, useSlots, watch } from "vue";
 import { cn } from "@/lib/utils";
@@ -27,6 +28,7 @@ import { PaginationBar } from "@/components/shared/pagination-bar";
 defineSlots<
   {
     empty: () => any;
+    expandedRow: (ctx: { row: T; index: number }) => any;
   } & {
     [K in `cell-${string}`]?: (ctx: CellContext<T>) => any;
   } & {
@@ -45,6 +47,8 @@ const props = withDefaults(defineProps<DataTableProps<T>>(), {
   pagination: false,
   sort: undefined,
   remote: false,
+  expandable: undefined,
+  scroll: undefined,
 });
 
 const emit = defineEmits<{
@@ -52,6 +56,7 @@ const emit = defineEmits<{
   "update:page": [page: number];
   "update:pageSize": [pageSize: number];
   "update:sort": [sort: SortInfo | undefined];
+  "update:expandedRowKeys": [keys: (string | number)[]];
 }>();
 
 const slots = useSlots();
@@ -213,6 +218,96 @@ function handleSortClick(column: ColumnConfig) {
 
 const internalSelectedRowKeys = ref<(string | number)[]>([]);
 
+// ========== 行展开相关 ==========
+const expandableConfig = computed<ExpandableConfig<T>>(() => {
+  if (!props.expandable) return {};
+  return props.expandable;
+});
+
+const hasExpandable = computed(() => {
+  if (!props.expandable) return false;
+  return expandableConfig.value.enabled ?? true;
+});
+
+const internalExpandedRowKeys = ref<(string | number)[]>([]);
+
+// 初始化展开行
+watch(
+  () => [props.expandable, props.data],
+  () => {
+    if (expandableConfig.value.expandAll && props.data.length > 0) {
+      internalExpandedRowKeys.value = props.data.map((row, index) => getRowKey(row, index));
+    } else if (expandableConfig.value.defaultExpandedRowKeys) {
+      internalExpandedRowKeys.value = expandableConfig.value.defaultExpandedRowKeys;
+    }
+  },
+  { immediate: true }
+);
+
+const expandedKeys = computed(() => {
+  if (expandableConfig.value.expandedRowKeys !== undefined) {
+    return expandableConfig.value.expandedRowKeys;
+  }
+  return internalExpandedRowKeys.value;
+});
+
+const expandedKeysSet = computed(() => new Set(expandedKeys.value));
+
+// 缓存曾经展开过的行 key（仅在 keepExpanded 为 true 时使用）
+const everExpandedKeys = ref<Set<string | number>>(new Set());
+
+const shouldKeepExpanded = computed(() => expandableConfig.value.keepExpanded ?? false);
+
+function isRowExpanded(row: T, index: number): boolean {
+  const key = getRowKey(row, index);
+  return expandedKeysSet.value.has(key);
+}
+
+function wasRowEverExpanded(row: T, index: number): boolean {
+  const key = getRowKey(row, index);
+  return everExpandedKeys.value.has(key);
+}
+
+function isRowExpandable(row: T): boolean {
+  if (!hasExpandable.value) return false;
+  if (expandableConfig.value.rowExpandable) {
+    return expandableConfig.value.rowExpandable(row);
+  }
+  return true;
+}
+
+function handleExpandToggle(row: T, index: number) {
+  const key = getRowKey(row, index);
+  const wasExpanded = isRowExpanded(row, index);
+
+  if (!wasExpanded && shouldKeepExpanded.value) {
+    // 展开时记录到缓存
+    everExpandedKeys.value.add(key);
+  }
+
+  const newExpandedKeys = wasExpanded
+    ? expandedKeys.value.filter((k) => k !== key)
+    : [...expandedKeys.value, key];
+
+  if (expandableConfig.value.expandedRowKeys === undefined) {
+    internalExpandedRowKeys.value = newExpandedKeys;
+  }
+
+  emit("update:expandedRowKeys", newExpandedKeys);
+  expandableConfig.value.onExpand?.(!wasExpanded, row);
+}
+
+// ========== 滚动相关 ==========
+const scrollConfig = computed(() => props.scroll ?? {});
+
+const hasStickyHeader = computed(() => !!scrollConfig.value.y);
+
+const scrollYStyle = computed(() => {
+  if (!scrollConfig.value.y) return undefined;
+  const y = scrollConfig.value.y;
+  return typeof y === "number" ? `${y}px` : y;
+});
+
 const selectedKeys = computed(() => {
   if (props.rowSelection?.selectedRowKeys !== undefined) {
     return props.rowSelection.selectedRowKeys;
@@ -224,9 +319,12 @@ const selectedKeysSet = computed(() => new Set(selectedKeys.value));
 
 const hasSelection = computed(() => props.rowSelection?.enabled);
 
-const totalColumns = computed(() =>
-  hasSelection.value ? props.columns.length + 1 : props.columns.length
-);
+const totalColumns = computed(() => {
+  let count = props.columns.length;
+  if (hasSelection.value) count += 1;
+  if (hasExpandable.value) count += 1;
+  return count;
+});
 
 const SIZE_STYLES = {
   xs: { text: "text-xs", padding: "py-1 px-1.5" },
@@ -413,148 +511,421 @@ function renderCell(column: ColumnConfig, row: T, index: number) {
         />
       </div>
 
-      <Table :class="SIZE_STYLES[props.size].text">
-        <TableHeader v-if="props.showHeader">
-          <TableRow :class="props.bordered && 'border-b'">
-            <TableHead
-              v-if="hasSelection"
-              :class="cn(
-                SELECTION_PADDING[props.size],
-                'w-12 text-center px-0',
-                props.bordered && 'border-r'
-              )"
+      <!-- 固定表头模式：使用原生 table 绕过 Table 组件的 overflow-auto 包裹层 -->
+      <template v-if="hasStickyHeader">
+        <div class="overflow-auto" :style="{ maxHeight: scrollYStyle }">
+          <table :class="cn('w-full caption-bottom text-sm', SIZE_STYLES[props.size].text)">
+            <thead
+              v-if="props.showHeader"
+              class="sticky top-0 z-10 bg-background [&_tr]:border-b"
             >
-              <div class="flex items-center justify-center">
-                <Checkbox
-                  v-if="!isSingleSelect"
-                  :model-value="selectionState.isAllSelected"
-                  :indeterminate="selectionState.isIndeterminate"
-                  @update:model-value="(v) => handleSelectAll(v === true)"
-                />
-              </div>
-            </TableHead>
-            <TableHead
-              v-for="(column, index) in props.columns"
-              :key="column.key"
-              :class="
-                cn(
-                  SIZE_STYLES[props.size].padding,
-                  column.align === 'center' && 'text-center',
-                  column.align === 'right' && 'text-right',
-                  column.sortable && 'cursor-pointer select-none hover:bg-accent/50',
-                  props.bordered &&
-                    index < props.columns.length - 1 &&
-                    'border-r',
-                )
-              "
-              :style="{ width: getWidthStyle(column.width) }"
-              @click="column.sortable && handleSortClick(column)"
-            >
-              <div class="flex items-center gap-2" :class="cn(column.align === 'center' && 'justify-center', column.align === 'right' && 'justify-end')">
-                <component :is="() => renderHeader(column, index)" />
-                <span v-if="column.sortable" class="flex items-center">
-                  <Icon
-                    v-if="getColumnSortOrder(column) === 'ascend'"
-                    icon="lucide:arrow-up"
-                    class="size-4 text-primary"
-                  />
-                  <Icon
-                    v-else-if="getColumnSortOrder(column) === 'descend'"
-                    icon="lucide:arrow-down"
-                    class="size-4 text-primary"
-                  />
-                  <Icon
-                    v-else
-                    icon="lucide:arrow-up-down"
-                    class="size-4 text-muted-foreground/50"
-                  />
-                </span>
-              </div>
-            </TableHead>
-          </TableRow>
-        </TableHeader>
-
-        <TableBody>
-          <TableRow v-if="paginatedData.length === 0">
-            <TableCell :colspan="totalColumns" class="p-6">
-              <Empty class="border-0">
-                <template v-if="slots.empty">
-                  <component :is="slots.empty" />
-                </template>
-                <template v-else>
-                  <EmptyMedia variant="icon">
-                    <Icon icon="lucide:database" class="size-6" />
-                  </EmptyMedia>
-                  <EmptyDescription>{{ emptyText }}</EmptyDescription>
-                </template>
-              </Empty>
-            </TableCell>
-          </TableRow>
-
-          <TableRow
-            v-else
-            v-for="(row, rowIndex) in paginatedData"
-            :key="getRowKey(row, rowIndex)"
-            :class="
-              cn(
-                SIZE_STYLES[props.size].padding,
-                props.bordered && rowIndex < paginatedData.length - 1 && 'border-b',
-                isRowSelected(row, rowIndex) && ROW_STATE_STYLES.selected,
-                isRowClickable(row, rowIndex) && cn('cursor-pointer', ROW_STATE_STYLES.hover),
-              )
-            "
-            @click="handleRowEvent('onClick', row, rowIndex, $event)"
-            @dblclick="handleRowEvent('onDblclick', row, rowIndex, $event)"
-            @mouseenter="handleRowEvent('onMouseenter', row, rowIndex, $event)"
-            @mouseleave="handleRowEvent('onMouseleave', row, rowIndex, $event)"
-          >
-            <TableCell
-              v-if="hasSelection"
-              :class="cn(
-                SELECTION_PADDING[props.size],
-                'w-12 text-center px-0',
-                props.bordered && 'border-r'
-              )"
-            >
-              <div class="flex items-center justify-center">
-                <RadioGroup
-                  v-if="isSingleSelect"
-                  :model-value="isRowSelected(row, rowIndex) ? getRowKey(row, rowIndex).toString() : undefined"
-                  @update:model-value="(val) => val && handleRowSelect(row, rowIndex, true)"
+              <tr :class="props.bordered && 'border-b'">
+                <!-- 展开列 -->
+                <th
+                  v-if="hasExpandable"
+                  :class="cn(
+                    SELECTION_PADDING[props.size],
+                    'w-12 text-center px-0 font-medium',
+                    hasSelection && 'border-r'
+                  )"
                 >
-                  <RadioGroupItem
-                    :value="getRowKey(row, rowIndex).toString()"
-                    :disabled="isRowDisabled(row)"
-                    @click.stop
+                  <div class="flex items-center justify-center"></div>
+                </th>
+                <!-- 选择列 -->
+                <th
+                  v-if="hasSelection"
+                  :class="cn(
+                    SELECTION_PADDING[props.size],
+                    'w-12 text-center px-0 font-medium',
+                    props.bordered && 'border-r'
+                  )"
+                >
+                  <div class="flex items-center justify-center">
+                    <Checkbox
+                      v-if="!isSingleSelect"
+                      :model-value="selectionState.isAllSelected"
+                      :indeterminate="selectionState.isIndeterminate"
+                      @update:model-value="(v) => handleSelectAll(v === true)"
+                    />
+                  </div>
+                </th>
+                <!-- 数据列 -->
+                <th
+                  v-for="(column, index) in props.columns"
+                  :key="column.key"
+                  :class="
+                    cn(
+                      SIZE_STYLES[props.size].padding,
+                      'font-medium text-left',
+                      column.align === 'center' && 'text-center',
+                      column.align === 'right' && 'text-right',
+                      column.sortable && 'cursor-pointer select-none hover:bg-accent/50',
+                      props.bordered &&
+                        index < props.columns.length - 1 &&
+                        'border-r',
+                    )
+                  "
+                  :style="{ width: getWidthStyle(column.width) }"
+                  @click="column.sortable && handleSortClick(column)"
+                >
+                  <div class="flex items-center gap-2" :class="cn(column.align === 'center' && 'justify-center', column.align === 'right' && 'justify-end')">
+                    <component :is="() => renderHeader(column, index)" />
+                    <span v-if="column.sortable" class="flex items-center">
+                      <Icon
+                        v-if="getColumnSortOrder(column) === 'ascend'"
+                        icon="lucide:arrow-up"
+                        class="size-4 text-primary"
+                      />
+                      <Icon
+                        v-else-if="getColumnSortOrder(column) === 'descend'"
+                        icon="lucide:arrow-down"
+                        class="size-4 text-primary"
+                      />
+                      <Icon
+                        v-else
+                        icon="lucide:arrow-up-down"
+                        class="size-4 text-muted-foreground/50"
+                      />
+                    </span>
+                  </div>
+                </th>
+              </tr>
+            </thead>
+
+            <tbody class="[&_tr:last-child]:border-0">
+              <tr v-if="paginatedData.length === 0">
+                <td :colspan="totalColumns" class="p-6">
+                  <Empty class="border-0">
+                    <template v-if="slots.empty">
+                      <component :is="slots.empty" />
+                    </template>
+                    <template v-else>
+                      <EmptyMedia variant="icon">
+                        <Icon icon="lucide:database" class="size-6" />
+                      </EmptyMedia>
+                      <EmptyDescription>{{ emptyText }}</EmptyDescription>
+                    </template>
+                  </Empty>
+                </td>
+              </tr>
+
+              <template v-else>
+                <template v-for="(row, rowIndex) in paginatedData" :key="getRowKey(row, rowIndex)">
+                  <!-- 数据行 -->
+                  <tr
+                    :class="
+                      cn(
+                        SIZE_STYLES[props.size].padding,
+                        props.bordered && rowIndex < paginatedData.length - 1 && 'border-b',
+                        isRowSelected(row, rowIndex) && ROW_STATE_STYLES.selected,
+                        isRowClickable(row, rowIndex) && cn('cursor-pointer', ROW_STATE_STYLES.hover),
+                        isRowExpanded(row, rowIndex) && 'bg-accent/20',
+                      )
+                    "
+                    @click="handleRowEvent('onClick', row, rowIndex, $event)"
+                    @dblclick="handleRowEvent('onDblclick', row, rowIndex, $event)"
+                    @mouseenter="handleRowEvent('onMouseenter', row, rowIndex, $event)"
+                    @mouseleave="handleRowEvent('onMouseleave', row, rowIndex, $event)"
+                  >
+                    <!-- 展开列 -->
+                    <td
+                      v-if="hasExpandable"
+                      :class="cn(
+                        SELECTION_PADDING[props.size],
+                        'w-12 text-center px-0',
+                        hasSelection && 'border-r'
+                      )"
+                    >
+                      <div class="flex items-center justify-center">
+                        <button
+                          v-if="isRowExpandable(row)"
+                          type="button"
+                          class="p-1 rounded hover:bg-accent/50 transition-colors"
+                          @click.stop="handleExpandToggle(row, rowIndex)"
+                        >
+                          <Icon
+                            :icon="isRowExpanded(row, rowIndex) ? 'lucide:chevron-down' : 'lucide:chevron-right'"
+                            class="size-4 text-muted-foreground"
+                          />
+                        </button>
+                      </div>
+                    </td>
+                    <!-- 选择列 -->
+                    <td
+                      v-if="hasSelection"
+                      :class="cn(
+                        SELECTION_PADDING[props.size],
+                        'w-12 text-center px-0',
+                        props.bordered && 'border-r'
+                      )"
+                    >
+                      <div class="flex items-center justify-center">
+                        <RadioGroup
+                          v-if="isSingleSelect"
+                          :model-value="isRowSelected(row, rowIndex) ? getRowKey(row, rowIndex).toString() : undefined"
+                          @update:model-value="(val) => val && handleRowSelect(row, rowIndex, true)"
+                        >
+                          <RadioGroupItem
+                            :value="getRowKey(row, rowIndex).toString()"
+                            :disabled="isRowDisabled(row)"
+                            @click.stop
+                          />
+                        </RadioGroup>
+                        <Checkbox
+                          v-else
+                          :model-value="isRowSelected(row, rowIndex)"
+                          :disabled="isRowDisabled(row)"
+                          @update:model-value="(v) => handleRowSelect(row, rowIndex, v === true)"
+                        />
+                      </div>
+                    </td>
+                    <!-- 数据列 -->
+                    <td
+                      v-for="(column, colIndex) in props.columns"
+                      :key="column.key"
+                      :class="
+                        cn(
+                          SIZE_STYLES[props.size].padding,
+                          column.align === 'center' && 'text-center',
+                          column.align === 'right' && 'text-right',
+                          props.bordered &&
+                            colIndex < props.columns.length - 1 &&
+                            'border-r',
+                        )
+                      "
+                    >
+                      <component :is="() => renderCell(column, row, rowIndex)" />
+                    </td>
+                  </tr>
+
+                  <!-- 展开行 -->
+                  <tr
+                    v-if="hasExpandable && isRowExpandable(row) && (shouldKeepExpanded ? wasRowEverExpanded(row, rowIndex) : isRowExpanded(row, rowIndex))"
+                    v-show="!shouldKeepExpanded || isRowExpanded(row, rowIndex)"
+                    :class="cn('bg-accent/10', props.bordered && 'border-b')"
+                  >
+                    <td :colspan="totalColumns" class="p-4">
+                      <component
+                        v-if="expandableConfig.expandedRowRender"
+                        :is="() => expandableConfig.expandedRowRender!(row, rowIndex)"
+                      />
+                      <component
+                        v-else-if="slots.expandedRow"
+                        :is="() => slots.expandedRow!({ row, index: rowIndex })"
+                      />
+                    </td>
+                  </tr>
+                </template>
+              </template>
+            </tbody>
+          </table>
+        </div>
+      </template>
+
+      <!-- 非固定表头模式：使用 Table 组件 -->
+      <template v-else>
+        <Table :class="SIZE_STYLES[props.size].text">
+          <TableHeader v-if="props.showHeader">
+            <TableRow :class="props.bordered && 'border-b'">
+              <!-- 展开列 -->
+              <TableHead
+                v-if="hasExpandable"
+                :class="cn(
+                  SELECTION_PADDING[props.size],
+                  'w-12 text-center px-0',
+                  hasSelection && 'border-r'
+                )"
+              >
+                <div class="flex items-center justify-center"></div>
+              </TableHead>
+              <!-- 选择列 -->
+              <TableHead
+                v-if="hasSelection"
+                :class="cn(
+                  SELECTION_PADDING[props.size],
+                  'w-12 text-center px-0',
+                  props.bordered && 'border-r'
+                )"
+              >
+                <div class="flex items-center justify-center">
+                  <Checkbox
+                    v-if="!isSingleSelect"
+                    :model-value="selectionState.isAllSelected"
+                    :indeterminate="selectionState.isIndeterminate"
+                    @update:model-value="(v) => handleSelectAll(v === true)"
                   />
-                </RadioGroup>
-                <Checkbox
-                  v-else
-                  :model-value="isRowSelected(row, rowIndex)"
-                  :disabled="isRowDisabled(row)"
-                  @update:model-value="(v) => handleRowSelect(row, rowIndex, v === true)"
-                />
-              </div>
-            </TableCell>
-            <TableCell
-              v-for="(column, colIndex) in props.columns"
-              :key="column.key"
-              :class="
-                cn(
-                  SIZE_STYLES[props.size].padding,
-                  column.align === 'center' && 'text-center',
-                  column.align === 'right' && 'text-right',
-                  props.bordered &&
-                    colIndex < props.columns.length - 1 &&
-                    'border-r',
-                )
-              "
-            >
-              <component :is="() => renderCell(column, row, rowIndex)" />
-            </TableCell>
-          </TableRow>
-        </TableBody>
-      </Table>
+                </div>
+              </TableHead>
+              <!-- 数据列 -->
+              <TableHead
+                v-for="(column, index) in props.columns"
+                :key="column.key"
+                :class="
+                  cn(
+                    SIZE_STYLES[props.size].padding,
+                    column.align === 'center' && 'text-center',
+                    column.align === 'right' && 'text-right',
+                    column.sortable && 'cursor-pointer select-none hover:bg-accent/50',
+                    props.bordered &&
+                      index < props.columns.length - 1 &&
+                      'border-r',
+                  )
+                "
+                :style="{ width: getWidthStyle(column.width) }"
+                @click="column.sortable && handleSortClick(column)"
+              >
+                <div class="flex items-center gap-2" :class="cn(column.align === 'center' && 'justify-center', column.align === 'right' && 'justify-end')">
+                  <component :is="() => renderHeader(column, index)" />
+                  <span v-if="column.sortable" class="flex items-center">
+                    <Icon
+                      v-if="getColumnSortOrder(column) === 'ascend'"
+                      icon="lucide:arrow-up"
+                      class="size-4 text-primary"
+                    />
+                    <Icon
+                      v-else-if="getColumnSortOrder(column) === 'descend'"
+                      icon="lucide:arrow-down"
+                      class="size-4 text-primary"
+                    />
+                    <Icon
+                      v-else
+                      icon="lucide:arrow-up-down"
+                      class="size-4 text-muted-foreground/50"
+                    />
+                  </span>
+                </div>
+              </TableHead>
+            </TableRow>
+          </TableHeader>
+
+          <TableBody>
+            <TableRow v-if="paginatedData.length === 0">
+              <TableCell :colspan="totalColumns" class="p-6">
+                <Empty class="border-0">
+                  <template v-if="slots.empty">
+                    <component :is="slots.empty" />
+                  </template>
+                  <template v-else>
+                    <EmptyMedia variant="icon">
+                      <Icon icon="lucide:database" class="size-6" />
+                    </EmptyMedia>
+                    <EmptyDescription>{{ emptyText }}</EmptyDescription>
+                  </template>
+                </Empty>
+              </TableCell>
+            </TableRow>
+
+            <template v-else>
+              <template v-for="(row, rowIndex) in paginatedData" :key="getRowKey(row, rowIndex)">
+                <!-- 数据行 -->
+                <TableRow
+                  :class="
+                    cn(
+                      SIZE_STYLES[props.size].padding,
+                      props.bordered && rowIndex < paginatedData.length - 1 && 'border-b',
+                      isRowSelected(row, rowIndex) && ROW_STATE_STYLES.selected,
+                      isRowClickable(row, rowIndex) && cn('cursor-pointer', ROW_STATE_STYLES.hover),
+                      isRowExpanded(row, rowIndex) && 'bg-accent/20',
+                    )
+                  "
+                  @click="handleRowEvent('onClick', row, rowIndex, $event)"
+                  @dblclick="handleRowEvent('onDblclick', row, rowIndex, $event)"
+                  @mouseenter="handleRowEvent('onMouseenter', row, rowIndex, $event)"
+                  @mouseleave="handleRowEvent('onMouseleave', row, rowIndex, $event)"
+                >
+                  <!-- 展开列 -->
+                  <TableCell
+                    v-if="hasExpandable"
+                    :class="cn(
+                      SELECTION_PADDING[props.size],
+                      'w-12 text-center px-0',
+                      hasSelection && 'border-r'
+                    )"
+                  >
+                    <div class="flex items-center justify-center">
+                      <button
+                        v-if="isRowExpandable(row)"
+                        type="button"
+                        class="p-1 rounded hover:bg-accent/50 transition-colors"
+                        @click.stop="handleExpandToggle(row, rowIndex)"
+                      >
+                        <Icon
+                          :icon="isRowExpanded(row, rowIndex) ? 'lucide:chevron-down' : 'lucide:chevron-right'"
+                          class="size-4 text-muted-foreground"
+                        />
+                      </button>
+                    </div>
+                  </TableCell>
+                  <!-- 选择列 -->
+                  <TableCell
+                    v-if="hasSelection"
+                    :class="cn(
+                      SELECTION_PADDING[props.size],
+                      'w-12 text-center px-0',
+                      props.bordered && 'border-r'
+                    )"
+                  >
+                    <div class="flex items-center justify-center">
+                      <RadioGroup
+                        v-if="isSingleSelect"
+                        :model-value="isRowSelected(row, rowIndex) ? getRowKey(row, rowIndex).toString() : undefined"
+                        @update:model-value="(val) => val && handleRowSelect(row, rowIndex, true)"
+                      >
+                        <RadioGroupItem
+                          :value="getRowKey(row, rowIndex).toString()"
+                          :disabled="isRowDisabled(row)"
+                          @click.stop
+                        />
+                      </RadioGroup>
+                      <Checkbox
+                        v-else
+                        :model-value="isRowSelected(row, rowIndex)"
+                        :disabled="isRowDisabled(row)"
+                        @update:model-value="(v) => handleRowSelect(row, rowIndex, v === true)"
+                      />
+                    </div>
+                  </TableCell>
+                  <!-- 数据列 -->
+                  <TableCell
+                    v-for="(column, colIndex) in props.columns"
+                    :key="column.key"
+                    :class="
+                      cn(
+                        SIZE_STYLES[props.size].padding,
+                        column.align === 'center' && 'text-center',
+                        column.align === 'right' && 'text-right',
+                        props.bordered &&
+                          colIndex < props.columns.length - 1 &&
+                          'border-r',
+                      )
+                    "
+                  >
+                    <component :is="() => renderCell(column, row, rowIndex)" />
+                  </TableCell>
+                </TableRow>
+
+                <!-- 展开行 -->
+                <TableRow
+                  v-if="hasExpandable && isRowExpandable(row) && (shouldKeepExpanded ? wasRowEverExpanded(row, rowIndex) : isRowExpanded(row, rowIndex))"
+                  v-show="!shouldKeepExpanded || isRowExpanded(row, rowIndex)"
+                  :class="cn('bg-accent/10', props.bordered && 'border-b')"
+                >
+                  <TableCell :colspan="totalColumns" class="p-4">
+                    <component
+                      v-if="expandableConfig.expandedRowRender"
+                      :is="() => expandableConfig.expandedRowRender!(row, rowIndex)"
+                    />
+                    <component
+                      v-else-if="slots.expandedRow"
+                      :is="() => slots.expandedRow!({ row, index: rowIndex })"
+                    />
+                  </TableCell>
+                </TableRow>
+              </template>
+            </template>
+          </TableBody>
+        </Table>
+      </template>
     </div>
 
     <div v-if="hasPagination" :class="cn('flex', paginationPositionClass)">

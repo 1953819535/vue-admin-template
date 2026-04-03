@@ -33,6 +33,32 @@ export interface RowEvents<T = any> {
   onMouseleave?: (row: T, index: number, event: MouseEvent) => void
 }
 
+/** 行展开配置 */
+export interface ExpandableConfig<T = any> {
+  /** 是否支持展开，默认 true */
+  enabled?: boolean
+  /** 默认展开的行 keys */
+  defaultExpandedRowKeys?: (string | number)[]
+  /** 受控展开的行 keys */
+  expandedRowKeys?: (string | number)[]
+  /** 展开变化回调 */
+  onExpand?: (expanded: boolean, row: T) => void
+  /** 展开行渲染函数 */
+  expandedRowRender?: (row: T, index: number) => VNode | string
+  /** 是否允许全部展开 */
+  expandAll?: boolean
+  /** 行是否可展开，返回 false 则不显示展开图标 */
+  rowExpandable?: (row: T) => boolean
+  /** 是否缓存展开内容，关闭时不销毁只隐藏，默认 false */
+  keepExpanded?: boolean
+}
+
+/** 滚动配置 */
+export interface ScrollConfig {
+  /** 纵向滚动高度，设置后表头固定 */
+  y?: number | string
+}
+
 export interface ColumnConfig<T = any> {
   key: string
   title: string
@@ -95,4 +121,8 @@ export interface DataTableProps<T = any> {
   sort?: SortConfig
   /** 是否远程模式，同时控制分页和排序（true 时不分页、不排序，由外部处理） */
   remote?: boolean
+  /** 行展开配置 */
+  expandable?: ExpandableConfig<T>
+  /** 滚动配置，设置 y 固定表头，设置 x 支持横向滚动 */
+  scroll?: ScrollConfig
 }

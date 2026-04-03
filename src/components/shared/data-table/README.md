@@ -413,6 +413,110 @@ function getRowEvents(row: any, index: number) {
 </template>
 ```
 
+### 行展开
+
+通过 `expandable` 配置行展开功能，展示更多详情信息。
+
+#### 基础展开
+
+```vue
+<script setup lang="ts">
+import { DataTable } from "@/components/shared/data-table";
+
+const expandable = {
+  expandedRowRender: (row) => `详情：${row.description}`,
+};
+</script>
+
+<template>
+  <DataTable :data="data" :columns="columns" :expandable="expandable" />
+</template>
+```
+
+#### 使用插槽
+
+```vue
+<template>
+  <DataTable :data="data" :columns="columns" :expandable="{}">
+    <template #expandedRow="{ row }">
+      <div class="p-4 bg-muted/50 rounded">
+        <h4 class="font-medium mb-2">{{ row.name }} 详情</h4>
+        <p class="text-muted-foreground">{{ row.description }}</p>
+      </div>
+    </template>
+  </DataTable>
+</template>
+```
+
+#### 受控展开
+
+```vue
+<script setup lang="ts">
+import { ref } from "vue";
+
+const expandedRowKeys = ref([1, 3]); // 默认展开 ID 为 1 和 3 的行
+
+const expandable = {
+  expandedRowKeys: expandedRowKeys.value,
+  expandedRowRender: (row) => `详情：${row.description}`,
+};
+
+function handleExpandChange(keys) {
+  expandedRowKeys.value = keys;
+}
+</script>
+
+<template>
+  <DataTable
+    :data="data"
+    :columns="columns"
+    :expandable="expandable"
+    @update:expanded-row-keys="handleExpandChange"
+  />
+</template>
+```
+
+#### 条件展开
+
+通过 `rowExpandable` 控制哪些行可以展开。
+
+```vue
+<script setup lang="ts">
+const expandable = {
+  // 只有有 children 的行才能展开
+  rowExpandable: (row) => row.hasChildren,
+  expandedRowRender: (row) => row.children.map(c => c.name).join(', '),
+};
+</script>
+```
+
+#### 缓存展开内容
+
+设置 `keepExpanded: true` 缓存展开内容，关闭时不销毁只隐藏，适合展开内容有复杂组件或表单的场景。
+
+```vue
+<script setup lang="ts">
+const expandable = {
+  keepExpanded: true, // 开启缓存
+  expandedRowRender: (row) => <DetailForm data={row} />,
+};
+</script>
+```
+
+### 固定表头
+
+通过 `scroll.y` 设置表格高度，表头固定，内容滚动。
+
+```vue
+<script setup lang="ts">
+const scroll = { y: 300 }; // 表格高度 300px，表头固定
+</script>
+
+<template>
+  <DataTable :data="data" :columns="columns" :scroll="scroll" />
+</template>
+```
+
 ## API
 
 ### DataTable Props
@@ -432,6 +536,8 @@ function getRowEvents(row: any, index: number) {
 | pagination | `boolean \| PaginationConfig` | `false` | 分页配置，`true` 启用前端分页 |
 | sort | `SortConfig` | - | 排序配置，见下方 SortConfig |
 | remote | `boolean` | `false` | 远程模式，同时控制分页和排序（true 时不分页、不排序，由外部处理） |
+| expandable | `ExpandableConfig<T>` | - | 行展开配置，见下方 ExpandableConfig |
+| scroll | `ScrollConfig` | - | 滚动配置，设置 y 固定表头，设置 x 支持横向滚动 |
 
 ### ColumnConfig
 
@@ -480,6 +586,25 @@ function getRowEvents(row: any, index: number) {
 
 > **提示**：远程模式由顶级 `remote` prop 控制，不在 pagination 中配置。
 
+### ExpandableConfig
+
+| 属性 | 类型 | 默认值 | 说明 |
+| --- | --- | --- | --- |
+| enabled | `boolean` | `true` | 是否启用行展开 |
+| defaultExpandedRowKeys | `(string \| number)[]` | `[]` | 默认展开的行 key |
+| expandedRowKeys | `(string \| number)[]` | - | 受控展开的行 key |
+| onExpand | `(expanded: boolean, row: T) => void` | - | 展开变化回调 |
+| expandedRowRender | `(row: T, index: number) => VNode \| string` | - | 展开行渲染函数 |
+| expandAll | `boolean` | `false` | 默认全部展开 |
+| rowExpandable | `(row: T) => boolean` | - | 指定哪些行可展开，返回 false 则不显示展开图标 |
+| keepExpanded | `boolean` | `false` | 是否缓存展开内容，关闭时不销毁只隐藏 |
+
+### ScrollConfig
+
+| 属性 | 类型 | 默认值 | 说明 |
+| --- | --- | --- | --- |
+| y | `number \| string` | - | 纵向滚动高度，设置后表头固定 |
+
 ### RowEvents
 
 | 属性 | 类型 | 说明 |
@@ -511,6 +636,7 @@ function getRowEvents(row: any, index: number) {
 | `cell-{key}` | `CellContext<T>` | 自定义单元格，`key` 为列的 key |
 | `header-{key}` | `HeaderContext<T>` | 自定义表头，`key` 为列的 key |
 | `empty` | - | 自定义空数据状态 |
+| `expandedRow` | `{ row: T, index: number }` | 自定义展开行内容 |
 
 ### 事件
 
@@ -520,6 +646,7 @@ function getRowEvents(row: any, index: number) {
 | `update:page` | `(page: number)` | 页码变化时触发 |
 | `update:pageSize` | `(pageSize: number)` | 每页条数变化时触发 |
 | `update:sort` | `(sort: SortInfo \| undefined)` | 排序变化时触发 |
+| `update:expandedRowKeys` | `(keys: (string \| number)[])` | 展开行变化时触发 |
 
 ## 注意事项
 
@@ -527,6 +654,10 @@ function getRowEvents(row: any, index: number) {
 
 2. **排序与分页顺序**：本地模式下，排序在分页之前执行，确保排序结果正确。
 
-3. **rowKey 重要**：行选择和排序依赖 `rowKey`，请确保每行有唯一标识。
+3. **rowKey 重要**：行选择、排序和行展开依赖 `rowKey`，请确保每行有唯一标识。
 
-4. **组件定制**：禁止修改 `src/components/ui/` 目录下的 shadcn-vue 组件，如需定制请在 `src/components/shared/` 中封装。
+4. **固定表头实现**：固定表头模式下，表头和表体分离为两个独立的表格，确保列宽一致。
+
+5. **横向滚动固定列**：展开列和选择列在横向滚动时自动固定在左侧，使用 `sticky left-0` 实现。
+
+6. **组件定制**：禁止修改 `src/components/ui/` 目录下的 shadcn-vue 组件，如需定制请在 `src/components/shared/` 中封装。
