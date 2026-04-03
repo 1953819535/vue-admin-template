@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { Button } from '@/components/ui/button'
 </script>
 
 <route lang="yaml">
@@ -16,12 +17,11 @@ meta:
       <p class="text-muted-foreground mb-6">
         您访问的页面不存在或已被移除
       </p>
-      <RouterLink
-        to="/"
-        class="px-6 py-2 bg-primary text-primary-foreground rounded-md hover:opacity-90"
-      >
-        返回首页
-      </RouterLink>
+      <Button as-child>
+        <RouterLink to="/">
+          返回首页
+        </RouterLink>
+      </Button>
     </div>
   </div>
 </template>

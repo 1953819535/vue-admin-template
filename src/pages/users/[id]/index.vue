@@ -2,6 +2,8 @@
 import { useRoute } from "vue-router";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Separator } from "@/components/ui/separator";
 
 const route = useRoute();
 const userId = route.params.id;
@@ -27,18 +29,18 @@ meta:
 </route>
 
 <template>
-  <div class="p-6 border rounded-lg bg-card">
-    <div class="flex items-center justify-between mb-6">
-      <h3 class="text-xl font-semibold">用户详情</h3>
-      <RouterLink
-        to="/users"
-        class="text-sm text-muted-foreground hover:text-foreground"
-      >
-        返回列表
-      </RouterLink>
-    </div>
-
-    <div class="space-y-4">
+  <Card>
+    <CardHeader>
+      <div class="flex items-center justify-between">
+        <CardTitle>用户详情</CardTitle>
+        <RouterLink to="/users">
+          <Button variant="ghost" size="sm">
+            返回列表
+          </Button>
+        </RouterLink>
+      </div>
+    </CardHeader>
+    <CardContent>
       <div class="grid grid-cols-2 gap-4">
         <div>
           <label class="text-sm text-muted-foreground">用户 ID</label>
@@ -68,12 +70,14 @@ meta:
         </div>
       </div>
 
-      <div class="pt-4 border-t flex gap-4">
+      <Separator class="my-4" />
+
+      <div class="flex gap-4">
         <RouterLink :to="`/users/${user.id}/edit`">
           <Button>编辑用户</Button>
         </RouterLink>
         <Button variant="outline">禁用账户</Button>
       </div>
-    </div>
-  </div>
+    </CardContent>
+  </Card>
 </template>

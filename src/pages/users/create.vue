@@ -33,12 +33,11 @@ meta:
   <div class="max-w-2xl">
     <div class="flex items-center justify-between mb-6">
       <h3 class="text-xl font-semibold">新增用户</h3>
-      <RouterLink
-        to="/users"
-        class="text-sm text-muted-foreground hover:text-foreground"
-      >
-        返回列表
-      </RouterLink>
+      <Button variant="link" as-child>
+        <RouterLink to="/users">
+          返回列表
+        </RouterLink>
+      </Button>
     </div>
 
     <Card>

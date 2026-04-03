@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { Icon } from '@iconify/vue'
 import { useAppStore } from '@/stores/modules/app'
+import { Button } from '@/components/ui/button'
 import Logo from "@/components/app/header/Logo.vue"
 import Actions from "@/components/app/header/Actions.vue"
 
@@ -17,15 +18,16 @@ const appStore = useAppStore()
       <!-- 顶部 logo 和折叠按钮 -->
       <div class="p-4 border-b flex items-center justify-between shrink-0">
         <Logo v-if="!appStore.sidebarCollapsed" />
-        <button
-          class="p-1.5 rounded-md hover:bg-sidebar-accent transition-colors"
+        <Button
+          variant="ghost"
+          size="icon"
           @click="appStore.toggleSidebar"
         >
           <Icon
             :icon="appStore.sidebarCollapsed ? 'lucide:panel-left-open' : 'lucide:panel-left-close'"
-            class="size-5 text-sidebar-foreground"
+            class="size-5"
           />
-        </button>
+        </Button>
       </div>
 
       <!-- 导航菜单 -->
