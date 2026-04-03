@@ -17,21 +17,3 @@ export interface NavProps {
   groups?: NavGroup[]
   items?: NavItem[]
 }
-
-export interface MenuItem {
-  title: string
-  to: string
-  icon?: string
-  indent?: boolean
-}
-
-export interface MenuGroup {
-  title: string
-  icon?: string
-  items: MenuItem[]
-}
-
-export interface MenuConfig {
-  items: MenuItem[]
-  groups: MenuGroup[]
-}

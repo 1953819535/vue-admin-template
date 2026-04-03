@@ -18,6 +18,9 @@ import type { NavProps } from './types'
 import { useNavActive } from './useNav'
 
 const MENU_ITEM_CLASS = 'flex flex-row items-center gap-2 px-3 py-2 rounded-md hover:bg-sidebar-accent text-sidebar-foreground transition-colors cursor-pointer whitespace-nowrap'
+const MENU_ITEM_COLLAPSED_CLASS = 'flex justify-center p-2 rounded-md hover:bg-sidebar-accent text-sidebar-foreground transition-colors cursor-pointer'
+const ACTIVE_CLASS = 'bg-sidebar-accent text-sidebar-accent-foreground font-medium'
+const GROUP_ACTIVE_CLASS = 'bg-sidebar-accent/50 text-sidebar-accent-foreground'
 
 const props = defineProps<NavProps>()
 
@@ -67,10 +70,7 @@ const groupIcons = computed(() => {
         v-for="item in items"
         :key="item.title"
         :to="item.to"
-        :class="[
-          MENU_ITEM_CLASS,
-          isActive(item.to) ? 'bg-sidebar-accent text-sidebar-accent-foreground font-medium' : ''
-        ]"
+        :class="[MENU_ITEM_CLASS, isActive(item.to) ? ACTIVE_CLASS : '']"
       >
         <Icon v-if="item.icon" :icon="item.icon" class="size-4" />
         <span>{{ item.title }}</span>
@@ -78,11 +78,7 @@ const groupIcons = computed(() => {
 
       <div v-for="group in groups" :key="group.title" class="pt-1">
         <div
-          :class="[
-            MENU_ITEM_CLASS,
-            'justify-between',
-            isGroupActive(group) ? 'bg-sidebar-accent/50 text-sidebar-accent-foreground' : ''
-          ]"
+          :class="[MENU_ITEM_CLASS, 'justify-between', isGroupActive(group) ? GROUP_ACTIVE_CLASS : '']"
           @click="toggleGroup(group.title)"
         >
           <div class="flex items-center gap-2">
@@ -103,10 +99,7 @@ const groupIcons = computed(() => {
             v-for="item in group.items"
             :key="item.title"
             :to="item.to"
-            :class="[
-              MENU_ITEM_CLASS,
-              isActive(item.to) ? 'bg-sidebar-accent text-sidebar-accent-foreground font-medium' : ''
-            ]"
+            :class="[MENU_ITEM_CLASS, isActive(item.to) ? ACTIVE_CLASS : '']"
           >
             <Icon v-if="item.icon" :icon="item.icon" class="size-4" />
             <span>{{ item.title }}</span>
@@ -121,10 +114,7 @@ const groupIcons = computed(() => {
           <TooltipTrigger as-child>
             <RouterLink
               :to="item.to"
-              :class="[
-                'flex justify-center p-2 rounded-md hover:bg-sidebar-accent text-sidebar-foreground transition-colors',
-                isActive(item.to) ? 'bg-sidebar-accent text-sidebar-accent-foreground font-medium' : ''
-              ]"
+              :class="[MENU_ITEM_COLLAPSED_CLASS, isActive(item.to) ? ACTIVE_CLASS : '']"
             >
               <Icon v-if="item.icon" :icon="item.icon" class="size-5" />
             </RouterLink>
@@ -137,10 +127,7 @@ const groupIcons = computed(() => {
         <DropdownMenu v-for="group in groups" :key="group.title">
           <DropdownMenuTrigger as-child>
             <div
-              :class="[
-                'flex justify-center p-2 rounded-md hover:bg-sidebar-accent text-sidebar-foreground transition-colors cursor-pointer',
-                isGroupActive(group) ? 'bg-sidebar-accent text-sidebar-accent-foreground font-medium' : ''
-              ]"
+              :class="[MENU_ITEM_COLLAPSED_CLASS, isGroupActive(group) ? ACTIVE_CLASS : '']"
             >
               <Icon :icon="groupIcons.get(group.title)!" class="size-5" />
             </div>

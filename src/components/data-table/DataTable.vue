@@ -21,16 +21,12 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Empty, EmptyMedia, EmptyDescription } from "@/components/ui/empty";
 
-// 定义插槽类型
 defineSlots<
   {
-    // 空数据插槽
     empty: () => any;
   } & {
-    // 动态单元格插槽 cell-{key}
     [K in `cell-${string}`]?: (ctx: CellContext<T>) => any;
   } & {
-    // 动态表头插槽 header-{key}
     [K in `header-${string}`]?: (ctx: HeaderContext) => any;
   }
 >();
@@ -49,13 +45,10 @@ const emit = defineEmits<{
   "update:selectedRowKeys": [keys: (string | number)[]];
 }>();
 
-// 使用 useSlots 获取插槽
 const slots = useSlots();
 
-// 内部选中的行
 const internalSelectedRowKeys = ref<(string | number)[]>([]);
 
-// 合并受控和非受控的选中状态
 const selectedKeys = computed(() => {
   if (props.rowSelection?.selectedRowKeys !== undefined) {
     return props.rowSelection.selectedRowKeys;
@@ -63,11 +56,9 @@ const selectedKeys = computed(() => {
   return internalSelectedRowKeys.value;
 });
 
-// 合并列配置
 const mergedColumns = computed(() => {
   const cols = props.columns;
 
-  // 如果启用行选择，添加选择列
   if (props.rowSelection?.enabled) {
     return [
       {
@@ -83,7 +74,6 @@ const mergedColumns = computed(() => {
   return cols;
 });
 
-// 表格大小样式映射
 const SIZE_STYLES = {
   xs: { text: "text-xs", padding: "py-1 px-1.5" },
   sm: { text: "text-sm", padding: "py-2 px-3" },
@@ -91,7 +81,6 @@ const SIZE_STYLES = {
   lg: { text: "text-base", padding: "py-4 px-6" },
 } as const;
 
-// 获取行 key
 function getRowKey(row: T, index: number): string | number {
   if (typeof props.rowKey === "function") {
     return props.rowKey(row);
@@ -99,18 +88,15 @@ function getRowKey(row: T, index: number): string | number {
   return (row as any)[props.rowKey] ?? index;
 }
 
-// 获取单元格值
 function getCellValue(row: T, key: string): any {
   return (row as any)[key];
 }
 
-// 获取列宽样式
 function getWidthStyle(width?: number | string): string | undefined {
   if (!width) return undefined;
   return typeof width === "number" ? `${width}px` : width;
 }
 
-// 获取行事件
 function getRowEvents(row: T, index: number): RowEvents<T> {
   if (typeof props.customRow === "function") {
     return props.customRow(row, index);
@@ -118,7 +104,6 @@ function getRowEvents(row: T, index: number): RowEvents<T> {
   return props.customRow || {};
 }
 
-// 行事件处理器
 function handleRowEvent(
   type: keyof RowEvents<T>,
   row: T,
@@ -128,56 +113,56 @@ function handleRowEvent(
   getRowEvents(row, index)[type]?.(row, index, event);
 }
 
-// 判断行是否选中
 function isRowSelected(row: T, index: number): boolean {
   const key = getRowKey(row, index);
   return selectedKeys.value.includes(key);
 }
 
-// 判断行是否禁用选择
 function isRowDisabled(row: T): boolean {
   return props.rowSelection?.getCheckboxProps?.(row)?.disabled ?? false;
 }
 
-// 是否单选模式
 const isSingleSelect = computed(() => props.rowSelection?.type === "single");
 
-// 监听模式切换：多选切单选时清空已选择
 watch(isSingleSelect, (newVal, oldVal) => {
   if (newVal && !oldVal && selectedKeys.value.length > 1) {
-    // 多选切单选，且选中项超过1个，清空选择
     updateSelection([]);
   }
 });
 
-// 可选择的行
-const selectableRows = computed(() =>
-  props.data.filter((row) => !isRowDisabled(row)),
-);
+// Combined selection state computation to avoid redundant iterations
+const selectionState = computed(() => {
+  const selectableRowsData: { row: T; index: number; key: string | number }[] = [];
 
-// 可选择行的 keys
-const selectableKeys = computed(() =>
-  selectableRows.value.map((row, index) => getRowKey(row, index)),
-);
+  for (let i = 0; i < props.data.length; i++) {
+    const row = props.data[i];
+    if (!isRowDisabled(row)) {
+      selectableRowsData.push({
+        row,
+        index: i,
+        key: getRowKey(row, i),
+      });
+    }
+  }
 
-// 是否全选
-const isAllSelected = computed(() => {
-  if (selectableRows.value.length === 0) return false;
-  return selectableRows.value.every((row, index) => isRowSelected(row, index));
-});
+  const selectableCount = selectableRowsData.length;
+  if (selectableCount === 0) {
+    return { selectableRows: [], selectableKeys: [], isAllSelected: false, isIndeterminate: false };
+  }
 
-// 是否部分选中
-const isIndeterminate = computed(() => {
-  if (selectableRows.value.length === 0) return false;
-  const selectedCount = selectableRows.value.filter((row, index) =>
-    isRowSelected(row, index),
+  const selectedCount = selectableRowsData.filter(
+    ({ key }) => selectedKeys.value.includes(key)
   ).length;
-  return selectedCount > 0 && selectedCount < selectableRows.value.length;
+
+  return {
+    selectableRows: selectableRowsData,
+    selectableKeys: selectableRowsData.map(({ key }) => key),
+    isAllSelected: selectedCount === selectableCount,
+    isIndeterminate: selectedCount > 0 && selectedCount < selectableCount,
+  };
 });
 
-// 更新选择状态（公共逻辑）
 function updateSelection(newSelectedKeys: (string | number)[]) {
-  // 非受控模式更新内部状态
   if (props.rowSelection?.selectedRowKeys === undefined) {
     internalSelectedRowKeys.value = newSelectedKeys;
   }
@@ -190,15 +175,12 @@ function updateSelection(newSelectedKeys: (string | number)[]) {
   props.rowSelection?.onChange?.(newSelectedKeys, selectedRows);
 }
 
-// 处理行选择
 function handleRowSelect(row: T, index: number, checked: boolean) {
   const key = getRowKey(row, index);
 
   if (isSingleSelect.value) {
-    // 单选模式：直接替换为当前选中项（互斥逻辑）
     updateSelection(checked ? [key] : []);
   } else {
-    // 多选模式：添加或移除
     const newSelectedKeys = checked
       ? [...selectedKeys.value, key]
       : selectedKeys.value.filter((k) => k !== key);
@@ -206,15 +188,12 @@ function handleRowSelect(row: T, index: number, checked: boolean) {
   }
 }
 
-// 处理全选
 function handleSelectAll(checked: boolean) {
   if (checked) {
-    // 选中所有可选的行
     const newKeys = new Set(selectedKeys.value);
-    selectableKeys.value.forEach((key) => newKeys.add(key));
+    selectionState.value.selectableKeys.forEach((key) => newKeys.add(key));
     updateSelection([...newKeys]);
   } else {
-    // 取消选中所有可选的行，保留禁用行的选中状态
     const disabledKeys = new Set(
       props.data
         .filter((row) => isRowDisabled(row))
@@ -224,42 +203,34 @@ function handleSelectAll(checked: boolean) {
   }
 }
 
-// 渲染表头
 function renderHeader(column: ColumnConfig, index: number) {
   const ctx: HeaderContext = { column, index };
 
-  // 1. 使用 headerRender
   if (column.headerRender) {
     return column.headerRender(ctx);
   }
 
-  // 2. 使用 header-{key} slot
   const slotName = `header-${column.key}`;
   if (slots[slotName as keyof typeof slots]) {
     return (slots[slotName as keyof typeof slots] as any)(ctx);
   }
 
-  // 3. 默认渲染 title
   return column.title;
 }
 
-// 渲染单元格内容
 function renderCell(column: ColumnConfig, row: T, index: number) {
   const value = getCellValue(row, column.key);
   const ctx: CellContext = { value, row, index };
 
-  // 1. 使用 customRender
   if (column.customRender) {
     return column.customRender(ctx);
   }
 
-  // 2. 使用 cell-{key} slot
   const slotName = `cell-${column.key}`;
   if (slots[slotName as keyof typeof slots]) {
     return (slots[slotName as keyof typeof slots] as any)(ctx);
   }
 
-  // 3. 默认渲染值
   return value;
 }
 </script>
@@ -306,8 +277,8 @@ function renderCell(column: ColumnConfig, row: T, index: number) {
             >
               <Checkbox
                 v-if="!isSingleSelect"
-                :model-value="isAllSelected"
-                :indeterminate="isIndeterminate"
+                :model-value="selectionState.isAllSelected"
+                :indeterminate="selectionState.isIndeterminate"
                 @update:model-value="(v) => handleSelectAll(v === true)"
               />
             </div>

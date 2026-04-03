@@ -30,9 +30,12 @@ const themeNamesZhMap = themeNamesZh as ThemeNamesZh
 
 type ThemeCssVars = { primary?: string; accent?: string; secondary?: string; background?: string }
 
+// Build a Map for O(1) theme lookup
+const themeDataMap = new Map(themes.map(t => [t.name, t]))
+
 const themePreviewData = computed(() => {
   return appStore.availableThemes.map(theme => {
-    const themeData = themes.find(t => t.name === theme.name)
+    const themeData = themeDataMap.get(theme.name)
     const light = (themeData?.cssVars.light || {}) as ThemeCssVars
     const dark = (themeData?.cssVars.dark || {}) as ThemeCssVars
     const vars = appStore.isDark ? dark : light

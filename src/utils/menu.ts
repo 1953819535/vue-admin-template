@@ -1,9 +1,9 @@
 import type { RouteRecordRaw, RouteMeta } from 'vue-router'
-import type { MenuItem, MenuGroup, MenuConfig } from '@/components/app/menu/types'
+import type { NavItem, NavGroup, NavProps } from '@/components/app/menu/types'
 
-export type { MenuItem, MenuGroup, MenuConfig }
+export type { NavItem, NavGroup, NavProps }
 
-interface InternalItem extends MenuItem {
+interface InternalItem extends NavItem {
   order: number
 }
 
@@ -16,11 +16,11 @@ interface InternalGroup {
 
 const DEFAULT_ORDER = 999
 
-const toItem = (item: InternalItem): MenuItem => ({
+const toItem = (item: InternalItem): NavItem => ({
   title: item.title, to: item.to, icon: item.icon, indent: item.indent
 })
 
-export function generateMenus(routes: RouteRecordRaw[]): MenuConfig {
+export function generateMenus(routes: RouteRecordRaw[]): NavProps {
   const items: InternalItem[] = []
   const groupsMap = new Map<string, InternalGroup>()
 
