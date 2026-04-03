@@ -4,9 +4,9 @@ import Actions from "@/components/app/header/Actions.vue";
 </script>
 
 <template>
-  <div class="flex flex-col min-h-screen">
+  <div class="flex flex-col w-screen h-screen overflow-hidden">
     <!-- 顶部区域：logo + menu + action 同一行 -->
-    <header class="border-b bg-background">
+    <header class="border-b bg-background shrink-0">
       <div class="px-6 py-4 flex items-center justify-between gap-6">
         <Logo />
         <nav class="flex-1">

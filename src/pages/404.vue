@@ -5,6 +5,7 @@
 meta:
   layout: blank
   title: 页面未找到
+  menuHidden: true
 </route>
 
 <template>

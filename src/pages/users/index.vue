@@ -39,9 +39,9 @@ const columns = [
   { key: 'id', title: 'ID', width: 80 },
   { key: 'name', title: '用户名' },
   { key: 'email', title: '邮箱' },
-  { key: 'role', title: '角色', slot: 'role' },
-  { key: 'status', title: '状态', slot: 'status' },
-  { key: 'action', title: '操作', width: 150, slot: 'action' },
+  { key: 'role', title: '角色' },
+  { key: 'status', title: '状态' },
+  { key: 'action', title: '操作', width: 150 },
 ]
 
 function handleDeleteClick(user: User) {

@@ -22,6 +22,8 @@ import {
 const appStore = useAppStore()
 const drawerOpen = ref(false)
 
+const drawerDirection = computed(() => appStore.layout === 'sidebar' ? 'left' : 'right')
+
 type ThemeNamesZh = Record<string, { title: string; description: string }>
 
 const themeNamesZhMap = themeNamesZh as ThemeNamesZh
@@ -59,8 +61,8 @@ function handleSelect(name: string) {
     <Icon icon="lucide:palette" class="size-5" />
   </Button>
 
-  <Drawer :open="drawerOpen" @update:open="drawerOpen = $event" direction="right">
-    <DrawerContent class="w-100 sm:max-w-100">
+  <Drawer :open="drawerOpen" @update:open="drawerOpen = $event" :direction="drawerDirection">
+    <DrawerContent class="w-[320px] max-w-[320px]">
       <DrawerHeader>
         <DrawerTitle class="flex items-center justify-between">
           <span>主题风格</span>

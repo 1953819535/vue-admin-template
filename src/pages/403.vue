@@ -5,6 +5,7 @@
 meta:
   layout: blank
   title: 无权限
+  menuHidden: true
 </route>
 
 <template>

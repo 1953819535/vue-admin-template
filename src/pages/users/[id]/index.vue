@@ -22,6 +22,7 @@ const user = {
 meta:
   layout: default
   title: 用户详情
+  menuHidden: true
   requiresAuth: true
 </route>
 

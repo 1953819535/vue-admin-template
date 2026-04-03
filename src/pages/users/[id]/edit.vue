@@ -26,6 +26,7 @@ const status = ref('active')
 meta:
   layout: default
   title: 编辑用户
+  menuHidden: true
   requiresAuth: true
 </route>
 

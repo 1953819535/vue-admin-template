@@ -21,6 +21,7 @@ const handleLogin = (e: Event) => {
 <route lang="yaml">
 meta:
   layout: blank
+  menuHidden: true
 </route>
 
 <template>

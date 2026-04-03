@@ -1,4 +1,4 @@
-import { computed, ref, watch } from 'vue'
+import { computed, ref, watch, onScopeDispose } from 'vue'
 import { defineStore } from 'pinia'
 import themes from '@/themes/tweakcn-themes.json'
 
@@ -14,26 +14,17 @@ export const availableThemes = themes.map(t => ({
 }))
 
 export const useAppStore = defineStore('app', () => {
-  // 当前主题名称
   const currentTheme = ref<ThemeName>('modern-minimal')
-
-  // 明暗模式
   const mode = ref<ThemeMode>('system')
-
-  // 布局类型
   const layout = ref<LayoutType>('sidebar')
-
-  // 侧边栏折叠状态
   const sidebarCollapsed = ref(false)
 
-  // 系统暗色模式状态
   const systemIsDark = ref(
     typeof window !== 'undefined'
       ? window.matchMedia('(prefers-color-scheme: dark)').matches
       : false
   )
 
-  // 计算实际应用的明暗模式
   const resolvedMode = computed(() => {
     if (mode.value === 'system') {
       return systemIsDark.value ? 'dark' : 'light'
@@ -41,33 +32,26 @@ export const useAppStore = defineStore('app', () => {
     return mode.value
   })
 
-  // 是否为暗色
   const isDark = computed(() => resolvedMode.value === 'dark')
 
-  // 获取当前主题数据
   const themeData = computed(() => {
     return themes.find(t => t.name === currentTheme.value)
   })
 
-  // 应用 CSS 变量到 DOM
   const applyTheme = () => {
     const root = document.documentElement
     const theme = themeData.value
 
     if (!theme) return
 
-    // 应用明暗模式类
     root.classList.toggle('dark', isDark.value)
 
-    // 获取对应模式的 CSS 变量
     const vars = isDark.value ? theme.cssVars.dark : theme.cssVars.light
 
-    // 应用 CSS 变量
     Object.entries(vars).forEach(([key, value]) => {
       root.style.setProperty(`--${key}`, value as string)
     })
 
-    // 应用 theme 级别的变量
     if (theme.cssVars.theme) {
       Object.entries(theme.cssVars.theme).forEach(([key, value]) => {
         root.style.setProperty(`--${key}`, value as string)
@@ -75,42 +59,37 @@ export const useAppStore = defineStore('app', () => {
     }
   }
 
-  // 监听系统主题变化
+  // 监听系统主题变化，自动清理
   if (typeof window !== 'undefined') {
     const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)')
-    mediaQuery.addEventListener('change', (e) => {
+    const handler = (e: MediaQueryListEvent) => {
       systemIsDark.value = e.matches
-    })
+    }
+    mediaQuery.addEventListener('change', handler)
+    onScopeDispose(() => mediaQuery.removeEventListener('change', handler))
   }
 
-  // 监听 isDark 变化自动应用主题
-  watch(isDark, () => {
+  // 监听变化自动应用主题
+  watch([isDark, currentTheme], () => {
     applyTheme()
   }, { immediate: false })
 
-  // 设置主题名称
   const setThemeName = (name: ThemeName) => {
     currentTheme.value = name
-    applyTheme()
   }
 
-  // 设置明暗模式
   const setMode = (newMode: ThemeMode) => {
     mode.value = newMode
-    applyTheme()
   }
 
-  // 切换明暗
   const toggleTheme = () => {
     setMode(isDark.value ? 'light' : 'dark')
   }
 
-  // 设置布局
   const setLayout = (newLayout: LayoutType) => {
     layout.value = newLayout
   }
 
-  // 切换侧边栏折叠
   const toggleSidebar = () => {
     sidebarCollapsed.value = !sidebarCollapsed.value
   }

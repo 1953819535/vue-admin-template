@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed, watchEffect } from 'vue'
+import { ref, computed, watch } from 'vue'
 import { Icon } from '@iconify/vue'
 import { useAppStore } from '@/stores/modules/app'
 import {
@@ -17,6 +17,8 @@ import {
 import type { NavProps } from './types'
 import { useNavActive } from './useNav'
 
+const MENU_ITEM_CLASS = 'flex flex-row items-center gap-2 px-3 py-2 rounded-md hover:bg-sidebar-accent text-sidebar-foreground transition-colors cursor-pointer whitespace-nowrap'
+
 const props = defineProps<NavProps>()
 
 const appStore = useAppStore()
@@ -24,13 +26,19 @@ const { isActive, isGroupActive } = useNavActive()
 
 const expandedGroups = ref<Set<string>>(new Set())
 
-watchEffect(() => {
-  props.groups?.forEach(group => {
-    if (isGroupActive(group)) {
-      expandedGroups.value.add(group.title)
-    }
-  })
-})
+// 仅在初始化时展开包含当前激活项的分组
+watch(
+  () => props.groups,
+  (groups) => {
+    if (!groups) return
+    groups.forEach(group => {
+      if (isGroupActive(group)) {
+        expandedGroups.value.add(group.title)
+      }
+    })
+  },
+  { immediate: true, flush: 'sync' }
+)
 
 const isGroupExpanded = (groupTitle: string) => expandedGroups.value.has(groupTitle)
 
@@ -50,7 +58,6 @@ const groupIcons = computed(() => {
   return map
 })
 
-const menuItemClass = 'flex items-center gap-2 px-3 py-2 rounded-md hover:bg-sidebar-accent text-sidebar-foreground transition-colors cursor-pointer'
 </script>
 
 <template>
@@ -61,7 +68,7 @@ const menuItemClass = 'flex items-center gap-2 px-3 py-2 rounded-md hover:bg-sid
         :key="item.title"
         :to="item.to"
         :class="[
-          menuItemClass,
+          MENU_ITEM_CLASS,
           isActive(item.to) ? 'bg-sidebar-accent text-sidebar-accent-foreground font-medium' : ''
         ]"
       >
@@ -72,7 +79,7 @@ const menuItemClass = 'flex items-center gap-2 px-3 py-2 rounded-md hover:bg-sid
       <div v-for="group in groups" :key="group.title" class="pt-1">
         <div
           :class="[
-            menuItemClass,
+            MENU_ITEM_CLASS,
             'justify-between',
             isGroupActive(group) ? 'bg-sidebar-accent/50 text-sidebar-accent-foreground' : ''
           ]"
@@ -97,7 +104,7 @@ const menuItemClass = 'flex items-center gap-2 px-3 py-2 rounded-md hover:bg-sid
             :key="item.title"
             :to="item.to"
             :class="[
-              menuItemClass,
+              MENU_ITEM_CLASS,
               isActive(item.to) ? 'bg-sidebar-accent text-sidebar-accent-foreground font-medium' : ''
             ]"
           >

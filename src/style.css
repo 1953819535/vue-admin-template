@@ -170,4 +170,13 @@
   body {
     @apply bg-background text-foreground;
   }
+
+  /* 隐藏滚动条 */
+  ::-webkit-scrollbar {
+    display: none;
+  }
+  * {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
 }
