@@ -2,6 +2,10 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+## 语言
+
+默认使用中文与用户对话。
+
 ## 常用命令
 
 ```bash
