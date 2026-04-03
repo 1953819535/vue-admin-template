@@ -1,74 +1,64 @@
 <script setup lang="ts">
-import { Icon } from "@iconify/vue";
-import { useAppStore } from "@/stores/modules/app";
-import themes from "@/themes/tweakcn-themes.json";
-import Button from "@/components/ui/button/Button.vue";
+import { ref } from 'vue'
+import { Icon } from '@iconify/vue'
+import { useAppStore } from '@/stores/modules/app'
+import themes from '@/themes/tweakcn-themes.json'
+import themeNamesZh from '@/themes/theme-names-zh.json'
+import Button from '@/components/ui/button/Button.vue'
 import {
   Drawer,
   DrawerClose,
   DrawerContent,
   DrawerHeader,
   DrawerTitle,
-} from "@/components/ui/drawer";
+} from '@/components/ui/drawer'
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
-} from "@/components/ui/tooltip";
-import themeNamesZh from "@/themes/theme-names-zh.json";
+} from '@/components/ui/tooltip'
 
-const appStore = useAppStore();
+const appStore = useAppStore()
+const drawerOpen = ref(false)
 
-type ThemeNamesZh = Record<string, { title: string; description: string }>;
+type ThemeNamesZh = Record<string, { title: string; description: string }>
 
 function getTitle(name: string): string {
-  return (themeNamesZh as ThemeNamesZh)[name]?.title || name;
+  return (themeNamesZh as ThemeNamesZh)[name]?.title || name
 }
 
 function getDescription(name: string): string {
-  return (themeNamesZh as ThemeNamesZh)[name]?.description || "";
+  return (themeNamesZh as ThemeNamesZh)[name]?.description || ''
 }
 
-// 获取主题的预览颜色
 function getThemePreviewColors(name: string) {
-  const theme = themes.find((t) => t.name === name);
-  if (!theme) return { primary: "", accent: "", background: "" };
+  const theme = themes.find((t) => t.name === name)
+  if (!theme) return { primary: '', accent: '', background: '' }
 
-  const light = theme.cssVars.light || {};
-  const dark = theme.cssVars.dark || {};
-
-  // 根据当前模式选择颜色
-  const vars = appStore.isDark ? dark : light;
+  const light = theme.cssVars.light || {}
+  const dark = theme.cssVars.dark || {}
+  const vars = appStore.isDark ? dark : light
 
   return {
-    primary: vars.primary || "",
-    accent: vars.accent || vars.secondary || "",
-    background: vars.background || "",
-  };
+    primary: vars.primary || '',
+    accent: vars.accent || vars.secondary || '',
+    background: vars.background || '',
+  }
 }
 
-// 定义props
-const props = defineProps<{
-  open: boolean;
-}>();
-
-const emit = defineEmits<{
-  (e: "update:open", value: boolean): void;
-}>();
-
 function handleSelect(name: string) {
-  appStore.setThemeName(name);
-  emit("update:open", false);
+  appStore.setThemeName(name)
+  drawerOpen.value = false
 }
 </script>
 
 <template>
-  <Drawer
-    :open="props.open"
-    @update:open="emit('update:open', $event)"
-    direction="right"
-  >
+  <Button variant="ghost" size="icon" @click="drawerOpen = true">
+    <Icon icon="lucide:palette" class="size-5" />
+  </Button>
+
+  <Drawer :open="drawerOpen" @update:open="drawerOpen = $event" direction="right">
     <DrawerContent class="w-[400px] sm:max-w-[400px]">
       <DrawerHeader>
         <DrawerTitle class="flex items-center justify-between">
@@ -95,12 +85,9 @@ function handleSelect(name: string) {
               ]"
               @click="handleSelect(theme.name)"
             >
-              <!-- 颜色预览条 -->
               <div
                 class="mb-2 h-8 w-full rounded-md overflow-hidden"
-                :style="{
-                  background: getThemePreviewColors(theme.name).background,
-                }"
+                :style="{ background: getThemePreviewColors(theme.name).background }"
               >
                 <div
                   class="h-full flex"
@@ -116,13 +103,10 @@ function handleSelect(name: string) {
                 />
               </div>
 
-              <!-- 主题信息 -->
               <div class="font-medium text-sm">{{ getTitle(theme.name) }}</div>
               <Tooltip>
                 <TooltipTrigger as-child>
-                  <div
-                    class="text-xs text-muted-foreground line-clamp-1 cursor-default"
-                  >
+                  <div class="text-xs text-muted-foreground line-clamp-1 cursor-default">
                     {{ getDescription(theme.name) }}
                   </div>
                 </TooltipTrigger>
@@ -131,11 +115,7 @@ function handleSelect(name: string) {
                 </TooltipContent>
               </Tooltip>
 
-              <!-- 当前选中标记 -->
-              <div
-                v-if="appStore.currentTheme === theme.name"
-                class="absolute right-2 top-2"
-              >
+              <div v-if="appStore.currentTheme === theme.name" class="absolute right-2 top-2">
                 <Icon icon="lucide:check" class="size-4 text-primary" />
               </div>
             </button>

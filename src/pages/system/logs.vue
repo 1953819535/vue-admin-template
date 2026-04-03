@@ -39,6 +39,11 @@ const columns = [
 meta:
   layout: admin
   title: 操作日志
+  menuTitle: 操作日志
+  menuIcon: lucide:file-text
+  menuGroup: 系统设置
+  menuOrder: 32
+  menuIndent: true
   requiresAuth: true
   roles: [admin]
 </route>

@@ -20,6 +20,11 @@ const settings = ref({
 meta:
   layout: admin
   title: 参数配置
+  menuTitle: 参数配置
+  menuIcon: lucide:sliders-horizontal
+  menuGroup: 系统设置
+  menuOrder: 31
+  menuIndent: true
   requiresAuth: true
   roles: [admin]
 </route>

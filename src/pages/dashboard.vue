@@ -4,6 +4,9 @@
 <route lang="yaml">
 meta:
   layout: admin
+  menuTitle: 仪表盘
+  menuIcon: lucide:home
+  menuOrder: 1
 </route>
 
 <template>

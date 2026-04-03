@@ -63,6 +63,11 @@ function confirmDelete() {
 meta:
   layout: admin
   title: 用户管理
+  menuTitle: 用户列表
+  menuIcon: lucide:users
+  menuGroup: 用户管理
+  menuGroupIcon: lucide:users
+  menuOrder: 10
   requiresAuth: true
 </route>
 

@@ -8,6 +8,11 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 meta:
   layout: admin
   title: 系统设置
+  menuTitle: 基本信息
+  menuIcon: lucide:settings
+  menuGroup: 系统设置
+  menuGroupIcon: lucide:settings
+  menuOrder: 30
   requiresAuth: true
   roles: [admin]
 </route>

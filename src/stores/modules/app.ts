@@ -23,6 +23,9 @@ export const useAppStore = defineStore('app', () => {
   // 布局类型
   const layout = ref<LayoutType>('sidebar')
 
+  // 侧边栏折叠状态
+  const sidebarCollapsed = ref(false)
+
   // 系统暗色模式状态
   const systemIsDark = ref(
     typeof window !== 'undefined'
@@ -107,10 +110,16 @@ export const useAppStore = defineStore('app', () => {
     layout.value = newLayout
   }
 
+  // 切换侧边栏折叠
+  const toggleSidebar = () => {
+    sidebarCollapsed.value = !sidebarCollapsed.value
+  }
+
   return {
     currentTheme,
     mode,
     layout,
+    sidebarCollapsed,
     resolvedMode,
     isDark,
     themeData,
@@ -118,11 +127,12 @@ export const useAppStore = defineStore('app', () => {
     setThemeName,
     setMode,
     setLayout,
+    toggleSidebar,
     toggleTheme,
     applyTheme,
   }
 }, {
   persist: {
-    pick: ['currentTheme', 'mode', 'layout']
+    pick: ['currentTheme', 'mode', 'layout', 'sidebarCollapsed']
   }
 })

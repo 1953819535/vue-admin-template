@@ -22,6 +22,11 @@ const password = ref('')
 meta:
   layout: admin
   title: 新增用户
+  menuTitle: 新增用户
+  menuIcon: lucide:user-plus
+  menuGroup: 用户管理
+  menuOrder: 11
+  menuIndent: true
   requiresAuth: true
 </route>
 

@@ -1,23 +1,24 @@
+<script setup lang="ts">
+import Logo from "@/components/app/header/Logo.vue";
+import Actions from "@/components/app/header/Actions.vue";
+</script>
+
 <template>
   <div class="flex flex-col min-h-screen">
-    <!-- 顶部导航插槽 -->
+    <!-- 顶部区域：logo + menu + action 同一行 -->
     <header class="border-b bg-background">
-      <slot name="header" />
+      <div class="px-6 py-4 flex items-center justify-between gap-6">
+        <Logo />
+        <nav class="flex-1">
+          <slot name="nav" />
+        </nav>
+        <Actions />
+      </div>
     </header>
-
-    <!-- 横向菜单插槽 -->
-    <nav class="border-b bg-muted/30">
-      <slot name="nav" />
-    </nav>
 
     <!-- 主内容区 -->
     <main class="flex-1 overflow-auto p-6">
       <slot name="content" />
     </main>
-
-    <!-- 底部插槽 -->
-    <footer class="border-t bg-background">
-      <slot name="footer" />
-    </footer>
   </div>
 </template>

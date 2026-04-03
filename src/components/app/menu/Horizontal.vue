@@ -1,48 +1,21 @@
 <script setup lang="ts">
-import type { RouteLocationRaw } from 'vue-router'
 import { Icon } from '@iconify/vue'
-import { useRoute } from 'vue-router'
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
+import type { NavProps } from './types'
+import { useNavActive } from './useNav'
 
-interface NavItem {
-  title: string
-  to: RouteLocationRaw
-  icon?: string
-  indent?: boolean
-}
+defineProps<NavProps>()
 
-interface NavGroup {
-  title: string
-  items: NavItem[]
-}
-
-interface Props {
-  groups?: NavGroup[]
-  items?: NavItem[]
-}
-
-defineProps<Props>()
-
-const route = useRoute()
-
-function isActive(to: RouteLocationRaw) {
-  const path = typeof to === 'string' ? to : (to as any).path
-  return route.path === path
-}
-
-function isGroupActive(group: NavGroup) {
-  return group.items.some(item => isActive(item.to))
-}
+const { isActive, isGroupActive } = useNavActive()
 </script>
 
 <template>
-  <div class="px-6 py-2 flex items-center gap-1">
-    <!-- 顶级导航项 -->
+  <div class="flex items-center gap-1">
     <RouterLink
       v-for="item in items"
       :key="item.title"
@@ -58,7 +31,6 @@ function isGroupActive(group: NavGroup) {
       {{ item.title }}
     </RouterLink>
 
-    <!-- 分组导航（下拉菜单） -->
     <DropdownMenu v-for="group in groups" :key="group.title">
       <DropdownMenuTrigger
         :class="[
@@ -75,9 +47,7 @@ function isGroupActive(group: NavGroup) {
         <DropdownMenuItem
           v-for="item in group.items"
           :key="item.title"
-          :class="[
-            isActive(item.to) ? 'bg-accent font-medium' : ''
-          ]"
+          :class="[isActive(item.to) ? 'bg-accent font-medium' : '']"
           as-child
         >
           <RouterLink :to="item.to" class="flex items-center w-full">

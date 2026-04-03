@@ -183,6 +183,11 @@ const displayData = computed(() => (showEmpty.value ? [] : data.value));
 meta:
   layout: admin
   title: DataTable 示例
+  menuTitle: DataTable
+  menuIcon: lucide:table
+  menuGroup: 组件示例
+  menuGroupIcon: lucide:component
+  menuOrder: 20
 </route>
 
 <template>
