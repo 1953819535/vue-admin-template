@@ -6,6 +6,7 @@ import type {
   CellContext,
   HeaderContext,
   RowEvents,
+  SortInfo,
 } from "./types";
 import { computed, ref, useSlots, watch } from "vue";
 import { cn } from "@/lib/utils";
@@ -42,24 +43,40 @@ const props = withDefaults(defineProps<DataTableProps<T>>(), {
   showHeader: true,
   bordered: false,
   pagination: false,
+  sort: undefined,
+  remote: false,
 });
 
 const emit = defineEmits<{
   "update:selectedRowKeys": [keys: (string | number)[]];
   "update:page": [page: number];
   "update:pageSize": [pageSize: number];
+  "update:sort": [sort: SortInfo | undefined];
 }>();
 
 const slots = useSlots();
 
 const internalPage = ref(1);
 const internalPageSize = ref(10);
+const internalSort = ref<SortInfo | undefined>(undefined);
 
 const paginationConfig = computed<PaginationConfig>(() => {
   if (props.pagination === false) return {};
   if (props.pagination === true) return {};
   return props.pagination;
 });
+
+const sortConfig = computed(() => {
+  // 如果 props.sort 存在，使用 props.sort
+  if (props.sort?.field && props.sort?.order) {
+    return { field: props.sort.field, order: props.sort.order };
+  }
+  // 否则使用内部排序状态
+  return internalSort.value;
+});
+
+// 是否远程模式：remote 同时控制分页和排序
+const isRemoteMode = computed(() => props.remote);
 
 const hasPagination = computed(() => props.pagination !== false);
 
@@ -81,18 +98,54 @@ const currentPageSize = computed({
 
 const paginationTotal = computed(() => {
   if (!hasPagination.value) return 0;
-  // 后端分页时使用传入的 total，前端分页时使用 data.length
-  return paginationConfig.value.remote
+  // 远程模式时使用传入的 total，本地模式时使用 data.length
+  return isRemoteMode.value
     ? (paginationConfig.value.total ?? 0)
     : props.data.length;
 });
 
 const paginatedData = computed(() => {
-  if (!hasPagination.value || paginationConfig.value.remote) return props.data;
+  let result = props.data;
+
+  // 本地排序（非远程模式时）
+  if (!isRemoteMode.value && sortConfig.value) {
+    const { field, order } = sortConfig.value;
+    const column = props.columns.find(col => col.key === field);
+
+    result = [...result].sort((a, b) => {
+      // 使用自定义排序函数
+      if (column?.sortFn) {
+        return column.sortFn(a, b, order);
+      }
+
+      // 默认排序：比较字段值
+      const aValue = (a as any)[field];
+      const bValue = (b as any)[field];
+
+      // 处理 null/undefined
+      if (aValue == null && bValue == null) return 0;
+      if (aValue == null) return order === 'ascend' ? -1 : 1;
+      if (bValue == null) return order === 'ascend' ? 1 : -1;
+
+      // 字符串比较
+      if (typeof aValue === 'string' && typeof bValue === 'string') {
+        return order === 'ascend'
+          ? aValue.localeCompare(bValue)
+          : bValue.localeCompare(aValue);
+      }
+
+      // 数字/日期比较
+      const compare = aValue < bValue ? -1 : aValue > bValue ? 1 : 0;
+      return order === 'ascend' ? compare : -compare;
+    });
+  }
+
+  // 本地分页
+  if (!hasPagination.value || isRemoteMode.value) return result;
 
   const start = (currentPage.value - 1) * currentPageSize.value;
   const end = start + currentPageSize.value;
-  return props.data.slice(start, end);
+  return result.slice(start, end);
 });
 
 const paginationPositionClass = computed(() => {
@@ -111,6 +164,51 @@ function handlePageChange(page: number) {
 
 function handlePageSizeChange(pageSize: number) {
   currentPageSize.value = pageSize;
+}
+
+// 获取列的排序方向配置
+function getSortDirections(column: ColumnConfig): ('ascend' | 'descend')[] {
+  return column.sortDirections ?? ['ascend', 'descend'];
+}
+
+// 判断列是否正在排序
+function getColumnSortOrder(column: ColumnConfig): 'ascend' | 'descend' | undefined {
+  if (!sortConfig.value || sortConfig.value.field !== column.key) {
+    return undefined;
+  }
+  return sortConfig.value.order;
+}
+
+// 获取下一个排序方向
+function getNextSortOrder(column: ColumnConfig): 'ascend' | 'descend' | undefined {
+  const directions = getSortDirections(column);
+  const currentOrder = getColumnSortOrder(column);
+
+  if (!currentOrder) {
+    return directions[0]; // 从第一个方向开始
+  }
+
+  const currentIndex = directions.indexOf(currentOrder);
+  if (currentIndex === directions.length - 1) {
+    return undefined; // 循环结束，取消排序
+  }
+  return directions[currentIndex + 1];
+}
+
+// 处理排序点击
+function handleSortClick(column: ColumnConfig) {
+  if (!column.sortable) return;
+
+  const nextOrder = getNextSortOrder(column);
+  const newSort: SortInfo | undefined = nextOrder
+    ? { field: column.key, order: nextOrder }
+    : undefined;
+
+  // 更新内部状态
+  internalSort.value = newSort;
+
+  // 触发事件
+  emit('update:sort', newSort);
 }
 
 const internalSelectedRowKeys = ref<(string | number)[]>([]);
@@ -343,14 +441,35 @@ function renderCell(column: ColumnConfig, row: T, index: number) {
                   SIZE_STYLES[props.size].padding,
                   column.align === 'center' && 'text-center',
                   column.align === 'right' && 'text-right',
+                  column.sortable && 'cursor-pointer select-none hover:bg-accent/50',
                   props.bordered &&
                     index < props.columns.length - 1 &&
                     'border-r',
                 )
               "
               :style="{ width: getWidthStyle(column.width) }"
+              @click="column.sortable && handleSortClick(column)"
             >
-              <component :is="() => renderHeader(column, index)" />
+              <div class="flex items-center gap-2" :class="cn(column.align === 'center' && 'justify-center', column.align === 'right' && 'justify-end')">
+                <component :is="() => renderHeader(column, index)" />
+                <span v-if="column.sortable" class="flex items-center">
+                  <Icon
+                    v-if="getColumnSortOrder(column) === 'ascend'"
+                    icon="lucide:arrow-up"
+                    class="size-4 text-primary"
+                  />
+                  <Icon
+                    v-else-if="getColumnSortOrder(column) === 'descend'"
+                    icon="lucide:arrow-down"
+                    class="size-4 text-primary"
+                  />
+                  <Icon
+                    v-else
+                    icon="lucide:arrow-up-down"
+                    class="size-4 text-muted-foreground/50"
+                  />
+                </span>
+              </div>
             </TableHead>
           </TableRow>
         </TableHeader>

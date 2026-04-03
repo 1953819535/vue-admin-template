@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { ref, computed, watch, nextTick } from 'vue'
 import { Icon } from '@iconify/vue'
 import { useAppStore } from '@/stores/modules/app'
 import themes from '@/themes/tweakcn-themes.json'
@@ -21,8 +21,23 @@ import {
 
 const appStore = useAppStore()
 const drawerOpen = ref(false)
+const scrollContainerRef = ref<HTMLElement | null>(null)
 
 const drawerDirection = computed(() => appStore.layout === 'sidebar' ? 'left' : 'right')
+
+// 抽屉打开时滚动到当前选中的主题
+watch(drawerOpen, async (open) => {
+  if (open) {
+    await nextTick()
+    // 等待 Drawer 动画完成后滚动
+    setTimeout(() => {
+      const selectedBtn = scrollContainerRef.value?.querySelector('.border-primary')
+      if (selectedBtn) {
+        selectedBtn.scrollIntoView({ behavior: 'instant', block: 'center' })
+      }
+    }, 100)
+  }
+})
 
 type ThemeNamesZh = Record<string, { title: string; description: string }>
 
@@ -78,7 +93,7 @@ function handleSelect(name: string) {
       </DrawerHeader>
 
       <TooltipProvider>
-        <div class="px-4 pb-4 overflow-y-auto">
+        <div ref="scrollContainerRef" class="px-4 pb-4 overflow-y-auto">
           <div class="grid grid-cols-2 gap-3">
             <button
               v-for="theme in themePreviewData"

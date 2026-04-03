@@ -24,7 +24,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import type { RowSelection, ColumnConfig } from "@/components/shared/data-table";
+import type { RowSelection, ColumnConfig, SortInfo } from "@/components/shared/data-table";
 
 interface User {
   id: number;
@@ -81,10 +81,14 @@ const selectedRowKeys = ref<(string | number)[]>([]);
 
 // 分页
 const enablePagination = ref(true);
-const paginationRemote = ref(false);
+const remoteMode = ref(false);
 const paginationPage = ref(1);
 const paginationPageSize = ref(3);
 const paginationPosition = ref<"left" | "center" | "right">("right");
+
+// 排序
+const enableSort = ref(true);
+const currentSort = ref<SortInfo | undefined>(undefined);
 
 // 行点击
 const enableRowClick = ref(true);
@@ -98,11 +102,13 @@ const columns = computed<ColumnConfig<User>[]>(() => [
     title: "ID",
     width: 80,
     align: "center",
+    sortable: enableSort.value,
   },
   {
     key: "name",
     title: "用户名",
     align: "center",
+    sortable: enableSort.value,
   },
   {
     key: "email",
@@ -128,6 +134,7 @@ const columns = computed<ColumnConfig<User>[]>(() => [
   {
     key: "createTime",
     title: "创建时间",
+    sortable: enableSort.value,
   },
   {
     key: "action",
@@ -156,9 +163,14 @@ const paginationConfig = computed(() => {
     pageSizes: [3, 5, 10, 20],
     showTotal: true,
     showSizeChanger: true,
-    remote: paginationRemote.value,
     position: paginationPosition.value,
   };
+});
+
+// 排序配置
+const sortConfig = computed(() => {
+  if (!enableSort.value) return undefined;
+  return currentSort.value;
 });
 
 // 分页事件处理
@@ -169,6 +181,11 @@ function handlePageChange(page: number) {
 function handlePageSizeChange(pageSize: number) {
   paginationPageSize.value = pageSize;
   paginationPage.value = 1; // 切换每页条数时重置到第一页
+}
+
+// 排序事件处理
+function handleSortChange(sort: SortInfo | undefined) {
+  currentSort.value = sort;
 }
 
 // 行事件
@@ -229,7 +246,7 @@ meta:
         <CardDescription>实时调整表格参数，查看效果变化</CardDescription>
       </CardHeader>
       <CardContent>
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
           <!-- 基础配置 -->
           <div class="space-y-4">
             <h4 class="text-sm font-medium text-muted-foreground flex items-center gap-2">
@@ -388,19 +405,60 @@ meta:
               </div>
 
               <label class="flex items-center gap-2 cursor-pointer">
-                <Checkbox v-model="paginationRemote" :disabled="!enablePagination" />
-                <span class="text-sm">后端分页模式</span>
+                <Checkbox v-model="remoteMode" />
+                <span class="text-sm">远程模式</span>
               </label>
 
               <p class="text-xs text-muted-foreground">
                 <Icon icon="lucide:info" class="size-3 inline mr-1" />
-                前端分页自动切片数据，后端分页需配合 API
+                远程模式下不分页、不排序，由外部 API 处理
               </p>
 
-              <div v-if="enablePagination && !paginationRemote" class="flex items-center gap-2 pt-1">
+              <div v-if="enablePagination && !remoteMode" class="flex items-center gap-2 pt-1">
                 <Badge variant="outline" class="font-normal">
                   第 {{ paginationPage }} / {{ Math.ceil(data.length / paginationPageSize) }} 页
                 </Badge>
+              </div>
+            </div>
+          </div>
+
+          <!-- 排序配置 -->
+          <div class="space-y-4">
+            <h4 class="text-sm font-medium text-muted-foreground flex items-center gap-2">
+              <Icon icon="lucide:arrow-up-down" class="size-4" />
+              排序
+            </h4>
+
+            <div class="space-y-3">
+              <label class="flex items-center gap-2 cursor-pointer">
+                <Checkbox v-model="enableSort" />
+                <span class="text-sm">启用排序</span>
+              </label>
+
+              <p class="text-xs text-muted-foreground">
+                <Icon icon="lucide:info" class="size-3 inline mr-1" />
+                点击表头切换：无 → 升序 → 降序 → 无
+              </p>
+
+              <p class="text-xs text-muted-foreground">
+                <Icon icon="lucide:info" class="size-3 inline mr-1" />
+                远程模式下排序由外部处理
+              </p>
+
+              <div v-if="currentSort" class="flex items-center gap-2 pt-1">
+                <Badge variant="outline" class="font-normal">
+                  {{ currentSort.field }}: {{ currentSort.order === 'ascend' ? '升序' : '降序' }}
+                </Badge>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  @click="currentSort = undefined"
+                >
+                  清除
+                </Button>
+              </div>
+              <div v-else class="text-xs text-muted-foreground">
+                点击表头开始排序
               </div>
             </div>
           </div>
@@ -424,10 +482,13 @@ meta:
           :row-selection="rowSelection"
           :custom-row="getRowEvents"
           :pagination="paginationConfig"
+          :sort="sortConfig"
+          :remote="remoteMode"
           empty-text="暂无用户数据"
           @update:selected-row-keys="handleSelectionChange"
           @update:page="handlePageChange"
           @update:page-size="handlePageSizeChange"
+          @update:sort="handleSortChange"
         >
           <!-- 自定义空数据状态 -->
           <template #empty>
@@ -500,6 +561,8 @@ meta:
     type: '{{ selectionType }}'
   }"
   :pagination="{{ enablePagination ? '{ position: \'' + paginationPosition + '\' }' : 'false' }}"
+  :sort="{{ currentSort ? '{ field: \'' + currentSort.field + '\', order: \'' + currentSort.order + '\' }' : 'undefined' }}"
+  :remote="{{ remoteMode }}"
   :custom-row="getRowEvents"
 /&gt;</code></pre>
       </CardContent>
