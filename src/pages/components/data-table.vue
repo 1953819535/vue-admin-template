@@ -667,8 +667,8 @@ meta:
               :variant="value === 'active' ? 'default' : 'outline'"
               :class="
                 value === 'active'
-                  ? 'bg-green-500'
-                  : 'text-red-600 border-red-300 dark:border-red-500'
+                  ? 'bg-primary'
+                  : 'text-destructive border-destructive/50'
               "
             >
               {{ value === "active" ? "正常" : "禁用" }}

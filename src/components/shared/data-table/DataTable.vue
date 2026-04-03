@@ -7,10 +7,9 @@ import type {
   HeaderContext,
   RowEvents,
   SortInfo,
-  ExpandableConfig,
 } from "./types";
 import { computed, ref, useSlots, watch } from "vue";
-import { cn } from "@/lib/utils";
+import { cn, toPx } from "@/lib/utils";
 import { Icon } from "@iconify/vue";
 import {
   Table,
@@ -72,16 +71,11 @@ const paginationConfig = computed<PaginationConfig>(() => {
 });
 
 const sortConfig = computed(() => {
-  // 如果 props.sort 存在，使用 props.sort
   if (props.sort?.field && props.sort?.order) {
     return { field: props.sort.field, order: props.sort.order };
   }
-  // 否则使用内部排序状态
   return internalSort.value;
 });
-
-// 是否远程模式：remote 同时控制分页和排序
-const isRemoteMode = computed(() => props.remote);
 
 const hasPagination = computed(() => props.pagination !== false);
 
@@ -103,8 +97,7 @@ const currentPageSize = computed({
 
 const paginationTotal = computed(() => {
   if (!hasPagination.value) return 0;
-  // 远程模式时使用传入的 total，本地模式时使用 data.length
-  return isRemoteMode.value
+  return props.remote
     ? (paginationConfig.value.total ?? 0)
     : props.data.length;
 });
@@ -113,40 +106,35 @@ const paginatedData = computed(() => {
   let result = props.data;
 
   // 本地排序（非远程模式时）
-  if (!isRemoteMode.value && sortConfig.value) {
+  if (!props.remote && sortConfig.value) {
     const { field, order } = sortConfig.value;
     const column = props.columns.find(col => col.key === field);
 
     result = [...result].sort((a, b) => {
-      // 使用自定义排序函数
       if (column?.sortFn) {
         return column.sortFn(a, b, order);
       }
 
-      // 默认排序：比较字段值
       const aValue = (a as any)[field];
       const bValue = (b as any)[field];
 
-      // 处理 null/undefined
       if (aValue == null && bValue == null) return 0;
       if (aValue == null) return order === 'ascend' ? -1 : 1;
       if (bValue == null) return order === 'ascend' ? 1 : -1;
 
-      // 字符串比较
       if (typeof aValue === 'string' && typeof bValue === 'string') {
         return order === 'ascend'
           ? aValue.localeCompare(bValue)
           : bValue.localeCompare(aValue);
       }
 
-      // 数字/日期比较
       const compare = aValue < bValue ? -1 : aValue > bValue ? 1 : 0;
       return order === 'ascend' ? compare : -compare;
     });
   }
 
   // 本地分页
-  if (!hasPagination.value || isRemoteMode.value) return result;
+  if (!hasPagination.value || props.remote) return result;
 
   const start = (currentPage.value - 1) * currentPageSize.value;
   const end = start + currentPageSize.value;
@@ -171,12 +159,10 @@ function handlePageSizeChange(pageSize: number) {
   currentPageSize.value = pageSize;
 }
 
-// 获取列的排序方向配置
 function getSortDirections(column: ColumnConfig): ('ascend' | 'descend')[] {
   return column.sortDirections ?? ['ascend', 'descend'];
 }
 
-// 判断列是否正在排序
 function getColumnSortOrder(column: ColumnConfig): 'ascend' | 'descend' | undefined {
   if (!sortConfig.value || sortConfig.value.field !== column.key) {
     return undefined;
@@ -184,23 +170,21 @@ function getColumnSortOrder(column: ColumnConfig): 'ascend' | 'descend' | undefi
   return sortConfig.value.order;
 }
 
-// 获取下一个排序方向
 function getNextSortOrder(column: ColumnConfig): 'ascend' | 'descend' | undefined {
   const directions = getSortDirections(column);
   const currentOrder = getColumnSortOrder(column);
 
   if (!currentOrder) {
-    return directions[0]; // 从第一个方向开始
+    return directions[0];
   }
 
   const currentIndex = directions.indexOf(currentOrder);
   if (currentIndex === directions.length - 1) {
-    return undefined; // 循环结束，取消排序
+    return undefined;
   }
   return directions[currentIndex + 1];
 }
 
-// 处理排序点击
 function handleSortClick(column: ColumnConfig) {
   if (!column.sortable) return;
 
@@ -209,29 +193,22 @@ function handleSortClick(column: ColumnConfig) {
     ? { field: column.key, order: nextOrder }
     : undefined;
 
-  // 更新内部状态
   internalSort.value = newSort;
 
-  // 触发事件
   emit('update:sort', newSort);
 }
 
 const internalSelectedRowKeys = ref<(string | number)[]>([]);
 
-// ========== 行展开相关 ==========
-const expandableConfig = computed<ExpandableConfig<T>>(() => {
-  if (!props.expandable) return {};
-  return props.expandable;
-});
+const expandableConfig = computed(() => props.expandable ?? {});
 
 const hasExpandable = computed(() => {
   if (!props.expandable) return false;
-  return expandableConfig.value.enabled ?? true;
+  return props.expandable.enabled ?? true;
 });
 
 const internalExpandedRowKeys = ref<(string | number)[]>([]);
 
-// 初始化展开行
 watch(
   () => [props.expandable, props.data],
   () => {
@@ -253,7 +230,6 @@ const expandedKeys = computed(() => {
 
 const expandedKeysSet = computed(() => new Set(expandedKeys.value));
 
-// 缓存曾经展开过的行 key（仅在 keepExpanded 为 true 时使用）
 const everExpandedKeys = ref<Set<string | number>>(new Set());
 
 const shouldKeepExpanded = computed(() => expandableConfig.value.keepExpanded ?? false);
@@ -281,7 +257,6 @@ function handleExpandToggle(row: T, index: number) {
   const wasExpanded = isRowExpanded(row, index);
 
   if (!wasExpanded && shouldKeepExpanded.value) {
-    // 展开时记录到缓存
     everExpandedKeys.value.add(key);
   }
 
@@ -297,16 +272,11 @@ function handleExpandToggle(row: T, index: number) {
   expandableConfig.value.onExpand?.(!wasExpanded, row);
 }
 
-// ========== 滚动相关 ==========
 const scrollConfig = computed(() => props.scroll ?? {});
 
 const hasStickyHeader = computed(() => !!scrollConfig.value.y);
 
-const scrollYStyle = computed(() => {
-  if (!scrollConfig.value.y) return undefined;
-  const y = scrollConfig.value.y;
-  return typeof y === "number" ? `${y}px` : y;
-});
+const scrollYStyle = computed(() => toPx(scrollConfig.value.y));
 
 const selectedKeys = computed(() => {
   if (props.rowSelection?.selectedRowKeys !== undefined) {
@@ -357,8 +327,7 @@ function getCellValue(row: T, key: string): any {
 }
 
 function getWidthStyle(width?: number | string): string | undefined {
-  if (!width) return undefined;
-  return typeof width === "number" ? `${width}px` : width;
+  return toPx(width);
 }
 
 function getRowEvents(row: T, index: number): RowEvents<T> {
