@@ -61,7 +61,7 @@ function confirmDelete() {
 
 <route lang="yaml">
 meta:
-  layout: admin
+  layout: default
   title: 用户管理
   menuTitle: 用户列表
   menuIcon: lucide:users

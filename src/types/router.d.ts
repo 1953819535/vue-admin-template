@@ -4,11 +4,11 @@ declare module 'vue-router' {
   interface RouteMeta {
     /** 页面标题 */
     title?: string
-    /** 菜单标题（不设置则不显示在菜单中） */
+    /** 菜单标题（不设置则使用 title，若 title 也未设置则不显示在菜单中） */
     menuTitle?: string
     /** 菜单分组标题 */
     menuGroup?: string
-    /** 菜单分组图标 */
+    /** 菜单分组图标（仅需在分组第一个页面设置） */
     menuGroupIcon?: string
     /** 菜单图标 */
     menuIcon?: string

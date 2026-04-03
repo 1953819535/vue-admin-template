@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { ref, computed, watchEffect } from 'vue'
 import { Icon } from '@iconify/vue'
 import { useAppStore } from '@/stores/modules/app'
 import {
@@ -22,26 +22,18 @@ const props = defineProps<NavProps>()
 const appStore = useAppStore()
 const { isActive, isGroupActive } = useNavActive()
 
-// 展开的分组状态
 const expandedGroups = ref<Set<string>>(new Set())
 
-// 自动展开包含当前激活路由的分组
-const initiallyExpanded = computed(() => {
-  const set = new Set<string>()
+watchEffect(() => {
   props.groups?.forEach(group => {
     if (isGroupActive(group)) {
-      set.add(group.title)
+      expandedGroups.value.add(group.title)
     }
   })
-  return set
 })
 
-// 合并初始展开和用户操作展开
-const isGroupExpanded = (groupTitle: string) => {
-  return expandedGroups.value.has(groupTitle) || initiallyExpanded.value.has(groupTitle)
-}
+const isGroupExpanded = (groupTitle: string) => expandedGroups.value.has(groupTitle)
 
-// 切换分组展开状态
 function toggleGroup(groupTitle: string) {
   if (expandedGroups.value.has(groupTitle)) {
     expandedGroups.value.delete(groupTitle)
@@ -50,20 +42,20 @@ function toggleGroup(groupTitle: string) {
   }
 }
 
-// 折叠状态下分组按钮的图标
-function getGroupIcon(group: { title: string; icon?: string; items: { icon?: string }[] }) {
-  return group.icon || group.items[0]?.icon || 'lucide:folder'
-}
+const groupIcons = computed(() => {
+  const map = new Map<string, string>()
+  props.groups?.forEach(group => {
+    map.set(group.title, group.icon || group.items[0]?.icon || 'lucide:folder')
+  })
+  return map
+})
 
-// 菜单项基础样式
 const menuItemClass = 'flex items-center gap-2 px-3 py-2 rounded-md hover:bg-sidebar-accent text-sidebar-foreground transition-colors cursor-pointer'
 </script>
 
 <template>
   <nav class="flex-1 p-4 space-y-1 overflow-auto">
-    <!-- 展开状态 -->
     <template v-if="!appStore.sidebarCollapsed">
-      <!-- 顶级菜单项 -->
       <RouterLink
         v-for="item in items"
         :key="item.title"
@@ -77,7 +69,6 @@ const menuItemClass = 'flex items-center gap-2 px-3 py-2 rounded-md hover:bg-sid
         <span>{{ item.title }}</span>
       </RouterLink>
 
-      <!-- 可折叠分组 -->
       <div v-for="group in groups" :key="group.title" class="pt-1">
         <div
           :class="[
@@ -97,7 +88,6 @@ const menuItemClass = 'flex items-center gap-2 px-3 py-2 rounded-md hover:bg-sid
           />
         </div>
 
-        <!-- 子菜单 -->
         <div
           v-show="isGroupExpanded(group.title)"
           class="ml-4 mt-1 space-y-1 overflow-hidden"
@@ -118,10 +108,8 @@ const menuItemClass = 'flex items-center gap-2 px-3 py-2 rounded-md hover:bg-sid
       </div>
     </template>
 
-    <!-- 折叠状态 -->
     <template v-else>
       <TooltipProvider :delay-duration="200">
-        <!-- 顶级菜单项 -->
         <Tooltip v-for="item in items" :key="item.title">
           <TooltipTrigger as-child>
             <RouterLink
@@ -139,7 +127,6 @@ const menuItemClass = 'flex items-center gap-2 px-3 py-2 rounded-md hover:bg-sid
           </TooltipContent>
         </Tooltip>
 
-        <!-- 分组：下拉菜单 -->
         <DropdownMenu v-for="group in groups" :key="group.title">
           <DropdownMenuTrigger as-child>
             <div
@@ -148,7 +135,7 @@ const menuItemClass = 'flex items-center gap-2 px-3 py-2 rounded-md hover:bg-sid
                 isGroupActive(group) ? 'bg-sidebar-accent text-sidebar-accent-foreground font-medium' : ''
               ]"
             >
-              <Icon :icon="getGroupIcon(group)" class="size-5" />
+              <Icon :icon="groupIcons.get(group.title)!" class="size-5" />
             </div>
           </DropdownMenuTrigger>
           <DropdownMenuContent side="right" align="start" class="w-48">

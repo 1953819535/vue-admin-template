@@ -181,7 +181,7 @@ const displayData = computed(() => (showEmpty.value ? [] : data.value));
 
 <route lang="yaml">
 meta:
-  layout: admin
+  layout: default
   title: DataTable 示例
   menuTitle: DataTable
   menuIcon: lucide:table

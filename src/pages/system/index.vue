@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 
 <route lang="yaml">
 meta:
-  layout: admin
+  layout: default
   title: 系统设置
   menuTitle: 基本信息
   menuIcon: lucide:settings

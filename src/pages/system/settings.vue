@@ -18,9 +18,8 @@ const settings = ref({
 
 <route lang="yaml">
 meta:
-  layout: admin
+  layout: default
   title: 参数配置
-  menuTitle: 参数配置
   menuIcon: lucide:sliders-horizontal
   menuGroup: 系统设置
   menuOrder: 31

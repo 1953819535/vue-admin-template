@@ -1,13 +1,18 @@
 import { useRoute } from 'vue-router'
-import type { RouteLocationRaw } from 'vue-router'
+import type { RouteLocationRaw, RouteLocationPathRaw } from 'vue-router'
 import type { NavGroup } from './types'
+
+function extractPath(to: RouteLocationRaw): string {
+  if (typeof to === 'string') return to
+  if ('path' in to) return (to as RouteLocationPathRaw).path
+  return ''
+}
 
 export function useNavActive() {
   const route = useRoute()
 
   function isActive(to: RouteLocationRaw) {
-    const path = typeof to === 'string' ? to : (to as any).path
-    return route.path === path
+    return route.path === extractPath(to)
   }
 
   function isGroupActive(group: NavGroup) {

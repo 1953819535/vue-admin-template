@@ -24,7 +24,7 @@ const status = ref('active')
 
 <route lang="yaml">
 meta:
-  layout: admin
+  layout: default
   title: 编辑用户
   requiresAuth: true
 </route>

@@ -20,7 +20,7 @@ const user = {
 
 <route lang="yaml">
 meta:
-  layout: admin
+  layout: default
   title: 用户详情
   requiresAuth: true
 </route>

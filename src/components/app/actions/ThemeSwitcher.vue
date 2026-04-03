@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
 import { Icon } from '@iconify/vue'
 import { useAppStore } from '@/stores/modules/app'
 import themes from '@/themes/tweakcn-themes.json'
@@ -24,28 +24,29 @@ const drawerOpen = ref(false)
 
 type ThemeNamesZh = Record<string, { title: string; description: string }>
 
-function getTitle(name: string): string {
-  return (themeNamesZh as ThemeNamesZh)[name]?.title || name
-}
+const themeNamesZhMap = themeNamesZh as ThemeNamesZh
 
-function getDescription(name: string): string {
-  return (themeNamesZh as ThemeNamesZh)[name]?.description || ''
-}
+type ThemeCssVars = { primary?: string; accent?: string; secondary?: string; background?: string }
 
-function getThemePreviewColors(name: string) {
-  const theme = themes.find((t) => t.name === name)
-  if (!theme) return { primary: '', accent: '', background: '' }
+const themePreviewData = computed(() => {
+  return appStore.availableThemes.map(theme => {
+    const themeData = themes.find(t => t.name === theme.name)
+    const light = (themeData?.cssVars.light || {}) as ThemeCssVars
+    const dark = (themeData?.cssVars.dark || {}) as ThemeCssVars
+    const vars = appStore.isDark ? dark : light
 
-  const light = theme.cssVars.light || {}
-  const dark = theme.cssVars.dark || {}
-  const vars = appStore.isDark ? dark : light
-
-  return {
-    primary: vars.primary || '',
-    accent: vars.accent || vars.secondary || '',
-    background: vars.background || '',
-  }
-}
+    return {
+      name: theme.name,
+      title: themeNamesZhMap[theme.name]?.title || theme.name,
+      description: themeNamesZhMap[theme.name]?.description || '',
+      colors: {
+        primary: vars.primary || '',
+        accent: vars.accent || vars.secondary || '',
+        background: vars.background || '',
+      },
+    }
+  })
+})
 
 function handleSelect(name: string) {
   appStore.setThemeName(name)
@@ -59,7 +60,7 @@ function handleSelect(name: string) {
   </Button>
 
   <Drawer :open="drawerOpen" @update:open="drawerOpen = $event" direction="right">
-    <DrawerContent class="w-[400px] sm:max-w-[400px]">
+    <DrawerContent class="w-100 sm:max-w-100">
       <DrawerHeader>
         <DrawerTitle class="flex items-center justify-between">
           <span>主题风格</span>
@@ -75,7 +76,7 @@ function handleSelect(name: string) {
         <div class="px-4 pb-4 overflow-y-auto">
           <div class="grid grid-cols-2 gap-3">
             <button
-              v-for="theme in appStore.availableThemes"
+              v-for="theme in themePreviewData"
               :key="theme.name"
               class="group relative rounded-lg border p-3 text-left transition-all hover:border-primary hover:shadow-sm"
               :class="[
@@ -87,31 +88,31 @@ function handleSelect(name: string) {
             >
               <div
                 class="mb-2 h-8 w-full rounded-md overflow-hidden"
-                :style="{ background: getThemePreviewColors(theme.name).background }"
+                :style="{ background: theme.colors.background }"
               >
                 <div
                   class="h-full flex"
                   :style="{
                     background: `linear-gradient(135deg,
-                    ${getThemePreviewColors(theme.name).primary} 0%,
-                    ${getThemePreviewColors(theme.name).primary} 30%,
-                    ${getThemePreviewColors(theme.name).accent} 30%,
-                    ${getThemePreviewColors(theme.name).accent} 60%,
-                    ${getThemePreviewColors(theme.name).background} 60%
+                    ${theme.colors.primary} 0%,
+                    ${theme.colors.primary} 30%,
+                    ${theme.colors.accent} 30%,
+                    ${theme.colors.accent} 60%,
+                    ${theme.colors.background} 60%
                   )`,
                   }"
                 />
               </div>
 
-              <div class="font-medium text-sm">{{ getTitle(theme.name) }}</div>
+              <div class="font-medium text-sm">{{ theme.title }}</div>
               <Tooltip>
                 <TooltipTrigger as-child>
                   <div class="text-xs text-muted-foreground line-clamp-1 cursor-default">
-                    {{ getDescription(theme.name) }}
+                    {{ theme.description }}
                   </div>
                 </TooltipTrigger>
                 <TooltipContent side="bottom" class="max-w-50">
-                  {{ getDescription(theme.name) }}
+                  {{ theme.description }}
                 </TooltipContent>
               </Tooltip>
 

@@ -3,7 +3,7 @@
 
 <route lang="yaml">
 meta:
-  layout: admin
+  layout: default
   menuTitle: 仪表盘
   menuIcon: lucide:home
   menuOrder: 1
