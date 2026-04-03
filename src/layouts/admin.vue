@@ -3,7 +3,6 @@ import Sidebar from '@/components/app/Sidebar.vue'
 import TopNavMenu from '@/components/app/TopNavMenu.vue'
 import LayoutProvider from '@/components/layouts/LayoutProvider.vue'
 import AppHeader from '@/components/app/AppHeader.vue'
-import ContentWrapper from '@/components/app/ContentWrapper.vue'
 
 // 导航配置
 const navGroups = [
@@ -70,9 +69,7 @@ const footerItems = [
 
     <!-- 内容插槽 -->
     <template #content>
-      <ContentWrapper>
-        <RouterView />
-      </ContentWrapper>
+      <RouterView />
     </template>
   </LayoutProvider>
 </template>

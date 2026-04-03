@@ -23,9 +23,6 @@ export const useAppStore = defineStore('app', () => {
   // 布局类型
   const layout = ref<LayoutType>('sidebar')
 
-  // 内容区域全屏
-  const contentFullscreen = ref(false)
-
   // 系统暗色模式状态
   const systemIsDark = ref(
     typeof window !== 'undefined'
@@ -110,21 +107,10 @@ export const useAppStore = defineStore('app', () => {
     layout.value = newLayout
   }
 
-  // 切换内容全屏
-  const toggleContentFullscreen = () => {
-    contentFullscreen.value = !contentFullscreen.value
-  }
-
-  // 设置内容全屏
-  const setContentFullscreen = (value: boolean) => {
-    contentFullscreen.value = value
-  }
-
   return {
     currentTheme,
     mode,
     layout,
-    contentFullscreen,
     resolvedMode,
     isDark,
     themeData,
@@ -132,8 +118,6 @@ export const useAppStore = defineStore('app', () => {
     setThemeName,
     setMode,
     setLayout,
-    toggleContentFullscreen,
-    setContentFullscreen,
     toggleTheme,
     applyTheme,
   }
