@@ -35,8 +35,6 @@ export interface RowEvents<T = any> {
 
 /** 行展开配置 */
 export interface ExpandableConfig<T = any> {
-  /** 是否支持展开，默认 true */
-  enabled?: boolean
   /** 默认展开的行 keys */
   defaultExpandedRowKeys?: (string | number)[]
   /** 受控展开的行 keys */

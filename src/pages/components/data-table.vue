@@ -9,6 +9,7 @@ import { DataTable } from "@/components/shared/data-table";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Label } from "@/components/ui/label";
 import {
   Card,
   CardContent,
@@ -23,7 +24,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import type { RowSelection, ColumnConfig, SortInfo, ExpandableConfig, ScrollConfig } from "@/components/shared/data-table";
+import type {
+  RowSelection,
+  ColumnConfig,
+  SortInfo,
+  ExpandableConfig,
+  ScrollConfig,
+} from "@/components/shared/data-table";
 
 interface User {
   id: number;
@@ -37,24 +44,168 @@ interface User {
 
 // 数据
 const data = ref<User[]>([
-  { id: 1, name: "张三", email: "zhangsan@example.com", role: "admin", status: "active", createTime: "2024-01-15", description: "张三是系统管理员，负责整体系统运维和用户管理。" },
-  { id: 2, name: "李四", email: "lisi@example.com", role: "user", status: "active", createTime: "2024-02-20", description: "李四是普通用户，主要负责产品运营工作。" },
-  { id: 3, name: "王五", email: "wangwu@example.com", role: "user", status: "inactive", createTime: "2024-03-10", description: "王五是普通用户，账号已禁用。" },
-  { id: 4, name: "赵六", email: "zhaoliu@example.com", role: "user", status: "active", createTime: "2024-04-05", description: "赵六是新入职员工，负责市场推广。" },
-  { id: 5, name: "钱七", email: "qianqi@example.com", role: "admin", status: "inactive", createTime: "2024-05-12", description: "钱七是管理员，账号已禁用。" },
-  { id: 6, name: "孙八", email: "sunba@example.com", role: "user", status: "active", createTime: "2024-06-01", description: "孙八是技术团队成员，负责前端开发。" },
-  { id: 7, name: "周九", email: "zhoujiu@example.com", role: "user", status: "active", createTime: "2024-06-15", description: "周九是技术团队成员，负责后端开发。" },
-  { id: 8, name: "吴十", email: "wushi@example.com", role: "user", status: "inactive", createTime: "2024-07-20", description: "吴十已离职，账号已禁用。" },
-  { id: 9, name: "郑一", email: "zhengyi@example.com", role: "user", status: "active", createTime: "2024-08-03", description: "郑一是新入职员工，负责客户服务。" },
-  { id: 10, name: "冯二", email: "fenger@example.com", role: "admin", status: "active", createTime: "2024-08-18", description: "冯二是系统管理员，负责数据安全。" },
-  { id: 11, name: "陈三", email: "chensan@example.com", role: "user", status: "active", createTime: "2024-09-05", description: "陈三是普通用户，负责财务管理。" },
-  { id: 12, name: "褚四", email: "chusi@example.com", role: "user", status: "inactive", createTime: "2024-09-22", description: "褚四账号已禁用。" },
-  { id: 13, name: "卫五", email: "weiwu@example.com", role: "user", status: "active", createTime: "2024-10-08", description: "卫五是普通用户，负责产品设计。" },
-  { id: 14, name: "蒋六", email: "jiangliu@example.com", role: "user", status: "active", createTime: "2024-10-25", description: "蒋六是普通用户，负责项目管理。" },
-  { id: 15, name: "沈七", email: "shenqi@example.com", role: "admin", status: "inactive", createTime: "2024-11-11", description: "沈七是管理员，账号已禁用。" },
-  { id: 16, name: "韩八", email: "hanba@example.com", role: "user", status: "active", createTime: "2024-11-28", description: "韩八是普通用户，负责数据分析。" },
-  { id: 17, name: "杨九", email: "yangjiu@example.com", role: "user", status: "active", createTime: "2024-12-14", description: "杨九是普通用户，负责质量保障。" },
-  { id: 18, name: "朱十", email: "zhushi@example.com", role: "user", status: "inactive", createTime: "2024-12-30", description: "朱十账号已禁用。" },
+  {
+    id: 1,
+    name: "张三",
+    email: "zhangsan@example.com",
+    role: "admin",
+    status: "active",
+    createTime: "2024-01-15",
+    description: "张三是系统管理员，负责整体系统运维和用户管理。",
+  },
+  {
+    id: 2,
+    name: "李四",
+    email: "lisi@example.com",
+    role: "user",
+    status: "active",
+    createTime: "2024-02-20",
+    description: "李四是普通用户，主要负责产品运营工作。",
+  },
+  {
+    id: 3,
+    name: "王五",
+    email: "wangwu@example.com",
+    role: "user",
+    status: "inactive",
+    createTime: "2024-03-10",
+    description: "王五是普通用户，账号已禁用。",
+  },
+  {
+    id: 4,
+    name: "赵六",
+    email: "zhaoliu@example.com",
+    role: "user",
+    status: "active",
+    createTime: "2024-04-05",
+    description: "赵六是新入职员工，负责市场推广。",
+  },
+  {
+    id: 5,
+    name: "钱七",
+    email: "qianqi@example.com",
+    role: "admin",
+    status: "inactive",
+    createTime: "2024-05-12",
+    description: "钱七是管理员，账号已禁用。",
+  },
+  {
+    id: 6,
+    name: "孙八",
+    email: "sunba@example.com",
+    role: "user",
+    status: "active",
+    createTime: "2024-06-01",
+    description: "孙八是技术团队成员，负责前端开发。",
+  },
+  {
+    id: 7,
+    name: "周九",
+    email: "zhoujiu@example.com",
+    role: "user",
+    status: "active",
+    createTime: "2024-06-15",
+    description: "周九是技术团队成员，负责后端开发。",
+  },
+  {
+    id: 8,
+    name: "吴十",
+    email: "wushi@example.com",
+    role: "user",
+    status: "inactive",
+    createTime: "2024-07-20",
+    description: "吴十已离职，账号已禁用。",
+  },
+  {
+    id: 9,
+    name: "郑一",
+    email: "zhengyi@example.com",
+    role: "user",
+    status: "active",
+    createTime: "2024-08-03",
+    description: "郑一是新入职员工，负责客户服务。",
+  },
+  {
+    id: 10,
+    name: "冯二",
+    email: "fenger@example.com",
+    role: "admin",
+    status: "active",
+    createTime: "2024-08-18",
+    description: "冯二是系统管理员，负责数据安全。",
+  },
+  {
+    id: 11,
+    name: "陈三",
+    email: "chensan@example.com",
+    role: "user",
+    status: "active",
+    createTime: "2024-09-05",
+    description: "陈三是普通用户，负责财务管理。",
+  },
+  {
+    id: 12,
+    name: "褚四",
+    email: "chusi@example.com",
+    role: "user",
+    status: "inactive",
+    createTime: "2024-09-22",
+    description: "褚四账号已禁用。",
+  },
+  {
+    id: 13,
+    name: "卫五",
+    email: "weiwu@example.com",
+    role: "user",
+    status: "active",
+    createTime: "2024-10-08",
+    description: "卫五是普通用户，负责产品设计。",
+  },
+  {
+    id: 14,
+    name: "蒋六",
+    email: "jiangliu@example.com",
+    role: "user",
+    status: "active",
+    createTime: "2024-10-25",
+    description: "蒋六是普通用户，负责项目管理。",
+  },
+  {
+    id: 15,
+    name: "沈七",
+    email: "shenqi@example.com",
+    role: "admin",
+    status: "inactive",
+    createTime: "2024-11-11",
+    description: "沈七是管理员，账号已禁用。",
+  },
+  {
+    id: 16,
+    name: "韩八",
+    email: "hanba@example.com",
+    role: "user",
+    status: "active",
+    createTime: "2024-11-28",
+    description: "韩八是普通用户，负责数据分析。",
+  },
+  {
+    id: 17,
+    name: "杨九",
+    email: "yangjiu@example.com",
+    role: "user",
+    status: "active",
+    createTime: "2024-12-14",
+    description: "杨九是普通用户，负责质量保障。",
+  },
+  {
+    id: 18,
+    name: "朱十",
+    email: "zhushi@example.com",
+    role: "user",
+    status: "inactive",
+    createTime: "2024-12-30",
+    description: "朱十账号已禁用。",
+  },
 ]);
 
 // ========== 配置项 ==========
@@ -95,7 +246,6 @@ const enableRowClick = ref(true);
 const clickedRow = ref<User | null>(null);
 
 // 行展开
-const enableExpandable = ref(false);
 const keepExpanded = ref(false);
 const expandedRowKeys = ref<(string | number)[]>([]);
 
@@ -112,9 +262,22 @@ const ExpandedRowContent = defineComponent({
     const renderId = Math.random().toFixed(6);
     return () => (
       <div class="p-4 bg-muted/30 rounded-lg border space-y-4">
-        <div class={keepExpanded.value ? 'flex items-center gap-2 text-xs text-primary' : 'flex items-center gap-2 text-xs text-muted-foreground'}>
-          <Icon icon={keepExpanded.value ? 'lucide:cache' : 'lucide:trash-2'} class="size-3.5" />
-          <span>{keepExpanded.value ? '缓存已开启：收起后再展开，数字不变' : '缓存已关闭：收起后再展开，数字会变化'}</span>
+        <div
+          class={
+            keepExpanded.value
+              ? "flex items-center gap-2 text-xs text-primary"
+              : "flex items-center gap-2 text-xs text-muted-foreground"
+          }
+        >
+          <Icon
+            icon={keepExpanded.value ? "lucide:cache" : "lucide:trash-2"}
+            class="size-3.5"
+          />
+          <span>
+            {keepExpanded.value
+              ? "缓存已开启：收起后再展开，数字不变"
+              : "缓存已关闭：收起后再展开，数字会变化"}
+          </span>
         </div>
         <div class="flex items-start gap-4">
           <div class="flex-1">
@@ -122,14 +285,22 @@ const ExpandedRowContent = defineComponent({
               <Icon icon="lucide:user" class="size-4" />
               {props.row.name} 详情
             </h4>
-            <p class="text-sm text-muted-foreground mb-3">{props.row.description}</p>
+            <p class="text-sm text-muted-foreground mb-3">
+              {props.row.description}
+            </p>
           </div>
         </div>
         <div class="flex items-center gap-4 pt-2 border-t">
           <span class="text-xs text-muted-foreground">渲染标识：</span>
-          <Badge variant="outline" class="font-mono">{renderId}</Badge>
+          <Badge variant="outline" class="font-mono">
+            {renderId}
+          </Badge>
           <span class="text-xs text-muted-foreground">
-            （{keepExpanded.value ? '缓存开启，数字不变' : '缓存关闭，每次展开数字变化'}）
+            （
+            {keepExpanded.value
+              ? "缓存开启，数字不变"
+              : "缓存关闭，每次展开数字变化"}
+            ）
           </span>
         </div>
       </div>
@@ -221,14 +392,11 @@ const sortConfig = computed(() => {
 });
 
 // 行展开配置
-const expandableConfig = computed<ExpandableConfig<User> | undefined>(() => {
-  if (!enableExpandable.value) return undefined;
-  return {
-    expandedRowKeys: expandedRowKeys.value,
-    rowExpandable: (row) => row.role !== "admin", // 管理员不可展开
-    keepExpanded: keepExpanded.value,
-  };
-});
+const expandableConfig = computed<ExpandableConfig<User>>(() => ({
+  expandedRowKeys: expandedRowKeys.value,
+  rowExpandable: (row) => row.role !== "admin", // 管理员不可展开
+  keepExpanded: keepExpanded.value,
+}));
 
 // 滚动配置
 const scrollConfig = computed<ScrollConfig | undefined>(() => {
@@ -298,7 +466,9 @@ meta:
     <!-- 页面标题 -->
     <div class="flex items-center justify-between">
       <div>
-        <h1 class="text-2xl font-semibold tracking-tight">DataTable 数据表格</h1>
+        <h1 class="text-2xl font-semibold tracking-tight">
+          DataTable 数据表格
+        </h1>
         <p class="text-muted-foreground mt-1.5">
           灵活的数据表格组件，支持多种配置方式
         </p>
@@ -319,7 +489,9 @@ meta:
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-7 gap-6">
           <!-- 基础配置 -->
           <div class="space-y-4">
-            <h4 class="text-sm font-medium text-muted-foreground flex items-center gap-2">
+            <h4
+              class="text-sm font-medium text-muted-foreground flex items-center gap-2"
+            >
               <Icon icon="lucide:settings-2" class="size-4" />
               基础配置
             </h4>
@@ -372,7 +544,9 @@ meta:
 
           <!-- 行选择 -->
           <div class="space-y-4">
-            <h4 class="text-sm font-medium text-muted-foreground flex items-center gap-2">
+            <h4
+              class="text-sm font-medium text-muted-foreground flex items-center gap-2"
+            >
               <Icon icon="lucide:check-square" class="size-4" />
               行选择
             </h4>
@@ -419,7 +593,9 @@ meta:
 
           <!-- 行事件 -->
           <div class="space-y-4">
-            <h4 class="text-sm font-medium text-muted-foreground flex items-center gap-2">
+            <h4
+              class="text-sm font-medium text-muted-foreground flex items-center gap-2"
+            >
               <Icon icon="lucide:mouse-pointer-click" class="size-4" />
               行事件
             </h4>
@@ -436,7 +612,9 @@ meta:
               >
                 <div class="text-muted-foreground text-xs">点击的行:</div>
                 <div class="font-medium">{{ clickedRow.name }}</div>
-                <div class="text-muted-foreground text-xs">{{ clickedRow.email }}</div>
+                <div class="text-muted-foreground text-xs">
+                  {{ clickedRow.email }}
+                </div>
               </div>
               <div
                 v-else
@@ -449,7 +627,9 @@ meta:
 
           <!-- 分页配置 -->
           <div class="space-y-4">
-            <h4 class="text-sm font-medium text-muted-foreground flex items-center gap-2">
+            <h4
+              class="text-sm font-medium text-muted-foreground flex items-center gap-2"
+            >
               <Icon icon="lucide:grip-horizontal" class="size-4" />
               分页
             </h4>
@@ -462,7 +642,10 @@ meta:
 
               <div class="flex items-center gap-3">
                 <Label class="w-16 text-muted-foreground">位置</Label>
-                <Select v-model="paginationPosition" :disabled="!enablePagination">
+                <Select
+                  v-model="paginationPosition"
+                  :disabled="!enablePagination"
+                >
                   <SelectTrigger class="w-full">
                     <SelectValue placeholder="选择位置" />
                   </SelectTrigger>
@@ -484,9 +667,13 @@ meta:
                 远程模式下不分页、不排序，由外部 API 处理
               </p>
 
-              <div v-if="enablePagination && !remoteMode" class="flex items-center gap-2 pt-1">
+              <div
+                v-if="enablePagination && !remoteMode"
+                class="flex items-center gap-2 pt-1"
+              >
                 <Badge variant="outline" class="font-normal">
-                  第 {{ paginationPage }} / {{ Math.ceil(data.length / paginationPageSize) }} 页
+                  第 {{ paginationPage }} /
+                  {{ Math.ceil(data.length / paginationPageSize) }} 页
                 </Badge>
               </div>
             </div>
@@ -494,7 +681,9 @@ meta:
 
           <!-- 排序配置 -->
           <div class="space-y-4">
-            <h4 class="text-sm font-medium text-muted-foreground flex items-center gap-2">
+            <h4
+              class="text-sm font-medium text-muted-foreground flex items-center gap-2"
+            >
               <Icon icon="lucide:arrow-up-down" class="size-4" />
               排序
             </h4>
@@ -517,7 +706,8 @@ meta:
 
               <div v-if="currentSort" class="flex items-center gap-2 pt-1">
                 <Badge variant="outline" class="font-normal">
-                  {{ currentSort.field }}: {{ currentSort.order === 'ascend' ? '升序' : '降序' }}
+                  {{ currentSort.field }}:
+                  {{ currentSort.order === "ascend" ? "升序" : "降序" }}
                 </Badge>
                 <Button
                   variant="ghost"
@@ -535,20 +725,22 @@ meta:
 
           <!-- 行展开 -->
           <div class="space-y-4">
-            <h4 class="text-sm font-medium text-muted-foreground flex items-center gap-2">
+            <h4
+              class="text-sm font-medium text-muted-foreground flex items-center gap-2"
+            >
               <Icon icon="lucide:chevrons-down" class="size-4" />
               行展开
             </h4>
 
             <div class="space-y-3">
-              <label class="flex items-center gap-2 cursor-pointer">
-                <Checkbox v-model="enableExpandable" />
-                <span class="text-sm">启用行展开</span>
-              </label>
+              <p class="text-xs text-muted-foreground">
+                <Icon icon="lucide:info" class="size-3 inline mr-1" />
+                提供 expandedRow 插槽即启用，rowExpandable 控制可展开行
+              </p>
 
               <p class="text-xs text-muted-foreground">
                 <Icon icon="lucide:info" class="size-3 inline mr-1" />
-                管理员角色行不可展开
+                管理员角色行不可展开（示例配置）
               </p>
 
               <label class="flex items-center gap-2 cursor-pointer">
@@ -584,7 +776,9 @@ meta:
 
           <!-- 滚动配置 -->
           <div class="space-y-4">
-            <h4 class="text-sm font-medium text-muted-foreground flex items-center gap-2">
+            <h4
+              class="text-sm font-medium text-muted-foreground flex items-center gap-2"
+            >
               <Icon icon="lucide:scroll" class="size-4" />
               滚动
             </h4>
@@ -655,7 +849,10 @@ meta:
           <!-- 自定义空数据状态 -->
           <template #empty>
             <div class="flex flex-col items-center gap-3 py-8">
-              <Icon icon="lucide:users" class="size-12 text-muted-foreground/50" />
+              <Icon
+                icon="lucide:users"
+                class="size-12 text-muted-foreground/50"
+              />
               <div class="text-muted-foreground">暂无用户数据</div>
               <Button size="sm">添加用户</Button>
             </div>
@@ -725,10 +922,12 @@ meta:
   :pagination="{{ enablePagination ? '{ position: \'' + paginationPosition + '\' }' : 'false' }}"
   :sort="{{ currentSort ? '{ field: \'' + currentSort.field + '\', order: \'' + currentSort.order + '\' }' : 'undefined' }}"
   :remote="{{ remoteMode }}"
-  :expandable="{{ enableExpandable ? `{ rowExpandable: (row) => row.role !== 'admin', keepExpanded: ${keepExpanded} }` : 'undefined' }}"
+  :expandable="{ rowExpandable: (row) => row.role !== 'admin', keepExpanded: {{ keepExpanded }} }"
   :scroll="{{ enableScrollY ? '{ y: ' + scrollYValue + ' }' : 'undefined' }}"
   :custom-row="getRowEvents"
-/&gt;</code></pre>
+&gt;
+  &lt;template #expandedRow=&quot;{ row }&quot;&gt;...&lt;/template&gt;
+&lt;/DataTable&gt;</code></pre>
       </CardContent>
     </Card>
   </div>
