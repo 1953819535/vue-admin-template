@@ -3,13 +3,12 @@
  * DataTable 交互式示例
  * 包含所有配置功能，可实时修改
  */
-import { ref, computed } from "vue";
+import { ref, computed, defineComponent } from "vue";
 import { Icon } from "@iconify/vue";
 import { DataTable } from "@/components/shared/data-table";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Label } from "@/components/ui/label";
 import {
   Card,
   CardContent,
@@ -99,6 +98,44 @@ const clickedRow = ref<User | null>(null);
 const enableExpandable = ref(false);
 const keepExpanded = ref(false);
 const expandedRowKeys = ref<(string | number)[]>([]);
+
+// 清空展开
+function clearExpanded() {
+  expandedRowKeys.value = [];
+}
+
+// 展开行内容组件（用于演示缓存效果）
+const ExpandedRowContent = defineComponent({
+  props: { row: { type: Object as () => User, required: true } },
+  setup(props) {
+    // 组件创建时生成随机数，缓存模式下不会重新创建
+    const renderId = Math.random().toFixed(6);
+    return () => (
+      <div class="p-4 bg-muted/30 rounded-lg border space-y-4">
+        <div class={keepExpanded.value ? 'flex items-center gap-2 text-xs text-primary' : 'flex items-center gap-2 text-xs text-muted-foreground'}>
+          <Icon icon={keepExpanded.value ? 'lucide:cache' : 'lucide:trash-2'} class="size-3.5" />
+          <span>{keepExpanded.value ? '缓存已开启：收起后再展开，数字不变' : '缓存已关闭：收起后再展开，数字会变化'}</span>
+        </div>
+        <div class="flex items-start gap-4">
+          <div class="flex-1">
+            <h4 class="font-medium mb-2 flex items-center gap-2">
+              <Icon icon="lucide:user" class="size-4" />
+              {props.row.name} 详情
+            </h4>
+            <p class="text-sm text-muted-foreground mb-3">{props.row.description}</p>
+          </div>
+        </div>
+        <div class="flex items-center gap-4 pt-2 border-t">
+          <span class="text-xs text-muted-foreground">渲染标识：</span>
+          <Badge variant="outline" class="font-mono">{renderId}</Badge>
+          <span class="text-xs text-muted-foreground">
+            （{keepExpanded.value ? '缓存开启，数字不变' : '缓存关闭，每次展开数字变化'}）
+          </span>
+        </div>
+      </div>
+    );
+  },
+});
 
 // 滚动
 const enableScrollY = ref(false);
@@ -239,11 +276,6 @@ function clearSelection() {
 // 行展开变化
 function handleExpandedChange(keys: (string | number)[]) {
   expandedRowKeys.value = keys;
-}
-
-// 清空展开
-function clearExpanded() {
-  expandedRowKeys.value = [];
 }
 
 // 显示数据
@@ -526,7 +558,12 @@ meta:
 
               <p class="text-xs text-muted-foreground">
                 <Icon icon="lucide:info" class="size-3 inline mr-1" />
-                开启后关闭展开不销毁，适合复杂表单场景
+                开启后收起不销毁内容，再次展开时表单数据保留
+              </p>
+
+              <p class="text-xs text-primary/80">
+                <Icon icon="lucide:lightbulb" class="size-3 inline mr-1" />
+                测试方法：展开某行 → 填写表单 → 收起 → 再展开，对比差异
               </p>
 
               <div class="flex items-center gap-2 pt-1">
@@ -539,7 +576,7 @@ meta:
                   :disabled="expandedRowKeys.length === 0"
                   @click="clearExpanded"
                 >
-                  清空
+                  收起全部
                 </Button>
               </div>
             </div>
@@ -612,30 +649,7 @@ meta:
         >
           <!-- 自定义展开行 -->
           <template #expandedRow="{ row }">
-            <div class="p-4 bg-muted/30 rounded-lg border">
-              <div class="flex items-start gap-4">
-                <div class="flex-1">
-                  <h4 class="font-medium mb-2 flex items-center gap-2">
-                    <Icon icon="lucide:user" class="size-4" />
-                    {{ row.name }} 详情
-                  </h4>
-                  <p class="text-sm text-muted-foreground mb-3">{{ row.description }}</p>
-                  <div class="grid grid-cols-2 gap-2 text-sm">
-                    <div>
-                      <span class="text-muted-foreground">邮箱：</span>
-                      <span>{{ row.email }}</span>
-                    </div>
-                    <div>
-                      <span class="text-muted-foreground">创建时间：</span>
-                      <span>{{ row.createTime }}</span>
-                    </div>
-                  </div>
-                </div>
-                <div class="shrink-0">
-                  <Button size="sm" variant="outline">查看详情</Button>
-                </div>
-              </div>
-            </div>
+            <ExpandedRowContent :row="row" />
           </template>
 
           <!-- 自定义空数据状态 -->
