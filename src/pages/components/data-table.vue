@@ -310,7 +310,11 @@ const ExpandedRowContent = defineComponent({
 
 // 滚动
 const enableScrollY = ref(false);
-const scrollYValue = ref<string>("300");
+const scrollYValue = ref<string>("500");
+const enableScrollX = ref(false);
+
+// 固定列
+const enableFixedColumns = ref(false);
 
 // ========== 列配置 ==========
 
@@ -321,16 +325,19 @@ const columns = computed<ColumnConfig<User>[]>(() => [
     width: 80,
     align: "center",
     sortable: enableSort.value,
+    fixed: enableFixedColumns.value ? "left" : undefined,
   },
   {
     key: "name",
     title: "用户名",
+    width: enableFixedColumns.value ? 120 : undefined,
     align: "center",
     sortable: enableSort.value,
   },
   {
     key: "email",
     title: "邮箱",
+    width: enableFixedColumns.value ? 200 : undefined,
     headerRender: () => (
       <div class="flex items-center justify-center gap-1">
         <Icon icon="lucide:mail" class="size-4" />
@@ -342,23 +349,32 @@ const columns = computed<ColumnConfig<User>[]>(() => [
   {
     key: "role",
     title: "角色",
+    width: enableFixedColumns.value ? 100 : undefined,
     align: "center",
   },
   {
     key: "status",
     title: "状态",
+    width: enableFixedColumns.value ? 100 : undefined,
     align: "center",
   },
   {
     key: "createTime",
     title: "创建时间",
+    width: enableFixedColumns.value ? 150 : undefined,
     sortable: enableSort.value,
+  },
+  {
+    key: "description",
+    title: "描述",
+    width: enableFixedColumns.value ? 250 : undefined,
   },
   {
     key: "action",
     title: "操作",
     width: 120,
     align: "center",
+    fixed: enableFixedColumns.value ? "right" : undefined,
   },
 ]);
 
@@ -400,9 +416,10 @@ const expandableConfig = computed<ExpandableConfig<User>>(() => ({
 
 // 滚动配置
 const scrollConfig = computed<ScrollConfig | undefined>(() => {
-  if (!enableScrollY.value) return undefined;
+  if (!enableScrollY.value && !enableScrollX.value) return undefined;
   return {
-    y: parseInt(scrollYValue.value),
+    y: enableScrollY.value ? parseInt(scrollYValue.value) : undefined,
+    x: enableScrollX.value,
   };
 });
 
@@ -797,16 +814,40 @@ meta:
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="200">200px</SelectItem>
-                    <SelectItem value="300">300px</SelectItem>
-                    <SelectItem value="400">400px</SelectItem>
                     <SelectItem value="500">500px</SelectItem>
+                    <SelectItem value="700">700px</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
 
+              <label class="flex items-center gap-2 cursor-pointer">
+                <Checkbox v-model="enableScrollX" />
+                <span class="text-sm">横向滚动</span>
+              </label>
+
               <p class="text-xs text-muted-foreground">
                 <Icon icon="lucide:info" class="size-3 inline mr-1" />
-                设置高度后表头固定，内容滚动
+                开启后列宽度固定，超出容器时横向滚动
+              </p>
+
+              <p class="text-xs text-muted-foreground">
+                <Icon icon="lucide:info" class="size-3 inline mr-1" />
+                关闭时列宽度自适应容器，不会滚动
+              </p>
+
+              <label class="flex items-center gap-2 cursor-pointer">
+                <Checkbox v-model="enableFixedColumns" />
+                <span class="text-sm">固定列</span>
+              </label>
+
+              <p class="text-xs text-muted-foreground">
+                <Icon icon="lucide:info" class="size-3 inline mr-1" />
+                开启后 ID 列固定左侧，操作列固定右侧
+              </p>
+
+              <p class="text-xs text-primary/80">
+                <Icon icon="lucide:lightbulb" class="size-3 inline mr-1" />
+                固定列需同时开启横向滚动
               </p>
             </div>
           </div>

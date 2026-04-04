@@ -300,6 +300,94 @@ const hasStickyHeader = computed(() => !!scrollConfig.value.y);
 
 const scrollYStyle = computed(() => toPx(scrollConfig.value.y));
 
+// 固定列位置常量
+const FIXED_POSITION = {
+  LEFT: "left",
+  RIGHT: "right",
+} as const;
+
+// 选择列/展开列宽度 (对应 Tailwind w-12 = 48px)
+const SELECTION_COLUMN_WIDTH = 48;
+
+const hasFixedColumns = computed(
+  () => props.columns.some((col) => col.fixed === FIXED_POSITION.LEFT || col.fixed === FIXED_POSITION.RIGHT),
+);
+
+const hasHorizontalScroll = computed(
+  () => scrollConfig.value.x === true || hasFixedColumns.value,
+);
+
+const leftOffsets = computed(() => {
+  const offsets: Map<string, number> = new Map();
+  let offset = 0;
+
+  if (hasSelection.value) {
+    offset += SELECTION_COLUMN_WIDTH;
+  }
+  if (hasExpandable.value) {
+    offset += SELECTION_COLUMN_WIDTH;
+  }
+
+  for (const col of props.columns) {
+    if (col.fixed === FIXED_POSITION.LEFT) {
+      offsets.set(col.key, offset);
+      offset += Number(col.width) || 0;
+    }
+  }
+  return offsets;
+});
+
+const rightOffsets = computed(() => {
+  const offsets: Map<string, number> = new Map();
+  let offset = 0;
+
+  for (let i = props.columns.length - 1; i >= 0; i--) {
+    const col = props.columns[i];
+    if (col.fixed === FIXED_POSITION.RIGHT) {
+      offsets.set(col.key, offset);
+      offset += Number(col.width) || 0;
+    }
+  }
+  return offsets;
+});
+
+// 预计算所有列的固定样式，避免模板中重复调用
+const columnFixedStyles = computed(() => {
+  const styles = new Map<string, Record<string, string>>();
+  for (const col of props.columns) {
+    if (col.fixed === FIXED_POSITION.LEFT) {
+      const offset = leftOffsets.value.get(col.key) ?? 0;
+      styles.set(col.key, { left: `${offset}px` });
+    } else if (col.fixed === FIXED_POSITION.RIGHT) {
+      const offset = rightOffsets.value.get(col.key) ?? 0;
+      styles.set(col.key, { right: `${offset}px` });
+    }
+  }
+  return styles;
+});
+
+// 预计算所有列的宽度样式
+const columnWidthStyles = computed(() => {
+  if (!hasHorizontalScroll.value) return new Map<string, { width: string }>();
+  const styles = new Map<string, { width: string }>();
+  for (const col of props.columns) {
+    if (col.width) {
+      const widthPx = toPx(col.width);
+      if (widthPx) {
+        styles.set(col.key, { width: widthPx });
+      }
+    }
+  }
+  return styles;
+});
+
+// 选择列的左侧偏移类名
+const selectionColumnLeftClass = computed(() =>
+  hasHorizontalScroll.value
+    ? hasExpandable.value ? "left-12" : "left-0"
+    : "",
+);
+
 const selectedKeys = computed(() => {
   if (props.rowSelection?.selectedRowKeys !== undefined) {
     return props.rowSelection.selectedRowKeys;
@@ -498,12 +586,12 @@ const rowKeyCache = computed(() =>
   <div class="space-y-4">
     <div
       class="relative rounded-md border flex flex-col overflow-hidden data-table-scroll"
-      :class="hasStickyHeader && 'overflow-y-auto'"
+      :class="[hasStickyHeader && 'overflow-y-auto', hasHorizontalScroll && 'overflow-x-auto']"
       :style="hasStickyHeader ? { maxHeight: scrollYStyle } : undefined"
     >
       <div
         v-if="props.loading"
-        class="absolute inset-0 bg-background/80 backdrop-blur-sm flex items-center justify-center z-20"
+        class="absolute inset-0 bg-background/80 backdrop-blur-sm flex items-center justify-center z-30"
       >
         <Icon
           icon="lucide:loader-2"
@@ -522,7 +610,7 @@ const rowKeyCache = computed(() =>
       >
         <TableHeader
           v-if="props.showHeader"
-          :class="hasStickyHeader && 'sticky top-0 z-10 bg-background'"
+          :class="hasStickyHeader && 'sticky top-0 bg-background z-20'"
         >
           <TableRow :class="props.bordered && 'border-b'">
             <!-- 展开列 -->
@@ -531,7 +619,8 @@ const rowKeyCache = computed(() =>
               :class="
                 cn(
                   sizeStyle.selection,
-                  'w-12 min-w-12 max-w-12 text-center',
+                  'w-12 text-center',
+                  hasHorizontalScroll && 'min-w-12 max-w-12 sticky left-0 bg-background',
                   props.bordered && 'border-r',
                 )
               "
@@ -542,7 +631,9 @@ const rowKeyCache = computed(() =>
               :class="
                 cn(
                   sizeStyle.selection,
-                  'w-12 min-w-12 max-w-12 text-center',
+                  'w-12 text-center',
+                  hasHorizontalScroll && 'min-w-12 max-w-12 sticky bg-background',
+                  selectionColumnLeftClass,
                   props.bordered && 'border-r',
                   '[&:has([role=checkbox])]:pr-2',
                 )
@@ -583,9 +674,11 @@ const rowKeyCache = computed(() =>
                   column.sortable &&
                     'cursor-pointer select-none hover:bg-accent/50',
                   getBorderedClass(index === props.columns.length - 1),
+                  column.fixed === 'left' && 'sticky left-0 bg-background',
+                  column.fixed === 'right' && 'sticky right-0 bg-background',
                 )
               "
-              :style="{ width: toPx(column.width) }"
+              :style="{ ...columnWidthStyles.get(column.key), ...columnFixedStyles.get(column.key) }"
               @click="column.sortable && handleSortClick(column)"
             >
               <div
@@ -661,7 +754,8 @@ const rowKeyCache = computed(() =>
                   :class="
                     cn(
                       sizeStyle.selection,
-                      'w-12 min-w-12 max-w-12 text-center',
+                      'w-12 text-center',
+                      hasHorizontalScroll && 'min-w-12 max-w-12 sticky left-0 bg-background',
                       props.bordered && 'border-r',
                     )
                   "
@@ -690,7 +784,9 @@ const rowKeyCache = computed(() =>
                   :class="
                     cn(
                       sizeStyle.selection,
-                      'w-12 min-w-12 max-w-12 text-center',
+                      'w-12 text-center',
+                      hasHorizontalScroll && 'min-w-12 max-w-12 sticky bg-background',
+                      selectionColumnLeftClass,
                       props.bordered && 'border-r',
                       '[&:has([role=checkbox])]:pr-2',
                     )
@@ -732,8 +828,11 @@ const rowKeyCache = computed(() =>
                       sizeStyle.cell,
                       getAlignClass(column.align),
                       getBorderedClass(colIndex === props.columns.length - 1),
+                      column.fixed === FIXED_POSITION.LEFT && 'sticky left-0 bg-background',
+                      column.fixed === FIXED_POSITION.RIGHT && 'sticky right-0 bg-background',
                     )
                   "
+                  :style="{ ...columnWidthStyles.get(column.key), ...columnFixedStyles.get(column.key) }"
                 >
                   <component :is="() => renderCell(column, row, rowIndex)" />
                 </TableCell>

@@ -55,6 +55,8 @@ export interface ExpandableConfig<T = any> {
 export interface ScrollConfig {
   /** 纵向滚动高度，设置后表头固定 */
   y?: number | string
+  /** 横向滚动，true 启用横向滚动，false 或不设置则压缩宽度防止滚动 */
+  x?: boolean
 }
 
 export interface ColumnConfig<T = any> {
@@ -70,6 +72,8 @@ export interface ColumnConfig<T = any> {
   sortFn?: (a: T, b: T, sortOrder: SortOrder) => number
   /** 支持的排序方向，默认 ['ascend', 'descend'] */
   sortDirections?: SortOrder[]
+  /** 固定列位置，left 固定在左侧，right 固定在右侧 */
+  fixed?: 'left' | 'right'
 }
 
 export type TableSize = 'xs' | 'sm' | 'md' | 'lg'
