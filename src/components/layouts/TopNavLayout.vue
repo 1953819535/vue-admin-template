@@ -2,6 +2,7 @@
 import Logo from '@/components/app/Logo.vue'
 import Actions from '@/components/app/Actions.vue'
 import HorizontalMenu from '@/components/app/HorizontalMenu.vue'
+import Announcement from '@/components/app/Announcement.vue'
 </script>
 
 <template>
@@ -13,6 +14,8 @@ import HorizontalMenu from '@/components/app/HorizontalMenu.vue'
       </nav>
       <Actions />
     </header>
+    <!-- 公告栏 -->
+    <Announcement />
     <main class="flex-1 overflow-auto bg-muted/30 p-6">
       <slot />
     </main>

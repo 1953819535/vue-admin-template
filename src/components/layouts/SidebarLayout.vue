@@ -2,6 +2,7 @@
 import Logo from "@/components/app/Logo.vue";
 import Actions from "@/components/app/Actions.vue";
 import VerticalMenu from "@/components/app/VerticalMenu.vue";
+import Announcement from "@/components/app/Announcement.vue";
 </script>
 
 <template>
@@ -26,6 +27,9 @@ import VerticalMenu from "@/components/app/VerticalMenu.vue";
 
     <!-- 主内容区 -->
     <main class="flex-1 flex flex-col overflow-hidden min-w-0 bg-muted/30">
+      <!-- 公告栏 -->
+      <Announcement />
+
       <div class="flex-1 overflow-auto p-6">
         <slot />
       </div>
