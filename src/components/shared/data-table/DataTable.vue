@@ -430,6 +430,41 @@ function getBorderedClass(isLast: boolean) {
   return props.bordered && !isLast ? "border-r" : "";
 }
 
+// 获取固定列的边框样式（使用 box-shadow 代替 border）
+function getFixedBorderedClass(column: ColumnConfig, isLast: boolean) {
+  if (!props.bordered) return "";
+
+  // 无横向滚动时，使用普通 border
+  if (!hasHorizontalScroll.value) {
+    return isLast ? "" : "border-r";
+  }
+
+  const rightFixedColumns = props.columns.filter((col) => col.fixed === FIXED_POSITION.RIGHT);
+
+  // 左固定列：右边框
+  if (column.fixed === FIXED_POSITION.LEFT) {
+    return "shadow-[inset_-1px_0_0_var(--border)]";
+  }
+
+  // 右固定列
+  if (column.fixed === FIXED_POSITION.RIGHT) {
+    const isFirstRightFixed = column.key === rightFixedColumns[0]?.key;
+
+    // 第一个右固定列：左边框（分割线）
+    if (isFirstRightFixed) {
+      // 如果不是最后一列，还需要右边框
+      return isLast
+        ? "shadow-[inset_1px_0_0_var(--border)]"
+        : "shadow-[inset_1px_0_0_var(--border),inset_-1px_0_0_var(--border)]";
+    }
+
+    // 其他右固定列：如果不是最后一列，需要右边框
+    return isLast ? "" : "shadow-[inset_-1px_0_0_var(--border)]";
+  }
+
+  return "";
+}
+
 function getRowKey(row: T, index: number): string | number {
   if (typeof props.rowKey === "function") {
     return props.rowKey(row);
@@ -612,7 +647,7 @@ const rowKeyCache = computed(() =>
           v-if="props.showHeader"
           :class="hasStickyHeader && 'sticky top-0 bg-background z-20'"
         >
-          <TableRow :class="props.bordered && 'border-b'">
+          <TableRow :class="cn(props.bordered && (hasStickyHeader ? 'shadow-[inset_0_-1px_0_var(--border)]' : 'border-b'), 'hover:!bg-transparent')">
             <!-- 展开列 -->
             <TableHead
               v-if="hasExpandable"
@@ -621,7 +656,7 @@ const rowKeyCache = computed(() =>
                   sizeStyle.selection,
                   'w-12 text-center',
                   hasHorizontalScroll && 'min-w-12 max-w-12 sticky left-0 bg-background',
-                  props.bordered && 'border-r',
+                  props.bordered && (hasHorizontalScroll ? 'shadow-[inset_-1px_0_0_var(--border)]' : 'border-r'),
                 )
               "
             />
@@ -634,7 +669,7 @@ const rowKeyCache = computed(() =>
                   'w-12 text-center',
                   hasHorizontalScroll && 'min-w-12 max-w-12 sticky bg-background',
                   selectionColumnLeftClass,
-                  props.bordered && 'border-r',
+                  props.bordered && (hasHorizontalScroll ? 'shadow-[inset_-1px_0_0_var(--border)]' : 'border-r'),
                   '[&:has([role=checkbox])]:pr-2',
                 )
               "
@@ -673,7 +708,7 @@ const rowKeyCache = computed(() =>
                   getAlignClass(column.align),
                   column.sortable &&
                     'cursor-pointer select-none hover:bg-accent/50',
-                  getBorderedClass(index === props.columns.length - 1),
+                  column.fixed ? getFixedBorderedClass(column, index === props.columns.length - 1) : getBorderedClass(index === props.columns.length - 1),
                   column.fixed === 'left' && 'sticky left-0 bg-background',
                   column.fixed === 'right' && 'sticky right-0 bg-background',
                 )
@@ -756,7 +791,7 @@ const rowKeyCache = computed(() =>
                       sizeStyle.selection,
                       'w-12 text-center',
                       hasHorizontalScroll && 'min-w-12 max-w-12 sticky left-0 bg-background',
-                      props.bordered && 'border-r',
+                      props.bordered && (hasHorizontalScroll ? 'shadow-[inset_-1px_0_0_var(--border)]' : 'border-r'),
                     )
                   "
                 >
@@ -787,7 +822,7 @@ const rowKeyCache = computed(() =>
                       'w-12 text-center',
                       hasHorizontalScroll && 'min-w-12 max-w-12 sticky bg-background',
                       selectionColumnLeftClass,
-                      props.bordered && 'border-r',
+                      props.bordered && (hasHorizontalScroll ? 'shadow-[inset_-1px_0_0_var(--border)]' : 'border-r'),
                       '[&:has([role=checkbox])]:pr-2',
                     )
                   "
@@ -827,7 +862,7 @@ const rowKeyCache = computed(() =>
                     cn(
                       sizeStyle.cell,
                       getAlignClass(column.align),
-                      getBorderedClass(colIndex === props.columns.length - 1),
+                      column.fixed ? getFixedBorderedClass(column, colIndex === props.columns.length - 1) : getBorderedClass(colIndex === props.columns.length - 1),
                       column.fixed === FIXED_POSITION.LEFT && 'sticky left-0 bg-background',
                       column.fixed === FIXED_POSITION.RIGHT && 'sticky right-0 bg-background',
                     )
@@ -852,7 +887,7 @@ const rowKeyCache = computed(() =>
                   expandedKeysSet.has(rowKeyCache[rowIndex])
                 "
                 :key="'expanded-' + rowKeyCache[rowIndex]"
-                :class="cn('bg-accent/10', props.bordered && 'border-b')"
+                :class="cn('bg-accent/10 hover:!bg-accent/10', props.bordered && 'border-b')"
               >
                 <TableCell :colspan="totalColumns" class="p-4">
                   <component
