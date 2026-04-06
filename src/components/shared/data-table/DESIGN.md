@@ -133,48 +133,45 @@ const rightOffsets = computed(() => {
 
 ## 四、关键技术解决方案
 
-### 4.1 固定元素边框问题
+### 4.1 边框实现方案
 
-**问题描述**：
+**背景问题**：
 当表格使用 `border-collapse: collapse`（边框合并）且单元格使用 `position: sticky` 时，滚动时固定列的边框会消失。这是因为浏览器将共享边框"分配"给了非固定的滚动元素。
 
 **解决方案**：
-使用 `box-shadow: inset` 代替 `border` 绘制固定元素的边框。
+统一使用 `box-shadow: inset` 代替 `border` 实现所有单元格的右边框，确保视觉一致且避免 sticky 边框消失问题。
 
 ```ts
+// 统一的单元格边框样式
+const borderedCellClass = computed(() =>
+  props.bordered ? "shadow-[inset_-1px_0_0_var(--border)]" : ""
+);
+
+// 固定列的边框样式（右固定列第一个需要左边框分割线）
 function getFixedBorderedClass(column: ColumnConfig, isLast: boolean) {
   if (!props.bordered) return "";
 
-  // 无横向滚动时，使用普通 border
-  if (!hasHorizontalScroll.value) {
-    return isLast ? "" : "border-r";
+  // 右固定列的第一个：需要左边框作为分割线
+  if (column.fixed === 'right' && column.key === firstRightFixedKey.value) {
+    return isLast
+      ? "shadow-[inset_1px_0_0_var(--border)]"
+      : "shadow-[inset_1px_0_0_var(--border),inset_-1px_0_0_var(--border)]";
   }
 
-  // 左固定列：右边框
-  if (column.fixed === 'left') {
-    return "shadow-[inset_-1px_0_0_var(--border)]";
-  }
-
-  // 右固定列
-  if (column.fixed === 'right') {
-    // 第一个右固定列：左边框（分割线）
-    if (isFirstRightFixed) {
-      return isLast
-        ? "shadow-[inset_1px_0_0_var(--border)]"
-        : "shadow-[inset_1px_0_0_var(--border),inset_-1px_0_0_var(--border)]";
-    }
-    // 其他右固定列
-    return isLast ? "" : "shadow-[inset_-1px_0_0_var(--border)]";
-  }
-
-  return "";
+  // 其他列：非最后一列显示右边框
+  return isLast ? "" : "shadow-[inset_-1px_0_0_var(--border)]";
 }
 ```
 
 **应用范围**：
+- 所有数据列单元格（表头和表体）
+- 展开列/选择列
 - 固定表头行的底部边框
-- 展开列/选择列（sticky 时）的右边框
-- 固定数据列的边框
+
+**优势**：
+- 边框视觉完全一致对齐
+- 无需区分 sticky/非 sticky 条件
+- 避免 border-collapse 与 sticky 的兼容问题
 
 ### 4.2 表头 hover 高亮问题
 

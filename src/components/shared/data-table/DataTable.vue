@@ -65,9 +65,8 @@ const internalPageSize = ref(10);
 const internalSort = ref<SortInfo | undefined>(undefined);
 
 const paginationConfig = computed<PaginationConfig>(() => {
-  if (props.pagination === false) return {};
-  if (props.pagination === true) return {};
-  return props.pagination;
+  if (typeof props.pagination === "object") return props.pagination;
+  return {};
 });
 
 const sortConfig = computed(() => {
@@ -155,13 +154,8 @@ function handlePageSizeChange(pageSize: number) {
   currentPageSize.value = pageSize;
 }
 
-function getColumnSortOrder(
-  column: ColumnConfig,
-): "ascend" | "descend" | undefined {
-  if (!sortConfig.value || sortConfig.value.field !== column.key) {
-    return undefined;
-  }
-  return sortConfig.value.order;
+function getColumnSortOrder(column: ColumnConfig): "ascend" | "descend" | undefined {
+  return sortConfig.value?.field === column.key ? sortConfig.value.order : undefined;
 }
 
 function getNextSortOrder(
@@ -300,17 +294,11 @@ const hasStickyHeader = computed(() => !!scrollConfig.value.y);
 
 const scrollYStyle = computed(() => toPx(scrollConfig.value.y));
 
-// 固定列位置常量
-const FIXED_POSITION = {
-  LEFT: "left",
-  RIGHT: "right",
-} as const;
-
 // 选择列/展开列宽度 (对应 Tailwind w-12 = 48px)
 const SELECTION_COLUMN_WIDTH = 48;
 
 const hasFixedColumns = computed(
-  () => props.columns.some((col) => col.fixed === FIXED_POSITION.LEFT || col.fixed === FIXED_POSITION.RIGHT),
+  () => props.columns.some((col) => col.fixed === "left" || col.fixed === "right"),
 );
 
 const hasHorizontalScroll = computed(
@@ -329,7 +317,7 @@ const leftOffsets = computed(() => {
   }
 
   for (const col of props.columns) {
-    if (col.fixed === FIXED_POSITION.LEFT) {
+    if (col.fixed === 'left') {
       offsets.set(col.key, offset);
       offset += Number(col.width) || 0;
     }
@@ -343,7 +331,7 @@ const rightOffsets = computed(() => {
 
   for (let i = props.columns.length - 1; i >= 0; i--) {
     const col = props.columns[i];
-    if (col.fixed === FIXED_POSITION.RIGHT) {
+    if (col.fixed === 'right') {
       offsets.set(col.key, offset);
       offset += Number(col.width) || 0;
     }
@@ -355,10 +343,10 @@ const rightOffsets = computed(() => {
 const columnFixedStyles = computed(() => {
   const styles = new Map<string, Record<string, string>>();
   for (const col of props.columns) {
-    if (col.fixed === FIXED_POSITION.LEFT) {
+    if (col.fixed === 'left') {
       const offset = leftOffsets.value.get(col.key) ?? 0;
       styles.set(col.key, { left: `${offset}px` });
-    } else if (col.fixed === FIXED_POSITION.RIGHT) {
+    } else if (col.fixed === 'right') {
       const offset = rightOffsets.value.get(col.key) ?? 0;
       styles.set(col.key, { right: `${offset}px` });
     }
@@ -382,11 +370,10 @@ const columnWidthStyles = computed(() => {
 });
 
 // 选择列的左侧偏移类名
-const selectionColumnLeftClass = computed(() =>
-  hasHorizontalScroll.value
-    ? hasExpandable.value ? "left-12" : "left-0"
-    : "",
-);
+const selectionColumnLeftClass = computed(() => {
+  if (!hasHorizontalScroll.value) return "";
+  return hasExpandable.value ? "left-12" : "left-0";
+});
 
 const selectedKeys = computed(() => {
   if (props.rowSelection?.selectedRowKeys !== undefined) {
@@ -426,43 +413,53 @@ function getAlignClass(align?: "left" | "center" | "right") {
     : "";
 }
 
-function getBorderedClass(isLast: boolean) {
-  return props.bordered && !isLast ? "border-r" : "";
-}
+// 统一的单元格边框样式（使用阴影代替 border，避免 border-collapse 与 sticky 冲突）
+const borderedCellClass = computed(() =>
+  props.bordered ? "shadow-[inset_-1px_0_0_var(--border)]" : ""
+);
 
-// 获取固定列的边框样式（使用 box-shadow 代替 border）
+// 预计算展开列样式
+const expandColumnClass = computed(() =>
+  cn(
+    sizeStyle.value.selection,
+    "w-12 text-center",
+    hasHorizontalScroll.value && "min-w-12 max-w-12 sticky left-0 bg-background",
+    borderedCellClass.value,
+  )
+);
+
+// 预计算选择列样式
+const selectionColumnClass = computed(() =>
+  cn(
+    sizeStyle.value.selection,
+    "w-12 text-center",
+    hasHorizontalScroll.value && "min-w-12 max-w-12 sticky bg-background",
+    selectionColumnLeftClass.value,
+    borderedCellClass.value,
+  )
+);
+
+// 预计算右固定列列表，避免在 getFixedBorderedClass 中重复过滤
+const rightFixedColumns = computed(() =>
+  props.columns.filter((col) => col.fixed === 'right')
+);
+
+// 预计算第一个右固定列的 key
+const firstRightFixedKey = computed(() => rightFixedColumns.value[0]?.key);
+
+// 固定列的边框样式（右固定列第一个需要左边框分割线）
 function getFixedBorderedClass(column: ColumnConfig, isLast: boolean) {
   if (!props.bordered) return "";
 
-  // 无横向滚动时，使用普通 border
-  if (!hasHorizontalScroll.value) {
-    return isLast ? "" : "border-r";
+  // 右固定列的第一个：需要左边框作为分割线
+  if (column.fixed === 'right' && column.key === firstRightFixedKey.value) {
+    return isLast
+      ? "shadow-[inset_1px_0_0_var(--border)]"
+      : "shadow-[inset_1px_0_0_var(--border),inset_-1px_0_0_var(--border)]";
   }
 
-  const rightFixedColumns = props.columns.filter((col) => col.fixed === FIXED_POSITION.RIGHT);
-
-  // 左固定列：右边框
-  if (column.fixed === FIXED_POSITION.LEFT) {
-    return "shadow-[inset_-1px_0_0_var(--border)]";
-  }
-
-  // 右固定列
-  if (column.fixed === FIXED_POSITION.RIGHT) {
-    const isFirstRightFixed = column.key === rightFixedColumns[0]?.key;
-
-    // 第一个右固定列：左边框（分割线）
-    if (isFirstRightFixed) {
-      // 如果不是最后一列，还需要右边框
-      return isLast
-        ? "shadow-[inset_1px_0_0_var(--border)]"
-        : "shadow-[inset_1px_0_0_var(--border),inset_-1px_0_0_var(--border)]";
-    }
-
-    // 其他右固定列：如果不是最后一列，需要右边框
-    return isLast ? "" : "shadow-[inset_-1px_0_0_var(--border)]";
-  }
-
-  return "";
+  // 其他列：非最后一列显示右边框
+  return isLast ? "" : "shadow-[inset_-1px_0_0_var(--border)]";
 }
 
 function getRowKey(row: T, index: number): string | number {
@@ -493,6 +490,18 @@ function isRowClickable(row: T, index: number): boolean {
 
 function isRowDisabled(row: T): boolean {
   return props.rowSelection?.getCheckboxProps?.(row)?.disabled ?? false;
+}
+
+// 数据行样式计算，避免模板中复杂条件
+function getDataRowClass(row: T, rowIndex: number): string {
+  const rowKey = rowKeyCache.value[rowIndex];
+  return cn(
+    sizeStyle.value.cell,
+    props.bordered && rowIndex < paginatedData.value.length - 1 && "border-b",
+    selectedKeysSet.value.has(rowKey) && "bg-accent/50",
+    isRowClickable(row, rowIndex) && "cursor-pointer hover:bg-accent/30",
+    expandedKeysSet.value.has(rowKey) && "bg-accent/20",
+  );
 }
 
 const isSingleSelect = computed(() => props.rowSelection?.type === "single");
@@ -651,28 +660,12 @@ const rowKeyCache = computed(() =>
             <!-- 展开列 -->
             <TableHead
               v-if="hasExpandable"
-              :class="
-                cn(
-                  sizeStyle.selection,
-                  'w-12 text-center',
-                  hasHorizontalScroll && 'min-w-12 max-w-12 sticky left-0 bg-background',
-                  props.bordered && (hasHorizontalScroll ? 'shadow-[inset_-1px_0_0_var(--border)]' : 'border-r'),
-                )
-              "
+              :class="expandColumnClass"
             />
             <!-- 选择列 -->
             <TableHead
               v-if="hasSelection"
-              :class="
-                cn(
-                  sizeStyle.selection,
-                  'w-12 text-center',
-                  hasHorizontalScroll && 'min-w-12 max-w-12 sticky bg-background',
-                  selectionColumnLeftClass,
-                  props.bordered && (hasHorizontalScroll ? 'shadow-[inset_-1px_0_0_var(--border)]' : 'border-r'),
-                  '[&:has([role=checkbox])]:pr-2',
-                )
-              "
+              :class="cn(selectionColumnClass, '[&:has([role=checkbox])]:pr-2')"
             >
               <div class="flex items-center justify-center" @click.stop>
                 <Checkbox
@@ -708,7 +701,9 @@ const rowKeyCache = computed(() =>
                   getAlignClass(column.align),
                   column.sortable &&
                     'cursor-pointer select-none hover:bg-accent/50',
-                  column.fixed ? getFixedBorderedClass(column, index === props.columns.length - 1) : getBorderedClass(index === props.columns.length - 1),
+                  column.fixed
+                    ? getFixedBorderedClass(column, index === props.columns.length - 1)
+                    : (index !== props.columns.length - 1 ? borderedCellClass : ''),
                   column.fixed === 'left' && 'sticky left-0 bg-background',
                   column.fixed === 'right' && 'sticky right-0 bg-background',
                 )
@@ -760,20 +755,7 @@ const rowKeyCache = computed(() =>
             >
               <!-- 数据行 -->
               <TableRow
-                :class="
-                  cn(
-                    sizeStyle.cell,
-                    props.bordered &&
-                      rowIndex < paginatedData.length - 1 &&
-                      'border-b',
-                    selectedKeysSet.has(rowKeyCache[rowIndex]) &&
-                      'bg-accent/50',
-                    isRowClickable(row, rowIndex) &&
-                      'cursor-pointer hover:bg-accent/30',
-                    expandedKeysSet.has(rowKeyCache[rowIndex]) &&
-                      'bg-accent/20',
-                  )
-                "
+                :class="getDataRowClass(row, rowIndex)"
                 @click="handleRowEvent('onClick', row, rowIndex, $event)"
                 @dblclick="handleRowEvent('onDblclick', row, rowIndex, $event)"
                 @mouseenter="
@@ -786,14 +768,7 @@ const rowKeyCache = computed(() =>
                 <!-- 展开列 -->
                 <TableCell
                   v-if="hasExpandable"
-                  :class="
-                    cn(
-                      sizeStyle.selection,
-                      'w-12 text-center',
-                      hasHorizontalScroll && 'min-w-12 max-w-12 sticky left-0 bg-background',
-                      props.bordered && (hasHorizontalScroll ? 'shadow-[inset_-1px_0_0_var(--border)]' : 'border-r'),
-                    )
-                  "
+                  :class="expandColumnClass"
                 >
                   <div class="flex items-center justify-center">
                     <button
@@ -816,16 +791,7 @@ const rowKeyCache = computed(() =>
                 <!-- 选择列 -->
                 <TableCell
                   v-if="hasSelection"
-                  :class="
-                    cn(
-                      sizeStyle.selection,
-                      'w-12 text-center',
-                      hasHorizontalScroll && 'min-w-12 max-w-12 sticky bg-background',
-                      selectionColumnLeftClass,
-                      props.bordered && (hasHorizontalScroll ? 'shadow-[inset_-1px_0_0_var(--border)]' : 'border-r'),
-                      '[&:has([role=checkbox])]:pr-2',
-                    )
-                  "
+                  :class="cn(selectionColumnClass, '[&:has([role=checkbox])]:pr-2')"
                 >
                   <div class="flex items-center justify-center" @click.stop>
                     <RadioGroup
@@ -862,9 +828,11 @@ const rowKeyCache = computed(() =>
                     cn(
                       sizeStyle.cell,
                       getAlignClass(column.align),
-                      column.fixed ? getFixedBorderedClass(column, colIndex === props.columns.length - 1) : getBorderedClass(colIndex === props.columns.length - 1),
-                      column.fixed === FIXED_POSITION.LEFT && 'sticky left-0 bg-background',
-                      column.fixed === FIXED_POSITION.RIGHT && 'sticky right-0 bg-background',
+                      column.fixed
+                        ? getFixedBorderedClass(column, colIndex === props.columns.length - 1)
+                        : (colIndex !== props.columns.length - 1 ? borderedCellClass : ''),
+                      column.fixed === 'left' && 'sticky left-0 bg-background',
+                      column.fixed === 'right' && 'sticky right-0 bg-background',
                     )
                   "
                   :style="{ ...columnWidthStyles.get(column.key), ...columnFixedStyles.get(column.key) }"
