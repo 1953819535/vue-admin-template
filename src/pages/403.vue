@@ -7,6 +7,7 @@ meta:
   layout: blank
   title: 无权限
   menuHidden: true
+  constant: true
 </route>
 
 <template>

@@ -28,6 +28,7 @@ meta:
   title: 编辑用户
   menuHidden: true
   requiresAuth: true
+  permissions: [users:edit]
 </route>
 
 <template>

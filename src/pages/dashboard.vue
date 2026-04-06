@@ -612,3 +612,13 @@ const chartPath = computed(() => {
     </div>
   </TooltipProvider>
 </template>
+
+<route lang="yaml">
+meta:
+  layout: default
+  title: 仪表盘
+  menuTitle: 仪表盘
+  menuIcon: lucide:layout-dashboard
+  menuOrder: 1
+  requiresAuth: true
+</route>

@@ -1,12 +1,14 @@
 # Vue Admin Template
 
-一个现代化的 Vue 3 后台管理系统模板，支持多主题切换、文件路由、布局系统。
+一个现代化的 Vue 3 后台管理系统模板，支持权限控制、多主题切换、文件路由、布局系统。
 
 ## 特性
 
 - **Vue 3 + TypeScript** - 类型安全，开发体验佳
+- **权限系统** - 路由级权限控制 + 按钮级权限
+- **通知中心** - 消息通知、待办提醒
 - **文件路由** - Nuxt 风格，页面即路由
-- **布局系统** - 支持多布局切换（admin/blank）
+- **布局系统** - 支持多布局切换（侧边栏/顶部导航）
 - **多主题支持** - 内置 36 个主题风格，支持亮色/暗色/跟随系统
 - **shadcn-vue** - 高质量 UI 组件库，可定制性强
 - **Tailwind CSS 4** - 原子化 CSS，样式灵活
@@ -66,14 +68,21 @@ src/
 │   ├── app/             # 业务组件
 │   │   ├── Actions.vue      # 顶部操作栏
 │   │   ├── Logo.vue         # Logo 组件
-│   │   └── ThemeSwitcher.vue # 主题切换器
+│   │   ├── NotificationPanel.vue # 通知中心
+│   │   ├── SettingsPanel.vue     # 设置面板
+│   │   └── UserMenu.vue     # 用户菜单
 │   └── layouts/         # 布局实现组件
 │       ├── SidebarLayout.vue
 │       └── TopNavLayout.vue
+├── composables/         # 组合式函数
+│   └── useAuth.ts       # 权限 Hook
 ├── layouts/             # 布局入口
 │   ├── admin.vue        # 后台管理布局（带侧边栏）
 │   ├── blank.vue        # 空白布局（登录页等）
 │   └── default.vue      # 默认布局
+├── mock/                # Mock 数据
+│   ├── auth.ts          # 用户认证 Mock
+│   └── notification.ts  # 通知 Mock
 ├── pages/               # 页面（文件路由）
 │   ├── index.vue        # 首页（重定向到 dashboard）
 │   ├── dashboard.vue    # 仪表盘
@@ -82,7 +91,10 @@ src/
 │   └── system/          # 系统设置
 ├── stores/              # Pinia 状态管理
 │   └── modules/
-│       └── app.ts       # 应用状态（主题、模式）
+│       ├── app.ts           # 应用状态（主题、模式）
+│       ├── auth.ts          # 用户认证
+│       ├── notification.ts  # 通知状态
+│       └── route.ts         # 路由状态
 ├── themes/              # 主题配置
 │   ├── tweakcn-themes.json    # 主题数据
 │   ├── theme-names-zh.json    # 中文映射
@@ -90,6 +102,11 @@ src/
 ├── lib/                 # 工具函数
 │   └── utils.ts         # cn() 等
 ├── router/              # 路由配置
+│   ├── index.ts         # 路由实例
+│   └── guard.ts         # 路由守卫
+├── types/               # 类型定义
+│   ├── auth.d.ts        # 认证相关类型
+│   └── notification.d.ts # 通知相关类型
 ├── style.css            # 全局样式 + CSS 变量
 ├── App.vue              # 根组件
 └── main.ts              # 入口文件
@@ -114,11 +131,45 @@ src/
 ```vue
 <route lang="yaml">
 meta:
-  layout: admin
+  layout: default
   title: 用户管理
   requiresAuth: true
+  permissions: [users:list]
+  roles: [admin]
 </route>
 ```
+
+### 权限系统
+
+支持路由级和按钮级权限控制：
+
+**路由权限**：在路由元信息中配置 `roles` 或 `permissions`
+
+**按钮权限**：使用 `useAuth` Hook
+
+```vue
+<script setup>
+import { useAuth } from '@/composables/useAuth'
+const { hasAuth, hasRole } = useAuth()
+</script>
+
+<template>
+  <!-- 权限控制 -->
+  <Button v-if="hasAuth('users:add')">新增</Button>
+  <Button v-if="hasAuth('users:delete')">删除</Button>
+  
+  <!-- 角色控制 -->
+  <AdminPanel v-if="hasRole('admin')" />
+</template>
+```
+
+**测试账号**：
+
+| 用户名 | 密码 | 权限 |
+|--------|------|------|
+| admin | admin123 | 超级管理员（所有权限） |
+| editor | editor123 | 用户增删改 |
+| user | user123 | 仅查看 |
 
 ## 布局系统
 

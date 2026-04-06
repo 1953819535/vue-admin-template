@@ -23,19 +23,21 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog'
+import { useAuthStore } from '@/stores/modules/auth'
 
 const router = useRouter()
+const authStore = useAuthStore()
 const logoutDialogOpen = ref(false)
 
-// TODO: 从 authStore 获取用户信息
+// 从 authStore 获取用户信息
 const user = {
-  name: '管理员',
-  email: 'admin@example.com',
-  avatar: '',
+  name: authStore.displayName,
+  email: authStore.userInfo?.email || '',
+  avatar: authStore.userInfo?.avatar || '',
 }
 
 function handleLogout() {
-  // TODO: 清除用户认证状态（如 token、用户信息等）
+  authStore.logout()
   toast.success('已退出登录')
   router.push('/login')
 }

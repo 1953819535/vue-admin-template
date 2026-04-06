@@ -47,6 +47,7 @@ meta:
   menuIndent: true
   requiresAuth: true
   roles: [admin]
+  permissions: [system:logs]
 </route>
 
 <template>

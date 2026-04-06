@@ -476,6 +476,8 @@ meta:
   menuGroup: 组件示例
   menuGroupIcon: lucide:component
   menuOrder: 20
+  requiresAuth: true
+  roles: [admin]
 </route>
 
 <template>

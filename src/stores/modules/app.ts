@@ -6,6 +6,17 @@ export type ThemeMode = 'light' | 'dark' | 'system'
 export type ThemeName = string
 export type LayoutType = 'sidebar' | 'top-nav'
 
+/** 自定义主题数据结构 */
+export interface CustomThemeData {
+  name: string
+  cssVars: {
+    light: Record<string, string>
+    dark: Record<string, string>
+    theme?: Record<string, string>
+  }
+  rawCss: string
+}
+
 const isClient = typeof window !== 'undefined'
 
 // 所有可用主题
@@ -19,6 +30,7 @@ export const useAppStore = defineStore('app', () => {
   const currentTheme = ref<ThemeName>('vintage-paper')
   const mode = ref<ThemeMode>('system')
   const layout = ref<LayoutType>('sidebar')
+  const customTheme = ref<CustomThemeData | null>(null)
 
   const systemIsDark = ref(
     isClient
@@ -36,6 +48,15 @@ export const useAppStore = defineStore('app', () => {
   const isDark = computed(() => resolvedMode.value === 'dark')
 
   const themeData = computed(() => {
+    // 如果有自定义主题，优先使用
+    if (customTheme.value) {
+      return {
+        name: 'custom',
+        title: '自定义主题',
+        description: '用户自定义的主题配置',
+        cssVars: customTheme.value.cssVars
+      }
+    }
     return themes.find(t => t.name === currentTheme.value)
   })
 
@@ -71,7 +92,7 @@ export const useAppStore = defineStore('app', () => {
   }
 
   // 监听变化自动应用主题
-  watch([isDark, currentTheme], () => {
+  watch([isDark, currentTheme, customTheme], () => {
     applyTheme()
   }, { immediate: false })
 
@@ -91,10 +112,24 @@ export const useAppStore = defineStore('app', () => {
     layout.value = newLayout
   }
 
+  /** 设置自定义主题 */
+  const setCustomTheme = (data: CustomThemeData) => {
+    customTheme.value = data
+    currentTheme.value = 'custom'
+  }
+
+  /** 清除自定义主题 */
+  const clearCustomTheme = () => {
+    customTheme.value = null
+    // 恢复到默认主题
+    currentTheme.value = 'vintage-paper'
+  }
+
   return {
     currentTheme,
     mode,
     layout,
+    customTheme,
     resolvedMode,
     isDark,
     themeData,
@@ -104,9 +139,11 @@ export const useAppStore = defineStore('app', () => {
     setLayout,
     toggleTheme,
     applyTheme,
+    setCustomTheme,
+    clearCustomTheme,
   }
 }, {
   persist: {
-    pick: ['currentTheme', 'mode', 'layout']
+    pick: ['currentTheme', 'mode', 'layout', 'customTheme']
   }
 })

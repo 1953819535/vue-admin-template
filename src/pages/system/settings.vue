@@ -26,6 +26,7 @@ meta:
   menuIndent: true
   requiresAuth: true
   roles: [admin]
+  permissions: [system:settings]
 </route>
 
 <template>

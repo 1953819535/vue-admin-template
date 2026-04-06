@@ -24,5 +24,9 @@ declare module 'vue-router' {
     requiresAuth?: boolean
     /** 允许的角色 */
     roles?: string[]
+    /** 所需权限标识 */
+    permissions?: string[]
+    /** 常量路由（无需登录验证） */
+    constant?: boolean
   }
 }

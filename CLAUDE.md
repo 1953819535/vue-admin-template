@@ -48,10 +48,32 @@ Vue 3 后台管理系统，Vite + TypeScript + Pinia + shadcn-vue + Tailwind CSS
 ```vue
 <route lang="yaml">
 meta:
-  layout: admin
+  layout: default
   title: 用户管理
+  requiresAuth: true
+  permissions: [users:list]
+  roles: [admin]
 </route>
 ```
+
+### 权限系统
+
+**路由级权限**：通过 `meta.roles` 或 `meta.permissions` 控制
+
+**按钮级权限**：使用 `useAuth` Hook
+
+```vue
+<script setup>
+import { useAuth } from '@/composables/useAuth'
+const { hasAuth, hasRole } = useAuth()
+</script>
+
+<template>
+  <Button v-if="hasAuth('users:add')">新增</Button>
+</template>
+```
+
+**超级管理员**：拥有 `admin` 角色或 `*:*:*` 权限的用户自动拥有所有权限
 
 ### 布局系统
 

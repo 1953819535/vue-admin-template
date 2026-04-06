@@ -27,6 +27,7 @@ meta:
   menuOrder: 11
   menuIndent: true
   requiresAuth: true
+  permissions: [users:add]
 </route>
 
 <template>

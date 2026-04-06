@@ -26,6 +26,7 @@ meta:
   title: 用户详情
   menuHidden: true
   requiresAuth: true
+  permissions: [users:view]
 </route>
 
 <template>

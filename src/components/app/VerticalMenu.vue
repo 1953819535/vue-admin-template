@@ -13,9 +13,8 @@ const { isActive, isGroupActive } = useNavActive()
 const expandedGroups = ref<Set<string>>(new Set())
 
 watch(
-  () => groups,
+  groups,
   (groups) => {
-    if (!groups) return
     groups.forEach((group: NavGroup) => {
       if (isGroupActive(group)) {
         expandedGroups.value.add(group.title)

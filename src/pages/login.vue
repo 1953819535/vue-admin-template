@@ -1,14 +1,21 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted } from 'vue'
-import { useRouter } from 'vue-router'
+import { useRouter, useRoute } from 'vue-router'
 import { toast } from 'vue-sonner'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { useAuthStore } from '@/stores/modules/auth'
+import { TEST_USERS } from '@/mock/auth'
 
 const router = useRouter()
+const route = useRoute()
+const authStore = useAuthStore()
+
+// 登录加载状态
+const loading = ref(false)
 
 // 账号密码登录
 const username = ref('')
@@ -109,17 +116,45 @@ const smsButtonText = computed(() => {
   return countdown.value > 0 ? `${countdown.value}s 后重发` : '获取验证码'
 })
 
-const handleLogin = (e: Event) => {
+const handleLogin = async (e: Event) => {
   e.preventDefault()
-  // 验证码校验（实际项目应在后端验证）
+
   if (captchaCode.value.toLowerCase() !== captchaText.value.toLowerCase()) {
     toast.error('验证码错误')
     generateCaptcha()
     return
   }
-  // 模拟登录逻辑
-  toast.success('登录成功')
-  router.push('/')
+
+  loading.value = true
+
+  try {
+    const success = await authStore.login({
+      username: username.value,
+      password: password.value,
+      captcha: captchaCode.value,
+    })
+
+    if (success) {
+      toast.success('登录成功')
+      const redirect = route.query.redirect as string || '/dashboard'
+      router.replace(redirect)
+    } else {
+      toast.error('登录失败，请检查用户名和密码')
+      generateCaptcha()
+    }
+  } catch (error) {
+    toast.error('登录失败，请稍后重试')
+    generateCaptcha()
+  } finally {
+    loading.value = false
+  }
+}
+
+// 快速填充测试账号
+const fillTestAccount = (account: { username: string; password: string }) => {
+  username.value = account.username
+  password.value = account.password
+  captchaCode.value = captchaText.value // 自动填充验证码
 }
 
 onMounted(() => {
@@ -131,6 +166,7 @@ onMounted(() => {
 meta:
   layout: blank
   menuHidden: true
+  constant: true
 </route>
 
 <template>
@@ -164,6 +200,7 @@ meta:
                   v-model="username"
                   type="text"
                   placeholder="请输入用户名"
+                  :disabled="loading"
                 />
               </div>
               <div class="space-y-2">
@@ -173,6 +210,7 @@ meta:
                   v-model="password"
                   type="password"
                   placeholder="请输入密码"
+                  :disabled="loading"
                 />
               </div>
               <div class="space-y-2">
@@ -185,6 +223,7 @@ meta:
                     placeholder="请输入验证码"
                     class="flex-1"
                     autocomplete="off"
+                    :disabled="loading"
                   />
                   <canvas
                     ref="captchaCanvas"
@@ -196,10 +235,28 @@ meta:
                   />
                 </div>
               </div>
-              <Button type="submit" class="w-full">
-                登录
+              <Button type="submit" class="w-full" :disabled="loading">
+                {{ loading ? '登录中...' : '登录' }}
               </Button>
             </form>
+
+            <!-- 测试账号提示 -->
+            <div class="mt-4 p-3 bg-muted/50 rounded-lg">
+              <p class="text-xs text-muted-foreground mb-2">测试账号（点击快速填充）：</p>
+              <div class="flex flex-wrap gap-2">
+                <Button
+                  v-for="(account, key) in TEST_USERS"
+                  :key="key"
+                  variant="outline"
+                  size="sm"
+                  type="button"
+                  :disabled="loading"
+                  @click="fillTestAccount(account)"
+                >
+                  {{ account.username }}
+                </Button>
+              </div>
+            </div>
           </TabsContent>
 
           <!-- 手机验证码登录 -->
@@ -212,6 +269,7 @@ meta:
                   v-model="phone"
                   type="tel"
                   placeholder="请输入手机号"
+                  :disabled="loading"
                 />
               </div>
               <div class="space-y-2">
@@ -223,19 +281,20 @@ meta:
                     type="text"
                     placeholder="请输入验证码"
                     class="flex-1"
+                    :disabled="loading"
                   />
                   <Button
                     type="button"
                     variant="outline"
-                    :disabled="countdown > 0 || !phone"
+                    :disabled="countdown > 0 || !phone || loading"
                     @click="sendSmsCode"
                   >
                     {{ smsButtonText }}
                   </Button>
                 </div>
               </div>
-              <Button type="submit" class="w-full">
-                登录
+              <Button type="submit" class="w-full" :disabled="loading">
+                {{ loading ? '登录中...' : '登录' }}
               </Button>
             </form>
           </TabsContent>

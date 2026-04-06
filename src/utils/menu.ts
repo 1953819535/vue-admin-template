@@ -5,6 +5,8 @@ export type { NavItem, NavGroup, NavProps }
 
 interface InternalItem extends NavItem {
   order: number
+  roles?: string[]
+  permissions?: string[]
 }
 
 interface InternalGroup {
@@ -16,8 +18,14 @@ interface InternalGroup {
 
 const DEFAULT_ORDER = 999
 
-const toItem = (item: InternalItem): NavItem => ({
-  title: item.title, to: item.to, icon: item.icon, indent: item.indent
+/** 保留权限信息转换为 NavItem */
+const toItem = (item: InternalItem): NavItem & { roles?: string[]; permissions?: string[] } => ({
+  title: item.title,
+  to: item.to,
+  icon: item.icon,
+  indent: item.indent,
+  roles: item.roles,
+  permissions: item.permissions,
 })
 
 export function generateMenus(routes: RouteRecordRaw[]): NavProps {
@@ -38,6 +46,8 @@ export function generateMenus(routes: RouteRecordRaw[]): NavProps {
       icon: meta.menuIcon,
       indent: meta.menuIndent,
       order: meta.menuOrder ?? DEFAULT_ORDER,
+      roles: meta.roles,
+      permissions: meta.permissions,
     }
 
     if (meta.menuGroup) {
@@ -69,10 +79,10 @@ export function generateMenus(routes: RouteRecordRaw[]): NavProps {
       title: g.title,
       icon: g.icon,
       items: g.items.sort((a, b) => a.order - b.order).map(toItem)
-    }))
+    })) as NavGroup[]
 
   return {
-    items: items.sort((a, b) => a.order - b.order).map(toItem),
+    items: items.sort((a, b) => a.order - b.order).map(toItem) as NavItem[],
     groups,
   }
 }

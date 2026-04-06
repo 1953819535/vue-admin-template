@@ -11,6 +11,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
+import { useAuth } from '@/composables/useAuth'
 
 interface User {
   id: number
@@ -19,6 +20,8 @@ interface User {
   role: string
   status: 'active' | 'inactive'
 }
+
+const { hasAuth } = useAuth()
 
 const users = ref<User[]>([
   { id: 1, name: '张三', email: 'zhangsan@example.com', role: 'admin', status: 'active' },
@@ -69,13 +72,15 @@ meta:
   menuGroupIcon: lucide:users
   menuOrder: 10
   requiresAuth: true
+  permissions: [users:list]
 </route>
 
 <template>
   <div>
     <div class="flex items-center justify-between mb-6">
       <h2 class="text-2xl font-bold">用户管理</h2>
-      <RouterLink to="/users/create">
+      <!-- 按钮级权限：新增按钮 -->
+      <RouterLink v-if="hasAuth('users:add')" to="/users/create">
         <Button>
           新增用户
         </Button>
@@ -101,7 +106,7 @@ meta:
         </Badge>
       </template>
 
-      <!-- 操作 slot -->
+      <!-- 操作 slot - 按钮级权限控制 -->
       <template #cell-action="{ row }">
         <div class="flex gap-2">
           <RouterLink :to="`/users/${row.id}`">
@@ -109,12 +114,15 @@ meta:
               查看
             </Button>
           </RouterLink>
-          <RouterLink :to="`/users/${row.id}/edit`">
+          <!-- 编辑按钮：需要 users:edit 权限 -->
+          <RouterLink v-if="hasAuth('users:edit')" :to="`/users/${row.id}/edit`">
             <Button variant="link" size="sm">
               编辑
             </Button>
           </RouterLink>
+          <!-- 删除按钮：需要 users:delete 权限 -->
           <Button
+            v-if="hasAuth('users:delete')"
             variant="link"
             size="sm"
             class="text-destructive"

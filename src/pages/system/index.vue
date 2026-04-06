@@ -15,6 +15,7 @@ meta:
   menuOrder: 30
   requiresAuth: true
   roles: [admin]
+  permissions: [system:view]
 </route>
 
 <template>
