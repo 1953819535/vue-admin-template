@@ -1,66 +1,62 @@
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
-import { Icon } from '@iconify/vue'
-import { useNotificationStore } from '@/stores/modules/notification'
-import { useAppStore } from '@/stores/modules/app'
-import { Button } from '@/components/ui/button'
-import { Badge } from '@/components/ui/badge'
-import { ScrollArea } from '@/components/ui/scroll-area'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { ref, computed, onMounted } from "vue";
+import { Icon } from "@iconify/vue";
+import { useNotificationStore } from "@/stores/modules/notification";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from '@/components/ui/popover'
-import type { NotificationType, NotificationItem } from '@/types/notification'
+} from "@/components/ui/popover";
+import type { NotificationType, NotificationItem } from "@/types/notification";
 
-const notificationStore = useNotificationStore()
-const appStore = useAppStore()
-const popoverOpen = ref(false)
-const activeTab = ref<NotificationType | 'all'>('all')
-
-const popoverAlign = computed(() => appStore.layout === 'sidebar' ? 'start' : 'end')
+const notificationStore = useNotificationStore();
+const popoverOpen = ref(false);
+const activeTab = ref<NotificationType | "all">("all");
 
 onMounted(() => {
-  notificationStore.loadNotifications()
-})
+  notificationStore.loadNotifications();
+});
 
 const displayNotifications = computed(() => {
-  if (activeTab.value === 'all') {
-    return notificationStore.notifications
+  if (activeTab.value === "all") {
+    return notificationStore.notifications;
   }
-  return notificationStore.groupedNotifications[activeTab.value]
-})
+  return notificationStore.groupedNotifications[activeTab.value];
+});
 
 function formatTime(dateStr: string) {
-  const date = new Date(dateStr)
-  const now = new Date()
-  const diff = now.getTime() - date.getTime()
-  const minutes = Math.floor(diff / 60000)
-  const hours = Math.floor(diff / 3600000)
-  const days = Math.floor(diff / 86400000)
+  const date = new Date(dateStr);
+  const now = new Date();
+  const diff = now.getTime() - date.getTime();
+  const minutes = Math.floor(diff / 60000);
+  const hours = Math.floor(diff / 3600000);
+  const days = Math.floor(diff / 86400000);
 
-  if (minutes < 60) return `${minutes} 分钟前`
-  if (hours < 24) return `${hours} 小时前`
-  if (days < 7) return `${days} 天前`
-  return dateStr.split(' ')[0]
+  if (minutes < 60) return `${minutes} 分钟前`;
+  if (hours < 24) return `${hours} 小时前`;
+  if (days < 7) return `${days} 天前`;
+  return dateStr.split(" ")[0];
 }
 
 // 点击通知项
 function handleClickNotification(notification: NotificationItem) {
   if (!notification.read) {
-    notificationStore.markRead(notification.id)
+    notificationStore.markRead(notification.id);
   }
 }
 
 // 全部已读
 function handleMarkAllRead() {
-  notificationStore.markAllRead()
+  notificationStore.markAllRead();
 }
 
 // 清空已读
 function handleClearRead() {
-  notificationStore.clearRead()
+  notificationStore.clearRead();
 }
 </script>
 
@@ -74,11 +70,15 @@ function handleClearRead() {
           v-if="notificationStore.hasUnread"
           class="absolute -top-0.5 -right-0.5 min-w-4 h-4 px-1 text-[10px] font-medium bg-destructive text-destructive-foreground rounded-full flex items-center justify-center"
         >
-          {{ notificationStore.unreadCount > 99 ? '99+' : notificationStore.unreadCount }}
+          {{
+            notificationStore.unreadCount > 99
+              ? "99+"
+              : notificationStore.unreadCount
+          }}
         </span>
       </Button>
     </PopoverTrigger>
-    <PopoverContent :align="popoverAlign" class="w-96 p-0">
+    <PopoverContent class="w-96 p-0">
       <!-- 头部 -->
       <div class="flex items-center justify-between px-4 py-3 border-b">
         <h4 class="font-semibold">通知中心</h4>
@@ -93,7 +93,9 @@ function handleClearRead() {
             全部已读
           </Button>
           <Button
-            v-if="notificationStore.stats.unread < notificationStore.stats.total"
+            v-if="
+              notificationStore.stats.unread < notificationStore.stats.total
+            "
             variant="ghost"
             size="sm"
             class="h-7 text-xs"
@@ -106,13 +108,19 @@ function handleClearRead() {
 
       <!-- 标签页 -->
       <Tabs v-model="activeTab" class="w-full">
-        <TabsList class="w-full justify-start rounded-none border-b bg-transparent px-2 h-9">
+        <TabsList
+          class="w-full justify-start rounded-none border-b bg-transparent px-2 h-9"
+        >
           <TabsTrigger
             value="all"
             class="text-xs data-[state=active]:bg-transparent data-[state=active]:shadow-none px-2"
           >
             全部
-            <Badge v-if="notificationStore.stats.total > 0" variant="secondary" class="ml-1 h-4 px-1 text-[10px]">
+            <Badge
+              v-if="notificationStore.stats.total > 0"
+              variant="secondary"
+              class="ml-1 h-4 px-1 text-[10px]"
+            >
               {{ notificationStore.stats.total }}
             </Badge>
           </TabsTrigger>
@@ -163,10 +171,18 @@ function handleClearRead() {
                   <!-- 类型图标 -->
                   <div
                     class="flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center bg-muted"
-                    :class="notificationStore.notificationTypeConfig[notification.type].color"
+                    :class="
+                      notificationStore.notificationTypeConfig[
+                        notification.type
+                      ].color
+                    "
                   >
                     <Icon
-                      :icon="notificationStore.notificationTypeConfig[notification.type].icon"
+                      :icon="
+                        notificationStore.notificationTypeConfig[
+                          notification.type
+                        ].icon
+                      "
                       class="size-4"
                     />
                   </div>
@@ -185,10 +201,14 @@ function handleClearRead() {
                         class="w-2 h-2 rounded-full bg-primary flex-shrink-0"
                       />
                     </div>
-                    <p class="text-xs text-muted-foreground line-clamp-2 mt-0.5">
+                    <p
+                      class="text-xs text-muted-foreground line-clamp-2 mt-0.5"
+                    >
                       {{ notification.content }}
                     </p>
-                    <span class="text-[10px] text-muted-foreground/70 mt-1 block">
+                    <span
+                      class="text-[10px] text-muted-foreground/70 mt-1 block"
+                    >
                       {{ formatTime(notification.createdAt) }}
                     </span>
                   </div>
@@ -201,7 +221,11 @@ function handleClearRead() {
 
       <!-- 底部 -->
       <div class="border-t px-4 py-2">
-        <Button variant="link" size="sm" class="w-full h-7 text-xs text-muted-foreground">
+        <Button
+          variant="link"
+          size="sm"
+          class="w-full h-7 text-xs text-muted-foreground"
+        >
           查看全部通知
         </Button>
       </div>

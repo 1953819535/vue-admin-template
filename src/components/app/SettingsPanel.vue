@@ -1,133 +1,146 @@
 <script setup lang="ts">
-import { ref, computed, watch } from 'vue'
-import { Icon } from '@iconify/vue'
-import { useAppStore, type LayoutType, type ThemeMode } from '@/stores/modules/app'
-import { useCustomTheme } from '@/composables/useCustomTheme'
-import themes from '@/themes/tweakcn-themes.json'
-import themeNamesZh from '@/themes/theme-names-zh.json'
-import { Button } from '@/components/ui/button'
-import { Label } from '@/components/ui/label'
-import { ScrollArea } from '@/components/ui/scroll-area'
-import { Textarea } from '@/components/ui/textarea'
-import { Input } from '@/components/ui/input'
+import { ref, computed, watch } from "vue";
+import { Icon } from "@iconify/vue";
+import {
+  useAppStore,
+  type LayoutType,
+  type ThemeMode,
+} from "@/stores/modules/app";
+import { useCustomTheme } from "@/composables/useCustomTheme";
+import themes from "@/themes/tweakcn-themes.json";
+import themeNamesZh from "@/themes/theme-names-zh.json";
+import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Textarea } from "@/components/ui/textarea";
+import { Input } from "@/components/ui/input";
 import {
   Sheet,
   SheetContent,
   SheetHeader,
   SheetTitle,
   SheetTrigger,
-} from '@/components/ui/sheet'
+} from "@/components/ui/sheet";
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
-} from '@/components/ui/tooltip'
-import {
-  ToggleGroup,
-  ToggleGroupItem,
-} from '@/components/ui/toggle-group'
-import {
-  Tabs,
-  TabsContent,
-  TabsList,
-  TabsTrigger,
-} from '@/components/ui/tabs'
+} from "@/components/ui/tooltip";
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
-const appStore = useAppStore()
-const customTheme = useCustomTheme()
-const sheetOpen = ref(false)
-const customCssInput = ref('')
-const urlInput = ref('')
-const themeTab = ref<'preset' | 'custom'>('preset')
+const appStore = useAppStore();
+const customTheme = useCustomTheme();
+const sheetOpen = ref(false);
+const customCssInput = ref("");
+const urlInput = ref("");
+const themeTab = ref<"preset" | "custom">("preset");
 
 // 类型定义
-type ThemeNamesZh = Record<string, { title: string; description: string }>
-type ThemeCssVars = { primary?: string; accent?: string; secondary?: string; background?: string }
-type ThemeData = { name: string; cssVars: { light?: ThemeCssVars; dark?: ThemeCssVars } }
+type ThemeNamesZh = Record<string, { title: string; description: string }>;
+type ThemeCssVars = {
+  primary?: string;
+  accent?: string;
+  secondary?: string;
+  background?: string;
+};
+type ThemeData = {
+  name: string;
+  cssVars: { light?: ThemeCssVars; dark?: ThemeCssVars };
+};
 
-const themeNamesZhMap = themeNamesZh as ThemeNamesZh
-const themeDataMap = new Map<string, ThemeData>(themes.map(t => [t.name, t as ThemeData]))
+const themeNamesZhMap = themeNamesZh as ThemeNamesZh;
+const themeDataMap = new Map<string, ThemeData>(
+  themes.map((t) => [t.name, t as ThemeData]),
+);
 
 // 外观模式选项
 const modeOptions: { value: ThemeMode; label: string; icon: string }[] = [
-  { value: 'light', label: '亮色', icon: 'lucide:sun' },
-  { value: 'dark', label: '暗色', icon: 'lucide:moon' },
-  { value: 'system', label: '系统', icon: 'lucide:monitor' },
-]
+  { value: "light", label: "亮色", icon: "lucide:sun" },
+  { value: "dark", label: "暗色", icon: "lucide:moon" },
+  { value: "system", label: "系统", icon: "lucide:monitor" },
+];
 
 // 布局选项
 const layoutOptions: { value: LayoutType; label: string; icon: string }[] = [
-  { value: 'sidebar', label: '侧边栏', icon: 'lucide:panel-left' },
-  { value: 'top-nav', label: '顶部导航', icon: 'lucide:layout-template' },
-]
+  { value: "sidebar", label: "侧边栏", icon: "lucide:panel-left" },
+  { value: "top-nav", label: "顶部导航", icon: "lucide:layout-template" },
+];
 
 // 主题预览数据
 const themePreviewData = computed(() => {
-  return appStore.availableThemes.map(theme => {
-    const themeData = themeDataMap.get(theme.name)
-    const light = (themeData?.cssVars.light || {}) as ThemeCssVars
-    const dark = (themeData?.cssVars.dark || {}) as ThemeCssVars
-    const vars = appStore.isDark ? dark : light
+  return appStore.availableThemes.map((theme) => {
+    const themeData = themeDataMap.get(theme.name);
+    const light = (themeData?.cssVars.light || {}) as ThemeCssVars;
+    const dark = (themeData?.cssVars.dark || {}) as ThemeCssVars;
+    const vars = appStore.isDark ? dark : light;
 
     return {
       name: theme.name,
       title: themeNamesZhMap[theme.name]?.title || theme.name,
-      description: themeNamesZhMap[theme.name]?.description || '',
+      description: themeNamesZhMap[theme.name]?.description || "",
       colors: {
-        primary: vars.primary || '',
-        accent: vars.accent || vars.secondary || '',
-        background: vars.background || '',
+        primary: vars.primary || "",
+        accent: vars.accent || vars.secondary || "",
+        background: vars.background || "",
       },
-    }
-  })
-})
+    };
+  });
+});
 
 // 自定义主题预览
 const customPreviewData = computed(() => {
-  if (!appStore.customTheme) return null
-  const vars = appStore.isDark ? appStore.customTheme.cssVars.dark : appStore.customTheme.cssVars.light
+  if (!appStore.customTheme) return null;
+  const vars = appStore.isDark
+    ? appStore.customTheme.cssVars.dark
+    : appStore.customTheme.cssVars.light;
   return {
-    primary: vars.primary || '',
-    accent: vars.accent || vars.secondary || '',
-    background: vars.background || '',
-  }
-})
+    primary: vars.primary || "",
+    accent: vars.accent || vars.secondary || "",
+    background: vars.background || "",
+  };
+});
 
 // 打开时加载自定义主题
 watch(sheetOpen, (open) => {
   if (open && customTheme.customThemeCss.value) {
-    customCssInput.value = customTheme.customThemeCss.value
+    customCssInput.value = customTheme.customThemeCss.value;
   }
-})
+});
+
+// 根据布局决定面板展开方向
+const sheetSide = computed(() =>
+  appStore.layout === "sidebar" ? "left" : "right",
+);
 
 function handleSelectTheme(name: string) {
   if (appStore.customTheme) {
-    appStore.clearCustomTheme()
+    appStore.clearCustomTheme();
   }
-  appStore.setThemeName(name)
+  appStore.setThemeName(name);
 }
 
 async function handleApplyCustom() {
   if (!customCssInput.value.trim()) {
-    customTheme.error.value = '请输入 CSS 配置'
-    return
+    customTheme.error.value = "请输入 CSS 配置";
+    return;
   }
-  const success = customTheme.applyCustomTheme(customCssInput.value)
+  const success = customTheme.applyCustomTheme(customCssInput.value);
   if (success) {
-    customCssInput.value = ''
+    customCssInput.value = "";
   }
 }
 
 async function handleLoadFromUrl() {
   if (!urlInput.value.trim()) {
-    customTheme.error.value = '请输入 URL'
-    return
+    customTheme.error.value = "请输入 URL";
+    return;
   }
   try {
-    const success = await customTheme.loadFromUrl(urlInput.value)
+    const success = await customTheme.loadFromUrl(urlInput.value);
     if (success) {
-      customCssInput.value = customTheme.customThemeCss.value
+      customCssInput.value = customTheme.customThemeCss.value;
     }
   } catch {
     // error 已在 useCustomTheme 中设置
@@ -135,9 +148,9 @@ async function handleLoadFromUrl() {
 }
 
 function handleClearCustom() {
-  customTheme.clearCustomTheme()
-  customCssInput.value = ''
-  urlInput.value = ''
+  customTheme.clearCustomTheme();
+  customCssInput.value = "";
+  urlInput.value = "";
 }
 </script>
 
@@ -148,7 +161,10 @@ function handleClearCustom() {
         <Icon icon="lucide:settings" class="size-5" />
       </Button>
     </SheetTrigger>
-    <SheetContent class="w-80 sm:w-96 p-0 flex flex-col h-full">
+    <SheetContent
+      :side="sheetSide"
+      class="w-80 sm:w-96 p-0 flex flex-col h-full"
+    >
       <SheetHeader class="px-4 pt-4 pb-2 flex-shrink-0">
         <SheetTitle>设置</SheetTitle>
       </SheetHeader>
@@ -206,17 +222,29 @@ function handleClearCustom() {
 
               <Tabs v-model="themeTab" class="w-full">
                 <TabsList class="w-full">
-                  <TabsTrigger value="preset" class="flex-1 text-xs">预设主题</TabsTrigger>
-                  <TabsTrigger value="custom" class="flex-1 text-xs">自定义</TabsTrigger>
+                  <TabsTrigger value="preset" class="flex-1 text-xs"
+                    >预设主题</TabsTrigger
+                  >
+                  <TabsTrigger value="custom" class="flex-1 text-xs"
+                    >自定义</TabsTrigger
+                  >
                 </TabsList>
 
                 <!-- 预设主题 -->
                 <TabsContent value="preset" class="mt-3">
                   <!-- 当前自定义主题提示 -->
-                  <div v-if="customPreviewData" class="p-2 rounded-lg border border-primary bg-muted/50 mb-3">
+                  <div
+                    v-if="customPreviewData"
+                    class="p-2 rounded-lg border border-primary bg-muted/50 mb-3"
+                  >
                     <div class="flex items-center justify-between mb-1">
                       <span class="text-xs font-medium">当前：自定义主题</span>
-                      <Button variant="ghost" size="sm" class="h-6 w-6 p-0" @click="handleClearCustom">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        class="h-6 w-6 p-0"
+                        @click="handleClearCustom"
+                      >
                         <Icon icon="lucide:trash-2" class="size-3" />
                       </Button>
                     </div>
@@ -247,7 +275,8 @@ function handleClearCustom() {
                         :key="theme.name"
                         class="group relative rounded-lg border p-2 text-left transition-all hover:border-primary hover:shadow-sm"
                         :class="[
-                          appStore.currentTheme === theme.name && !appStore.customTheme
+                          appStore.currentTheme === theme.name &&
+                          !appStore.customTheme
                             ? 'border-primary ring-2 ring-primary/20'
                             : 'border-border',
                         ]"
@@ -270,19 +299,35 @@ function handleClearCustom() {
                             }"
                           />
                         </div>
-                        <div class="text-[10px] font-medium truncate">{{ theme.title }}</div>
+                        <div class="text-[10px] font-medium truncate">
+                          {{ theme.title }}
+                        </div>
                         <Tooltip>
                           <TooltipTrigger as-child>
-                            <div class="text-[9px] text-muted-foreground truncate cursor-default">
+                            <div
+                              class="text-[9px] text-muted-foreground truncate cursor-default"
+                            >
                               {{ theme.description }}
                             </div>
                           </TooltipTrigger>
-                          <TooltipContent side="bottom" class="max-w-32 text-xs">
+                          <TooltipContent
+                            side="bottom"
+                            class="max-w-32 text-xs"
+                          >
                             {{ theme.description }}
                           </TooltipContent>
                         </Tooltip>
-                        <div v-if="appStore.currentTheme === theme.name && !appStore.customTheme" class="absolute right-1 top-1">
-                          <Icon icon="lucide:check" class="size-3 text-primary" />
+                        <div
+                          v-if="
+                            appStore.currentTheme === theme.name &&
+                            !appStore.customTheme
+                          "
+                          class="absolute right-1 top-1"
+                        >
+                          <Icon
+                            icon="lucide:check"
+                            class="size-3 text-primary"
+                          />
                         </div>
                       </button>
                     </div>
@@ -291,8 +336,17 @@ function handleClearCustom() {
 
                 <!-- 自定义主题 -->
                 <TabsContent value="custom" class="mt-3 space-y-3">
-                  <div class="p-2 rounded-lg border bg-muted/30 text-xs text-muted-foreground">
-                    从 <a href="https://tweakcn.com/community" target="_blank" class="text-primary hover:underline">tweakcn.com</a> 复制 CSS 或链接
+                  <div
+                    class="p-2 rounded-lg border bg-muted/30 text-xs text-muted-foreground"
+                  >
+                    从
+                    <a
+                      href="https://tweakcn.com/community"
+                      target="_blank"
+                      class="text-primary hover:underline"
+                      >tweakcn.com</a
+                    >
+                    复制 CSS 或链接
                   </div>
                   <div class="flex gap-2">
                     <Input
@@ -306,7 +360,11 @@ function handleClearCustom() {
                       :disabled="customTheme.isLoading.value"
                       @click="handleLoadFromUrl"
                     >
-                      <Icon v-if="customTheme.isLoading.value" icon="lucide:loader-2" class="size-3 animate-spin" />
+                      <Icon
+                        v-if="customTheme.isLoading.value"
+                        icon="lucide:loader-2"
+                        class="size-3 animate-spin"
+                      />
                       <Icon v-else icon="lucide:download" class="size-3" />
                     </Button>
                   </div>
@@ -315,7 +373,10 @@ function handleClearCustom() {
                     placeholder="或直接粘贴 CSS..."
                     class="h-24 text-xs font-mono resize-none"
                   />
-                  <div v-if="customTheme.error.value" class="p-2 rounded bg-destructive/10 text-destructive text-xs">
+                  <div
+                    v-if="customTheme.error.value"
+                    class="p-2 rounded bg-destructive/10 text-destructive text-xs"
+                  >
                     {{ customTheme.error.value }}
                   </div>
                   <Button size="sm" class="w-full" @click="handleApplyCustom">
