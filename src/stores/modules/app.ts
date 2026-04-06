@@ -6,6 +6,8 @@ export type ThemeMode = 'light' | 'dark' | 'system'
 export type ThemeName = string
 export type LayoutType = 'sidebar' | 'top-nav'
 
+const isClient = typeof window !== 'undefined'
+
 // 所有可用主题
 export const availableThemes = themes.map(t => ({
   name: t.name,
@@ -14,13 +16,12 @@ export const availableThemes = themes.map(t => ({
 }))
 
 export const useAppStore = defineStore('app', () => {
-  const currentTheme = ref<ThemeName>('modern-minimal')
+  const currentTheme = ref<ThemeName>('vintage-paper')
   const mode = ref<ThemeMode>('system')
   const layout = ref<LayoutType>('sidebar')
-  const sidebarCollapsed = ref(false)
 
   const systemIsDark = ref(
-    typeof window !== 'undefined'
+    isClient
       ? window.matchMedia('(prefers-color-scheme: dark)').matches
       : false
   )
@@ -60,7 +61,7 @@ export const useAppStore = defineStore('app', () => {
   }
 
   // 监听系统主题变化，自动清理
-  if (typeof window !== 'undefined') {
+  if (isClient) {
     const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)')
     const handler = (e: MediaQueryListEvent) => {
       systemIsDark.value = e.matches
@@ -90,15 +91,10 @@ export const useAppStore = defineStore('app', () => {
     layout.value = newLayout
   }
 
-  const toggleSidebar = () => {
-    sidebarCollapsed.value = !sidebarCollapsed.value
-  }
-
   return {
     currentTheme,
     mode,
     layout,
-    sidebarCollapsed,
     resolvedMode,
     isDark,
     themeData,
@@ -106,12 +102,11 @@ export const useAppStore = defineStore('app', () => {
     setThemeName,
     setMode,
     setLayout,
-    toggleSidebar,
     toggleTheme,
     applyTheme,
   }
 }, {
   persist: {
-    pick: ['currentTheme', 'mode', 'layout', 'sidebarCollapsed']
+    pick: ['currentTheme', 'mode', 'layout']
   }
 })

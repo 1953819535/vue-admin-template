@@ -3,6 +3,7 @@ import router from './router'
 import pinia from './stores'
 import App from './App.vue'
 import { useAppStore } from './stores/modules/app'
+import 'vue-sonner/style.css'
 import './style.css'
 
 const app = createApp(App)

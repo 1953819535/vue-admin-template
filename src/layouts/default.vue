@@ -1,25 +1,21 @@
 <script setup lang="ts">
-import routes from '~pages'
-import Vertical from '@/components/app/menu/Vertical.vue'
-import Horizontal from '@/components/app/menu/Horizontal.vue'
-import LayoutProvider from '@/components/layouts/LayoutProvider.vue'
-import { generateMenus } from '@/utils/menu'
+import { computed } from 'vue'
+import { useAppStore, type LayoutType } from '@/stores/modules/app'
+import SidebarLayout from '@/components/layouts/SidebarLayout.vue'
+import TopNavLayout from '@/components/layouts/TopNavLayout.vue'
 
-const menuConfig = generateMenus(routes)
+const appStore = useAppStore()
+
+const layoutComponents: Record<LayoutType, any> = {
+  sidebar: SidebarLayout,
+  'top-nav': TopNavLayout,
+}
+
+const currentLayout = computed(() => layoutComponents[appStore.layout])
 </script>
 
 <template>
-  <LayoutProvider>
-    <template #sidebar>
-      <Vertical :items="menuConfig.items" :groups="menuConfig.groups" />
-    </template>
-
-    <template #nav>
-      <Horizontal :items="menuConfig.items" :groups="menuConfig.groups" />
-    </template>
-
-    <template #content>
-      <RouterView />
-    </template>
-  </LayoutProvider>
+  <component :is="currentLayout">
+    <RouterView />
+  </component>
 </template>

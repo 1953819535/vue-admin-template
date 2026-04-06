@@ -6,11 +6,9 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-import type { NavProps } from './types'
-import { useNavActive } from './useNav'
+import { useNavActive, useMenus } from '@/components/app/useNav'
 
-defineProps<NavProps>()
-
+const { items, groups } = useMenus()
 const { isActive, isGroupActive } = useNavActive()
 </script>
 

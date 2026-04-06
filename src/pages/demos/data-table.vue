@@ -5,7 +5,7 @@
  */
 import { ref, computed, defineComponent } from "vue";
 import { Icon } from "@iconify/vue";
-import { DataTable } from "@/components/shared/data-table";
+import { SDataTable } from "@/components/shared/sdata-table";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -30,7 +30,7 @@ import type {
   SortInfo,
   ExpandableConfig,
   ScrollConfig,
-} from "@/components/shared/data-table";
+} from "@/components/shared/sdata-table";
 
 interface User {
   id: number;
@@ -861,7 +861,7 @@ meta:
         <CardTitle class="text-base">示例表格</CardTitle>
       </CardHeader>
       <CardContent>
-        <DataTable
+        <SDataTable
           :data="displayData"
           :columns="columns"
           :size="size"
@@ -936,7 +936,7 @@ meta:
               >
             </div>
           </template>
-        </DataTable>
+        </SDataTable>
       </CardContent>
     </Card>
 

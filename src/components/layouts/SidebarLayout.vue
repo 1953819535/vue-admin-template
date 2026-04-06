@@ -1,51 +1,33 @@
 <script setup lang="ts">
-import { Icon } from '@iconify/vue'
-import { useAppStore } from '@/stores/modules/app'
-import { Button } from '@/components/ui/button'
-import Logo from "@/components/app/header/Logo.vue"
-import Actions from "@/components/app/header/Actions.vue"
-
-const appStore = useAppStore()
+import Logo from "@/components/app/Logo.vue";
+import Actions from "@/components/app/Actions.vue";
+import VerticalMenu from "@/components/app/VerticalMenu.vue";
 </script>
 
 <template>
-  <div class="flex w-screen h-screen overflow-hidden">
+  <div class="flex w-screen h-screen overflow-hidden bg-background">
     <!-- 侧边栏 -->
-    <aside
-      class="border-r bg-sidebar flex flex-col transition-all duration-300 h-full"
-      :class="appStore.sidebarCollapsed ? 'w-16' : 'w-64'"
-    >
-      <!-- 顶部 logo 和折叠按钮 -->
-      <div class="p-4 border-b flex items-center justify-between shrink-0">
-        <Logo v-if="!appStore.sidebarCollapsed" />
-        <Button
-          variant="ghost"
-          size="icon"
-          @click="appStore.toggleSidebar"
-        >
-          <Icon
-            :icon="appStore.sidebarCollapsed ? 'lucide:panel-left-open' : 'lucide:panel-left-close'"
-            class="size-5"
-          />
-        </Button>
+    <aside class="w-60 shrink-0 flex flex-col overflow-hidden border-r border-border bg-sidebar">
+      <!-- 顶部 logo -->
+      <div class="shrink-0 px-4 py-4 border-b border-border">
+        <Logo variant="sidebar" />
       </div>
 
       <!-- 导航菜单 -->
-      <div class="flex-1 overflow-auto">
-        <slot name="sidebar" />
-      </div>
+      <nav class="flex-1 overflow-auto px-2 py-3">
+        <VerticalMenu />
+      </nav>
 
       <!-- 底部操作 -->
-      <div class="p-4 border-t shrink-0">
-        <Actions :collapsed="appStore.sidebarCollapsed" />
+      <div class="shrink-0 px-3 py-3 border-t border-border">
+        <Actions />
       </div>
     </aside>
 
     <!-- 主内容区 -->
-    <main class="flex-1 flex flex-col overflow-hidden h-full">
-      <!-- 内容插槽 -->
+    <main class="flex-1 flex flex-col overflow-hidden min-w-0 bg-muted/30">
       <div class="flex-1 overflow-auto p-6">
-        <slot name="content" />
+        <slot />
       </div>
     </main>
   </div>

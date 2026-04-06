@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref } from 'vue'
-import { DataTable } from '@/components/shared/data-table'
+import { SDataTable } from '@/components/shared/sdata-table'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Button } from '@/components/ui/button'
@@ -81,7 +81,7 @@ meta:
       </div>
 
       <!-- 数据表格 -->
-      <DataTable :data="logs" :columns="columns" />
+      <SDataTable :data="logs" :columns="columns" />
 
       <!-- 分页 -->
       <div class="mt-4 flex justify-between items-center text-sm text-muted-foreground">

@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref } from 'vue'
-import { DataTable } from '@/components/shared/data-table'
+import { SDataTable } from '@/components/shared/sdata-table'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import {
@@ -83,7 +83,7 @@ meta:
     </div>
 
     <!-- 使用 DataTable -->
-    <DataTable :data="users" :columns="columns" :loading="loading">
+    <SDataTable :data="users" :columns="columns" :loading="loading">
       <!-- 角色 slot -->
       <template #cell-role="{ value }">
         <Badge :variant="value === 'admin' ? 'default' : 'secondary'">
@@ -124,7 +124,7 @@ meta:
           </Button>
         </div>
       </template>
-    </DataTable>
+    </SDataTable>
 
     <!-- 删除确认对话框 -->
     <Dialog v-model:open="deleteDialogOpen">

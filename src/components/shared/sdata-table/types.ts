@@ -63,6 +63,10 @@ export interface ColumnConfig<T = any> {
   key: string
   title: string
   width?: number | string
+  /** 最小宽度 */
+  minWidth?: number | string
+  /** 最大宽度 */
+  maxWidth?: number | string
   align?: 'left' | 'center' | 'right'
   customRender?: (ctx: CellContext<T>) => VNode | string
   headerRender?: (ctx: HeaderContext<T>) => VNode | string

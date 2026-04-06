@@ -145,15 +145,20 @@ grep -o '"name": "[^"]*"' src/themes/tweakcn-themes.json | sed 's/"name": "//;s/
 
 ```
 src/components/
-├── ui/                    # 第三方组件库 (shadcn-vue)
+├── ui/                    # 第三方组件库 (shadcn-vue，禁止修改)
 │   ├── button/
 │   ├── dropdown-menu/
 │   ├── separator/
 │   ├── card/
 │   └── avatar/
+├── shared/                # 通用封装组件（S 前缀命名）
+│   ├── sdata-table/       # SDataTable 数据表格
+│   ├── spagination/       # SPaginationBar 分页条
+│   └── stoaster/          # SToaster 消息提示
 └── app/                   # 应用业务组件
     ├── ThemeSwitcher.vue  # 主题风格切换器
-    └── Sidebar.vue        # 侧边栏导航
+    ├── Logo.vue           # Logo 组件
+    └── Actions.vue        # 顶部操作栏
 ```
 
 ## UI 组件安装
@@ -179,4 +184,5 @@ pnpm dlx shadcn-vue@latest add button dropdown-menu separator card avatar
 - [tweakcn 官网](https://tweakcn.com)
 - [tweakcn GitHub](https://github.com/jnsahaj/tweakcn)
 - [tweakcn 主题预览](https://tweakcn.com/themes)
+- [tweakcn 主题编辑器](https://tweakcn.com/editor/theme) - 预设主题查看与自定义主题创建
 - [shadcn-vue 文档](https://www.shadcn-vue.com)

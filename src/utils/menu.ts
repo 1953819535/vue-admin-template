@@ -1,5 +1,5 @@
 import type { RouteRecordRaw, RouteMeta } from 'vue-router'
-import type { NavItem, NavGroup, NavProps } from '@/components/app/menu/types'
+import type { NavItem, NavGroup, NavProps } from '@/components/app/useNav'
 
 export type { NavItem, NavGroup, NavProps }
 

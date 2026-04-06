@@ -22,7 +22,7 @@ import {
 import { Checkbox } from "@/components/ui/checkbox";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Empty, EmptyMedia, EmptyDescription } from "@/components/ui/empty";
-import { PaginationBar } from "@/components/shared/pagination-bar";
+import { SPaginationBar } from "@/components/shared/spagination";
 
 defineSlots<
   {
@@ -99,7 +99,6 @@ const paginationTotal = computed(() => {
   return props.remote ? (paginationConfig.value.total ?? 0) : props.data.length;
 });
 
-/** 默认排序比较函数 */
 function compareValues<T>(
   a: T,
   b: T,
@@ -167,7 +166,6 @@ function getColumnSortOrder(column: ColumnConfig): "ascend" | "descend" | undefi
   return sortConfig.value?.field === column.key ? sortConfig.value.order : undefined;
 }
 
-// 预计算列排序状态
 const columnSortOrders = computed(() => {
   const orders = new Map<string, "ascend" | "descend" | undefined>();
   for (const col of props.columns) {
@@ -372,14 +370,23 @@ const columnFixedStyles = computed(() => {
 
 // 预计算所有列的宽度样式
 const columnWidthStyles = computed(() => {
-  if (!hasHorizontalScroll.value) return new Map<string, { width: string }>();
-  const styles = new Map<string, { width: string }>();
+  const styles = new Map<string, Record<string, string>>();
   for (const col of props.columns) {
+    const style: Record<string, string> = {};
     if (col.width) {
       const widthPx = toPx(col.width);
-      if (widthPx) {
-        styles.set(col.key, { width: widthPx });
-      }
+      if (widthPx) style.width = widthPx;
+    }
+    if (col.minWidth) {
+      const minWidthPx = toPx(col.minWidth);
+      if (minWidthPx) style.minWidth = minWidthPx;
+    }
+    if (col.maxWidth) {
+      const maxWidthPx = toPx(col.maxWidth);
+      if (maxWidthPx) style.maxWidth = maxWidthPx;
+    }
+    if (Object.keys(style).length > 0) {
+      styles.set(col.key, style);
     }
   }
   return styles;
@@ -681,6 +688,7 @@ const rowKeyCache = computed(() =>
             sizeStyle.text,
             hasStickyHeader &&
               'min-h-0 flex-1 [&_[data-slot=table-container]]:min-h-full',
+            !hasHorizontalScroll && '[&_[data-slot=table-container]]:overflow-x-hidden [&_td]:whitespace-normal [&_td]:break-all [&_th]:whitespace-normal [&_th]:break-words',
           )
         "
       >
@@ -903,7 +911,7 @@ const rowKeyCache = computed(() =>
     </div>
 
     <div v-if="hasPagination" :class="cn('flex', paginationPositionClass)">
-      <PaginationBar
+      <SPaginationBar
         :page="currentPage"
         :page-size="currentPageSize"
         :total="paginationTotal"

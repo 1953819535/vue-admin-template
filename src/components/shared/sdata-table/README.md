@@ -1,4 +1,4 @@
-# DataTable 数据表格
+# SDataTable 数据表格
 
 高性能数据表格组件，支持多种配置方式、行选择、分页、排序等功能。
 
@@ -22,7 +22,7 @@ pnpm dlx shadcn-vue@latest add table checkbox radio-group empty
 
 ```vue
 <script setup lang="ts">
-import { DataTable } from "@/components/shared/data-table";
+import { SDataTable } from "@/components/shared/sdata-table";
 
 const columns = [
   { key: "id", title: "ID", width: 80 },
@@ -37,7 +37,7 @@ const data = [
 </script>
 
 <template>
-  <DataTable :data="data" :columns="columns" />
+  <SDataTable :data="data" :columns="columns" />
 </template>
 ```
 
@@ -51,7 +51,7 @@ const data = [
 
 ```vue
 <script setup lang="ts">
-import { DataTable } from "@/components/shared/data-table";
+import { SDataTable } from "@/components/shared/sdata-table";
 
 const columns = [
   { key: "id", title: "ID", width: 80, sortable: true },
@@ -68,7 +68,7 @@ const data = [
 </script>
 
 <template>
-  <DataTable :data="data" :columns="columns" />
+  <SDataTable :data="data" :columns="columns" />
 </template>
 ```
 
@@ -79,8 +79,8 @@ const data = [
 ```vue
 <script setup lang="ts">
 import { ref } from "vue";
-import { DataTable } from "@/components/shared/data-table";
-import type { SortInfo } from "@/components/shared/data-table";
+import { SDataTable } from "@/components/shared/sdata-table";
+import type { SortInfo } from "@/components/shared/sdata-table";
 
 const columns = [
   { key: "id", title: "ID", sortable: true },
@@ -112,7 +112,7 @@ async function fetchData() {
 </script>
 
 <template>
-  <DataTable
+  <SDataTable
     :data="data"
     :columns="columns"
     :pagination="pagination"
@@ -131,7 +131,7 @@ async function fetchData() {
 ```vue
 <script setup lang="ts">
 import { ref } from "vue";
-import { DataTable } from "@/components/shared/data-table";
+import { SDataTable } from "@/components/shared/sdata-table";
 
 const columns = [
   { key: "name", title: "用户名", sortable: true },
@@ -142,7 +142,7 @@ const currentSort = ref({ field: "name", order: "ascend" });
 </script>
 
 <template>
-  <DataTable
+  <SDataTable
     :data="data"
     :columns="columns"
     :sort="currentSort"
@@ -175,7 +175,7 @@ const columns = [
 
 ```vue
 <script setup lang="ts">
-import { DataTable } from "@/components/shared/data-table";
+import { SDataTable } from "@/components/shared/sdata-table";
 
 const data = [...]; // 大量数据
 
@@ -188,7 +188,7 @@ const pagination = {
 </script>
 
 <template>
-  <DataTable :data="data" :columns="columns" :pagination="pagination" />
+  <SDataTable :data="data" :columns="columns" :pagination="pagination" />
 </template>
 ```
 
@@ -199,7 +199,7 @@ const pagination = {
 ```vue
 <script setup lang="ts">
 import { ref } from "vue";
-import { DataTable } from "@/components/shared/data-table";
+import { SDataTable } from "@/components/shared/sdata-table";
 
 const data = ref([]);
 const pagination = ref({
@@ -217,7 +217,7 @@ async function handlePageChange(page: number) {
 </script>
 
 <template>
-  <DataTable
+  <SDataTable
     :data="data"
     :columns="columns"
     :pagination="pagination"
@@ -233,7 +233,7 @@ async function handlePageChange(page: number) {
 ```vue
 <script setup lang="ts">
 import { ref } from "vue";
-import { DataTable } from "@/components/shared/data-table";
+import { SDataTable } from "@/components/shared/sdata-table";
 
 const selectedRowKeys = ref<(string | number)[]>([]);
 
@@ -247,7 +247,7 @@ const rowSelection = {
 </script>
 
 <template>
-  <DataTable
+  <SDataTable
     :data="data"
     :columns="columns"
     :row-selection="rowSelection"
@@ -275,7 +275,7 @@ const rowSelection = {
 
 ```vue
 <template>
-  <DataTable :data="data" :columns="columns">
+  <SDataTable :data="data" :columns="columns">
     <!-- 状态列 -->
     <template #cell-status="{ value }">
       <Badge :variant="value === 'active' ? 'default' : 'secondary'">
@@ -287,7 +287,7 @@ const rowSelection = {
     <template #cell-action="{ row }">
       <Button variant="link" size="sm" @click="handleEdit(row)">编辑</Button>
     </template>
-  </DataTable>
+  </SDataTable>
 </template>
 ```
 
@@ -318,14 +318,14 @@ const columns = [
 
 ```vue
 <template>
-  <DataTable :data="data" :columns="columns">
+  <SDataTable :data="data" :columns="columns">
     <template #header-name>
       <div class="flex items-center gap-1">
         <Icon icon="lucide:user" class="size-4" />
         用户名
       </div>
     </template>
-  </DataTable>
+  </SDataTable>
 </template>
 ```
 
@@ -367,7 +367,7 @@ function getRowEvents(row: any, index: number) {
 </script>
 
 <template>
-  <DataTable :data="data" :columns="columns" :custom-row="getRowEvents" />
+  <SDataTable :data="data" :columns="columns" :custom-row="getRowEvents" />
 </template>
 ```
 
@@ -375,7 +375,7 @@ function getRowEvents(row: any, index: number) {
 
 ```vue
 <template>
-  <DataTable :data="data" :columns="columns" :loading="true" />
+  <SDataTable :data="data" :columns="columns" :loading="true" />
 </template>
 ```
 
@@ -385,7 +385,7 @@ function getRowEvents(row: any, index: number) {
 
 ```vue
 <template>
-  <DataTable :data="data" :columns="columns" size="sm" />
+  <SDataTable :data="data" :columns="columns" size="sm" />
 </template>
 ```
 
@@ -393,7 +393,7 @@ function getRowEvents(row: any, index: number) {
 
 ```vue
 <template>
-  <DataTable :data="data" :columns="columns" bordered />
+  <SDataTable :data="data" :columns="columns" bordered />
 </template>
 ```
 
@@ -401,7 +401,7 @@ function getRowEvents(row: any, index: number) {
 
 ```vue
 <template>
-  <DataTable :data="[]" :columns="columns">
+  <SDataTable :data="[]" :columns="columns">
     <template #empty>
       <div class="flex flex-col items-center gap-3 py-8">
         <Icon icon="lucide:users" class="size-12 text-muted-foreground/50" />
@@ -409,7 +409,7 @@ function getRowEvents(row: any, index: number) {
         <Button size="sm">添加用户</Button>
       </div>
     </template>
-  </DataTable>
+  </SDataTable>
 </template>
 ```
 
@@ -421,7 +421,7 @@ function getRowEvents(row: any, index: number) {
 
 ```vue
 <script setup lang="ts">
-import { DataTable } from "@/components/shared/data-table";
+import { SDataTable } from "@/components/shared/sdata-table";
 
 const expandable = {
   expandedRowRender: (row) => `详情：${row.description}`,
@@ -429,7 +429,7 @@ const expandable = {
 </script>
 
 <template>
-  <DataTable :data="data" :columns="columns" :expandable="expandable" />
+  <SDataTable :data="data" :columns="columns" :expandable="expandable" />
 </template>
 ```
 
@@ -437,14 +437,14 @@ const expandable = {
 
 ```vue
 <template>
-  <DataTable :data="data" :columns="columns" :expandable="{}">
+  <SDataTable :data="data" :columns="columns" :expandable="{}">
     <template #expandedRow="{ row }">
       <div class="p-4 bg-muted/50 rounded">
         <h4 class="font-medium mb-2">{{ row.name }} 详情</h4>
         <p class="text-muted-foreground">{{ row.description }}</p>
       </div>
     </template>
-  </DataTable>
+  </SDataTable>
 </template>
 ```
 
@@ -467,7 +467,7 @@ function handleExpandChange(keys) {
 </script>
 
 <template>
-  <DataTable
+  <SDataTable
     :data="data"
     :columns="columns"
     :expandable="expandable"
@@ -513,13 +513,13 @@ const scroll = { y: 300 }; // 表格高度 300px，表头固定
 </script>
 
 <template>
-  <DataTable :data="data" :columns="columns" :scroll="scroll" />
+  <SDataTable :data="data" :columns="columns" :scroll="scroll" />
 </template>
 ```
 
 ## API
 
-### DataTable Props
+### SDataTable Props
 
 | 属性 | 类型 | 默认值 | 说明 |
 | --- | --- | --- | --- |

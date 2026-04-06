@@ -54,16 +54,23 @@ pnpm build
 ```
 src/
 ├── components/
-│   ├── ui/              # shadcn-vue 基础组件
+│   ├── ui/              # shadcn-vue 基础组件（禁止修改）
 │   │   ├── button/
 │   │   ├── card/
 │   │   ├── dropdown-menu/
-│   │   ├── separator/
-│   │   └── avatar/
-│   └── app/             # 业务组件
-│       ├── Sidebar.vue       # 侧边栏导航
-│       └── ThemeSwitcher.vue # 主题切换器
-├── layouts/             # 布局组件
+│   │   └── ...
+│   ├── shared/          # 通用封装组件（S 前缀）
+│   │   ├── sdata-table/     # SDataTable 数据表格
+│   │   ├── spagination/     # SPaginationBar 分页条
+│   │   └── stoaster/        # SToaster 消息提示
+│   ├── app/             # 业务组件
+│   │   ├── Actions.vue      # 顶部操作栏
+│   │   ├── Logo.vue         # Logo 组件
+│   │   └── ThemeSwitcher.vue # 主题切换器
+│   └── layouts/         # 布局实现组件
+│       ├── SidebarLayout.vue
+│       └── TopNavLayout.vue
+├── layouts/             # 布局入口
 │   ├── admin.vue        # 后台管理布局（带侧边栏）
 │   ├── blank.vue        # 空白布局（登录页等）
 │   └── default.vue      # 默认布局
@@ -203,11 +210,22 @@ import {
 
 ```
 src/components/
-├── ui/      # shadcn-vue 组件（第三方，保持原样）
+├── ui/      # shadcn-vue 组件（第三方，禁止修改）
+├── shared/  # 通用封装组件（S 前缀命名）
 └── app/     # 业务组件（自行开发）
 ```
 
-**注意**：`ui/` 目录下的组件由 shadcn-vue CLI 管理，请勿手动修改。
+**命名规范**：
+
+| 目录 | 导入路径 | 组件名 | 说明 |
+|------|---------|--------|------|
+| `ui/` | `@/components/ui/button` | `Button` | shadcn-vue 原组件 |
+| `shared/` | `@/components/shared/sdata-table` | `SDataTable` | 通用封装，S 前缀 |
+| `app/` | `@/components/app/Logo` | `Logo` | 业务组件 |
+
+**注意**：
+- `ui/` 目录下的组件由 shadcn-vue CLI 管理，请勿手动修改
+- `shared/` 目录使用 S 前缀命名，避免与 ui 组件混淆
 
 ### 常用组件列表
 

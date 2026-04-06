@@ -1,2 +1,2 @@
-export { PaginationBar } from './pagination-bar'
-export * from './data-table'
+export { SPaginationBar } from './spagination'
+export * from './sdata-table'

@@ -1,0 +1,1 @@
+export { default as SPaginationBar } from './index.vue'

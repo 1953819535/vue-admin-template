@@ -1,11 +1,11 @@
 <script setup lang="ts">
 /**
- * PaginationBar 交互式示例
+ * SPaginationBar 交互式示例
  */
 import type { AcceptableValue } from "reka-ui";
 import { ref } from "vue";
 import { Icon } from "@iconify/vue";
-import { PaginationBar } from "@/components/shared/pagination-bar";
+import { SPaginationBar } from "@/components/shared/spagination";
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
@@ -59,8 +59,8 @@ function handleTotalChange(value: AcceptableValue) {
 <route lang="yaml">
 meta:
   layout: default
-  title: PaginationBar 示例
-  menuTitle: PaginationBar
+  title: SPaginationBar 示例
+  menuTitle: SPaginationBar
   menuIcon: lucide:grip-horizontal
   menuGroup: 组件示例
   menuGroupIcon: lucide:component
@@ -72,7 +72,7 @@ meta:
     <!-- 页面标题 -->
     <div class="flex items-center justify-between">
       <div>
-        <h1 class="text-2xl font-semibold tracking-tight">PaginationBar 分页条</h1>
+        <h1 class="text-2xl font-semibold tracking-tight">SPaginationBar 分页条</h1>
         <p class="text-muted-foreground mt-1.5">
           基于 shadcn-vue Pagination 封装的分页组件
         </p>
@@ -198,7 +198,7 @@ meta:
         <CardTitle class="text-base">示例</CardTitle>
       </CardHeader>
       <CardContent>
-        <PaginationBar
+        <SPaginationBar
           :page="page"
           :page-size="pageSize"
           :total="total"
@@ -221,7 +221,7 @@ meta:
         <!-- 少量数据 -->
         <div class="space-y-2">
           <div class="text-sm text-muted-foreground">少量数据 (35条)</div>
-          <PaginationBar
+          <SPaginationBar
             :page="1"
             :page-size="10"
             :total="35"
@@ -232,7 +232,7 @@ meta:
         <!-- 中等数据 -->
         <div class="space-y-2">
           <div class="text-sm text-muted-foreground">中等数据 (200条)</div>
-          <PaginationBar
+          <SPaginationBar
             :page="5"
             :page-size="20"
             :total="200"
@@ -243,7 +243,7 @@ meta:
         <!-- 大量数据 -->
         <div class="space-y-2">
           <div class="text-sm text-muted-foreground">大量数据 (1000条)</div>
-          <PaginationBar
+          <SPaginationBar
             :page="25"
             :page-size="20"
             :total="1000"
@@ -254,7 +254,7 @@ meta:
         <!-- 简洁模式 -->
         <div class="space-y-2">
           <div class="text-sm text-muted-foreground">简洁模式 (不显示总数和切换器)</div>
-          <PaginationBar
+          <SPaginationBar
             :page="3"
             :page-size="10"
             :total="50"
@@ -272,7 +272,7 @@ meta:
         <CardTitle class="text-base">使用示例</CardTitle>
       </CardHeader>
       <CardContent>
-        <pre class="text-xs bg-muted/50 p-4 rounded-lg overflow-x-auto border"><code>&lt;PaginationBar
+        <pre class="text-xs bg-muted/50 p-4 rounded-lg overflow-x-auto border"><code>&lt;SPaginationBar
   v-model:page="page"
   v-model:page-size="pageSize"
   :total="total"
