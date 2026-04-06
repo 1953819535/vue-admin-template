@@ -77,7 +77,6 @@ src/
 ├── composables/         # 组合式函数
 │   └── useAuth.ts       # 权限 Hook
 ├── layouts/             # 布局入口
-│   ├── admin.vue        # 后台管理布局（带侧边栏）
 │   ├── blank.vue        # 空白布局（登录页等）
 │   └── default.vue      # 默认布局
 ├── mock/                # Mock 数据
