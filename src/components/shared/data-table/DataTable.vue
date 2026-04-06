@@ -99,6 +99,30 @@ const paginationTotal = computed(() => {
   return props.remote ? (paginationConfig.value.total ?? 0) : props.data.length;
 });
 
+/** 默认排序比较函数 */
+function compareValues<T>(
+  a: T,
+  b: T,
+  field: keyof T,
+  order: "ascend" | "descend",
+): number {
+  const aValue = (a as any)[field];
+  const bValue = (b as any)[field];
+
+  if (aValue == null && bValue == null) return 0;
+  if (aValue == null) return order === "ascend" ? -1 : 1;
+  if (bValue == null) return order === "ascend" ? 1 : -1;
+
+  if (typeof aValue === "string" && typeof bValue === "string") {
+    return order === "ascend"
+      ? aValue.localeCompare(bValue)
+      : bValue.localeCompare(aValue);
+  }
+
+  const compare = aValue < bValue ? -1 : aValue > bValue ? 1 : 0;
+  return order === "ascend" ? compare : -compare;
+}
+
 const paginatedData = computed(() => {
   let result = props.data;
 
@@ -110,22 +134,7 @@ const paginatedData = computed(() => {
       if (column?.sortFn) {
         return column.sortFn(a, b, order);
       }
-
-      const aValue = (a as any)[field];
-      const bValue = (b as any)[field];
-
-      if (aValue == null && bValue == null) return 0;
-      if (aValue == null) return order === "ascend" ? -1 : 1;
-      if (bValue == null) return order === "ascend" ? 1 : -1;
-
-      if (typeof aValue === "string" && typeof bValue === "string") {
-        return order === "ascend"
-          ? aValue.localeCompare(bValue)
-          : bValue.localeCompare(aValue);
-      }
-
-      const compare = aValue < bValue ? -1 : aValue > bValue ? 1 : 0;
-      return order === "ascend" ? compare : -compare;
+      return compareValues(a, b, field, order);
     });
   }
 
@@ -157,6 +166,15 @@ function handlePageSizeChange(pageSize: number) {
 function getColumnSortOrder(column: ColumnConfig): "ascend" | "descend" | undefined {
   return sortConfig.value?.field === column.key ? sortConfig.value.order : undefined;
 }
+
+// 预计算列排序状态
+const columnSortOrders = computed(() => {
+  const orders = new Map<string, "ascend" | "descend" | undefined>();
+  for (const col of props.columns) {
+    orders.set(col.key, getColumnSortOrder(col));
+  }
+  return orders;
+});
 
 function getNextSortOrder(
   column: ColumnConfig,
@@ -292,9 +310,7 @@ const scrollConfig = computed(() => props.scroll ?? {});
 
 const hasStickyHeader = computed(() => !!scrollConfig.value.y);
 
-const scrollYStyle = computed(() => toPx(scrollConfig.value.y));
-
-// 选择列/展开列宽度 (对应 Tailwind w-12 = 48px)
+/** 选择列/展开列宽度（对应 Tailwind w-12 = 48px） */
 const SELECTION_COLUMN_WIDTH = 48;
 
 const hasFixedColumns = computed(
@@ -339,7 +355,7 @@ const rightOffsets = computed(() => {
   return offsets;
 });
 
-// 预计算所有列的固定样式，避免模板中重复调用
+// 预计算所有列的固定样式
 const columnFixedStyles = computed(() => {
   const styles = new Map<string, Record<string, string>>();
   for (const col of props.columns) {
@@ -369,7 +385,19 @@ const columnWidthStyles = computed(() => {
   return styles;
 });
 
-// 选择列的左侧偏移类名
+// 预计算合并样式，避免模板中每次渲染创建新对象
+const mergedColumnStyles = computed(() => {
+  const styles = new Map<string, Record<string, string>>();
+  for (const col of props.columns) {
+    const widthStyle = columnWidthStyles.value.get(col.key);
+    const fixedStyle = columnFixedStyles.value.get(col.key);
+    if (widthStyle || fixedStyle) {
+      styles.set(col.key, { ...widthStyle, ...fixedStyle });
+    }
+  }
+  return styles;
+});
+
 const selectionColumnLeftClass = computed(() => {
   if (!hasHorizontalScroll.value) return "";
   return hasExpandable.value ? "left-12" : "left-0";
@@ -418,17 +446,15 @@ const borderedCellClass = computed(() =>
   props.bordered ? "shadow-[inset_-1px_0_0_var(--border)]" : ""
 );
 
-// 预计算展开列样式
 const expandColumnClass = computed(() =>
   cn(
     sizeStyle.value.selection,
     "w-12 text-center",
     hasHorizontalScroll.value && "min-w-12 max-w-12 sticky left-0 bg-background",
     borderedCellClass.value,
-  )
+  ),
 );
 
-// 预计算选择列样式
 const selectionColumnClass = computed(() =>
   cn(
     sizeStyle.value.selection,
@@ -436,30 +462,37 @@ const selectionColumnClass = computed(() =>
     hasHorizontalScroll.value && "min-w-12 max-w-12 sticky bg-background",
     selectionColumnLeftClass.value,
     borderedCellClass.value,
-  )
+  ),
 );
 
-// 预计算右固定列列表，避免在 getFixedBorderedClass 中重复过滤
 const rightFixedColumns = computed(() =>
-  props.columns.filter((col) => col.fixed === 'right')
+  props.columns.filter((col) => col.fixed === 'right'),
 );
 
-// 预计算第一个右固定列的 key
 const firstRightFixedKey = computed(() => rightFixedColumns.value[0]?.key);
 
-// 固定列的边框样式（右固定列第一个需要左边框分割线）
+/** 固定列的边框样式（右固定列第一个需要左边框分割线） */
 function getFixedBorderedClass(column: ColumnConfig, isLast: boolean) {
   if (!props.bordered) return "";
 
-  // 右固定列的第一个：需要左边框作为分割线
   if (column.fixed === 'right' && column.key === firstRightFixedKey.value) {
     return isLast
       ? "shadow-[inset_1px_0_0_var(--border)]"
       : "shadow-[inset_1px_0_0_var(--border),inset_-1px_0_0_var(--border)]";
   }
 
-  // 其他列：非最后一列显示右边框
   return isLast ? "" : "shadow-[inset_-1px_0_0_var(--border)]";
+}
+
+/** 获取列的固定样式类名（统一表头和数据列的固定列逻辑） */
+function getColumnFixedClass(column: ColumnConfig, isLast: boolean) {
+  return cn(
+    column.fixed
+      ? getFixedBorderedClass(column, isLast)
+      : (isLast ? '' : borderedCellClass.value),
+    column.fixed === 'left' && 'sticky left-0 bg-background',
+    column.fixed === 'right' && 'sticky right-0 bg-background',
+  );
 }
 
 function getRowKey(row: T, index: number): string | number {
@@ -620,7 +653,6 @@ function getSortIcon(order: "ascend" | "descend" | undefined) {
   return "lucide:arrow-up-down";
 }
 
-// 缓存每行的 key，避免模板中重复计算
 const rowKeyCache = computed(() =>
   paginatedData.value.map((row, index) => getRowKey(row, index)),
 );
@@ -631,7 +663,7 @@ const rowKeyCache = computed(() =>
     <div
       class="relative rounded-md border flex flex-col overflow-hidden data-table-scroll"
       :class="[hasStickyHeader && 'overflow-y-auto', hasHorizontalScroll && 'overflow-x-auto']"
-      :style="hasStickyHeader ? { maxHeight: scrollYStyle } : undefined"
+      :style="hasStickyHeader ? { maxHeight: toPx(scrollConfig.y) } : undefined"
     >
       <div
         v-if="props.loading"
@@ -701,14 +733,10 @@ const rowKeyCache = computed(() =>
                   getAlignClass(column.align),
                   column.sortable &&
                     'cursor-pointer select-none hover:bg-accent/50',
-                  column.fixed
-                    ? getFixedBorderedClass(column, index === props.columns.length - 1)
-                    : (index !== props.columns.length - 1 ? borderedCellClass : ''),
-                  column.fixed === 'left' && 'sticky left-0 bg-background',
-                  column.fixed === 'right' && 'sticky right-0 bg-background',
+                  getColumnFixedClass(column, index === props.columns.length - 1),
                 )
               "
-              :style="{ ...columnWidthStyles.get(column.key), ...columnFixedStyles.get(column.key) }"
+              :style="mergedColumnStyles.get(column.key)"
               @click="column.sortable && handleSortClick(column)"
             >
               <div
@@ -718,9 +746,9 @@ const rowKeyCache = computed(() =>
                 <component :is="() => renderHeader(column, index)" />
                 <span v-if="column.sortable" class="flex items-center">
                   <Icon
-                    :icon="getSortIcon(getColumnSortOrder(column))"
+                    :icon="getSortIcon(columnSortOrders.get(column.key))"
                     :class="
-                      getColumnSortOrder(column)
+                      columnSortOrders.get(column.key)
                         ? 'size-4 text-primary'
                         : 'size-4 text-muted-foreground/50'
                     "
@@ -828,14 +856,10 @@ const rowKeyCache = computed(() =>
                     cn(
                       sizeStyle.cell,
                       getAlignClass(column.align),
-                      column.fixed
-                        ? getFixedBorderedClass(column, colIndex === props.columns.length - 1)
-                        : (colIndex !== props.columns.length - 1 ? borderedCellClass : ''),
-                      column.fixed === 'left' && 'sticky left-0 bg-background',
-                      column.fixed === 'right' && 'sticky right-0 bg-background',
+                      getColumnFixedClass(column, colIndex === props.columns.length - 1),
                     )
                   "
-                  :style="{ ...columnWidthStyles.get(column.key), ...columnFixedStyles.get(column.key) }"
+                  :style="mergedColumnStyles.get(column.key)"
                 >
                   <component :is="() => renderCell(column, row, rowIndex)" />
                 </TableCell>
