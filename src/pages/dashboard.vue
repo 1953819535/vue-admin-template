@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed } from "vue";
+import { ref } from "vue";
 import { Icon } from "@iconify/vue";
 import {
   Card,
@@ -35,8 +35,20 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { SChart } from "@/components/shared/schart";
+import {
+  revenueLineOptions,
+  revenueSeries,
+  userAreaOptions,
+  userSeries,
+  salesBarOptions,
+  salesSeries,
+  categoryDonutOptions,
+  categorySeries,
+  metricsRadarOptions,
+  metricsSeries,
+} from "./dashboard-charts";
 
-// --- 类型定义 ---
 interface StatCard {
   title: string;
   value: string;
@@ -52,7 +64,6 @@ interface Payment {
   amount: string;
 }
 
-// --- 模拟数据 ---
 const stats: StatCard[] = [
   {
     title: "总收入",
@@ -124,16 +135,6 @@ const recentSales = [
   },
 ];
 
-const chartData = [
-  { month: "Jan", revenue: 1200 },
-  { month: "Feb", revenue: 1500 },
-  { month: "Mar", revenue: 1100 },
-  { month: "Apr", revenue: 2100 },
-  { month: "May", revenue: 2400 },
-  { month: "Jun", revenue: 2800 },
-];
-
-// --- 状态管理 ---
 const sliderValue = ref([50]);
 const notificationsEnabled = ref(true);
 const selectedPlan = ref("pro");
@@ -150,17 +151,6 @@ const toggleLoading = () => {
   isLoading.value = true;
   setTimeout(() => (isLoading.value = false), 1500);
 };
-
-// 计算图表路径
-const maxValue = Math.max(...chartData.map((d) => d.revenue));
-const chartPath = computed(() => {
-  const points = chartData.map((d, i) => {
-    const x = (i / (chartData.length - 1)) * 100;
-    const y = 100 - (d.revenue / maxValue) * 80; // 留出顶部空间
-    return `${x},${y}`;
-  });
-  return `M ${points.join(" L ")}`;
-});
 </script>
 
 <template>
@@ -251,78 +241,12 @@ const chartPath = computed(() => {
                 </div>
               </CardHeader>
               <CardContent>
-                <div class="h-[240px] w-full pt-4">
-                  <!-- Simplified Responsive Chart -->
-                  <svg
-                    viewBox="0 0 100 100"
-                    preserveAspectRatio="none"
-                    class="h-full w-full overflow-visible"
-                  >
-                    <defs>
-                      <linearGradient
-                        id="chartGradient"
-                        x1="0"
-                        y1="0"
-                        x2="0"
-                        y2="1"
-                      >
-                        <stop
-                          offset="0%"
-                          stop-color="hsl(var(--primary))"
-                          stop-opacity="0.3"
-                        />
-                        <stop
-                          offset="100%"
-                          stop-color="hsl(var(--primary))"
-                          stop-opacity="0"
-                        />
-                      </linearGradient>
-                    </defs>
-                    <!-- Grid Lines -->
-                    <line
-                      v-for="i in 5"
-                      :key="i"
-                      x1="0"
-                      :y1="i * 20"
-                      x2="100"
-                      :y2="i * 20"
-                      stroke="currentColor"
-                      stroke-opacity="0.1"
-                      stroke-width="0.5"
-                    />
-                    <!-- Area -->
-                    <path
-                      :d="`${chartPath} L 100,100 L 0,100 Z`"
-                      fill="url(#chartGradient)"
-                    />
-                    <!-- Line -->
-                    <path
-                      :d="chartPath"
-                      fill="none"
-                      stroke="hsl(var(--primary))"
-                      stroke-width="2"
-                      stroke-linejoin="round"
-                    />
-                    <!-- Points -->
-                    <circle
-                      v-for="(d, i) in chartData"
-                      :key="i"
-                      :cx="(i / (chartData.length - 1)) * 100"
-                      :cy="100 - (d.revenue / maxValue) * 80"
-                      r="1.5"
-                      fill="white"
-                      stroke="hsl(var(--primary))"
-                      stroke-width="1"
-                    />
-                  </svg>
-                </div>
-                <div
-                  class="flex justify-between mt-4 text-xs text-muted-foreground px-2"
-                >
-                  <span v-for="d in chartData" :key="d.month">{{
-                    d.month
-                  }}</span>
-                </div>
+                <SChart
+                  type="line"
+                  :height="240"
+                  :options="revenueLineOptions"
+                  :series="revenueSeries"
+                />
               </CardContent>
             </Card>
 
@@ -400,6 +324,74 @@ const chartPath = computed(() => {
         </TabsContent>
 
         <TabsContent value="analytics" class="space-y-6">
+          <!-- 图表网格 -->
+          <div class="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+            <!-- 用户增长面积图 -->
+            <Card>
+              <CardHeader>
+                <CardTitle>用户增长</CardTitle>
+                <CardDescription>近6个月新增用户趋势</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <SChart
+                  type="area"
+                  :height="200"
+                  :options="userAreaOptions"
+                  :series="userSeries"
+                />
+              </CardContent>
+            </Card>
+
+            <!-- 销售柱状图 -->
+            <Card>
+              <CardHeader>
+                <CardTitle>产品销量</CardTitle>
+                <CardDescription>各产品本月销售对比</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <SChart
+                  type="bar"
+                  :height="200"
+                  :options="salesBarOptions"
+                  :series="salesSeries"
+                />
+              </CardContent>
+            </Card>
+
+            <!-- 分类占比环形图 -->
+            <Card>
+              <CardHeader>
+                <CardTitle>销售分类占比</CardTitle>
+                <CardDescription>各类别销售额分布</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <SChart
+                  type="donut"
+                  :height="200"
+                  :options="categoryDonutOptions"
+                  :series="categorySeries"
+                />
+              </CardContent>
+            </Card>
+          </div>
+
+          <!-- 雷达图 -->
+          <Card>
+            <CardHeader>
+              <CardTitle>多维度指标分析</CardTitle>
+              <CardDescription>本月与上月关键指标对比</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <SChart
+                type="radar"
+                :height="280"
+                :options="metricsRadarOptions"
+                :series="metricsSeries"
+              />
+            </CardContent>
+          </Card>
+
+          <!-- 原有的进度和控制 -->
           <div class="grid gap-6 md:grid-cols-2">
             <Card>
               <CardHeader>
