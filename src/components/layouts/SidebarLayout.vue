@@ -3,6 +3,7 @@ import Logo from "@/components/app/Logo.vue";
 import Actions from "@/components/app/Actions.vue";
 import VerticalMenu from "@/components/app/VerticalMenu.vue";
 import Announcement from "@/components/app/Announcement.vue";
+import BackToTop from "@/components/shared/back-to-top/index.vue";
 </script>
 
 <template>
@@ -30,9 +31,11 @@ import Announcement from "@/components/app/Announcement.vue";
       <!-- 公告栏 -->
       <Announcement />
 
-      <div class="flex-1 overflow-auto p-6">
+      <div class="flex-1 overflow-auto p-6" data-scroll-container>
         <slot />
       </div>
+
+      <BackToTop />
     </main>
   </div>
 </template>

@@ -71,6 +71,9 @@ importers:
       vue3-apexcharts:
         specifier: ^1.11.1
         version: 1.11.1(apexcharts@5.10.5)(vue@3.5.31(typescript@5.9.3))
+      watermark-plus:
+        specifier: ^1.6.1
+        version: 1.6.1
       zod:
         specifier: 3.25.76
         version: 3.25.76
@@ -212,6 +215,10 @@ packages:
     engines: {node: '>=6.9.0'}
     peerDependencies:
       '@babel/core': ^7.0.0-0
+
+  '@babel/runtime@7.29.2':
+    resolution: {integrity: sha512-JiDShH45zKHWyGe4ZNVRrCjBz8Nh9TMmZG1kh4QTK8hCBTWBi8Da+i7s1fJw7/lYpM4ccepSNfqzZ/QvABBi5g==}
+    engines: {node: '>=6.9.0'}
 
   '@babel/template@7.28.6':
     resolution: {integrity: sha512-YA6Ma2KsCdGb+WC6UpBVFJGXL58MDA6oyONbjyF/+5sBgxY/dwkhLogbMT2GXXyU84/IhRw/2D1Os1B/giz+BQ==}
@@ -710,6 +717,9 @@ packages:
   copy-anything@4.0.5:
     resolution: {integrity: sha512-7Vv6asjS4gMOuILabD3l739tsaxFQmC+a7pLZm02zyvs8p977bL3zEgq3yDk5rn9B0PbYgIv++jmHcuUab4RhA==}
     engines: {node: '>=18'}
+
+  core-js@3.49.0:
+    resolution: {integrity: sha512-es1U2+YTtzpwkxVLwAFdSpaIMyQaq0PBgm3YD1W3Qpsn1NAmO3KSgZfu+oGSWVu6NvLHoHCV/aYcsE5wiB7ALg==}
 
   csstype@3.2.3:
     resolution: {integrity: sha512-z1HGKcYy2xA8AGQfwrn0PAy+PB7X/GSj3UVJW9qKyn43xWa+gl5nXmU4qqLMRzWVLFC8KusUX8T/0kCiOYpAIQ==}
@@ -1241,6 +1251,9 @@ packages:
       typescript:
         optional: true
 
+  watermark-plus@1.6.1:
+    resolution: {integrity: sha512-xcrwy2knvDz0wiyg5jSnFsYsbu1lHqcamJi/CaNqHPENllC0D7WwBWn096tjiqqmOMoptR2JVm56sAU6x6q8RQ==}
+
   yallist@3.1.1:
     resolution: {integrity: sha512-a4UGQaWPH59mOXUYnAG2ewncQS4i4F43Tv3JoAM+s2VDAmS9NsK8GpDMLrCHPksFT7h3K6TOoUNn2pb7RoXx4g==}
 
@@ -1397,6 +1410,8 @@ snapshots:
       '@babel/plugin-syntax-typescript': 7.28.6(@babel/core@7.29.0)
     transitivePeerDependencies:
       - supports-color
+
+  '@babel/runtime@7.29.2': {}
 
   '@babel/template@7.28.6':
     dependencies:
@@ -1912,6 +1927,8 @@ snapshots:
     dependencies:
       is-what: 5.5.0
 
+  core-js@3.49.0: {}
+
   csstype@3.2.3: {}
 
   debug@4.4.3:
@@ -2335,6 +2352,11 @@ snapshots:
       '@vue/shared': 3.5.31
     optionalDependencies:
       typescript: 5.9.3
+
+  watermark-plus@1.6.1:
+    dependencies:
+      '@babel/runtime': 7.29.2
+      core-js: 3.49.0
 
   yallist@3.1.1: {}
 

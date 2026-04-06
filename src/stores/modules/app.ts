@@ -17,6 +17,16 @@ export interface CustomThemeData {
   rawCss: string
 }
 
+/** 水印配置 */
+export interface WatermarkConfig {
+  /** 是否启用水印 */
+  enabled: boolean
+  /** 水印透明度 (0-1) */
+  alpha?: number
+  /** 水印旋转角度 */
+  rotate?: number
+}
+
 const isClient = typeof window !== 'undefined'
 
 // 所有可用主题
@@ -31,6 +41,9 @@ export const useAppStore = defineStore('app', () => {
   const mode = ref<ThemeMode>('system')
   const layout = ref<LayoutType>('sidebar')
   const customTheme = ref<CustomThemeData | null>(null)
+  const watermarkConfig = ref<WatermarkConfig>({
+    enabled: true,
+  })
 
   const systemIsDark = ref(
     isClient
@@ -125,11 +138,20 @@ export const useAppStore = defineStore('app', () => {
     currentTheme.value = 'vintage-paper'
   }
 
+  /** 设置水印配置 */
+  const setWatermarkConfig = (config: Partial<WatermarkConfig>) => {
+    watermarkConfig.value = {
+      ...watermarkConfig.value,
+      ...config,
+    }
+  }
+
   return {
     currentTheme,
     mode,
     layout,
     customTheme,
+    watermarkConfig,
     resolvedMode,
     isDark,
     themeData,
@@ -141,9 +163,10 @@ export const useAppStore = defineStore('app', () => {
     applyTheme,
     setCustomTheme,
     clearCustomTheme,
+    setWatermarkConfig,
   }
 }, {
   persist: {
-    pick: ['currentTheme', 'mode', 'layout', 'customTheme']
+    pick: ['currentTheme', 'mode', 'layout', 'customTheme', 'watermarkConfig']
   }
 })
