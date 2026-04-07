@@ -187,6 +187,21 @@ const multipleClearableOptions = [
   { label: '系统设置', value: 'system' },
 ];
 
+// ========== 大量选项多选 ==========
+const largeValue = ref<string[]>([]);
+const largeOptions = Array.from({ length: 50 }, (_, i) => ({
+  label: `选项 ${i + 1}`,
+  value: `opt-${i + 1}`,
+}));
+
+function handleSelectAll() {
+  largeValue.value = largeOptions.map(o => o.value);
+}
+
+function handleClearAll() {
+  largeValue.value = [];
+}
+
 // ========== 对象比较 (by) ==========
 interface UserItem {
   id: number;
@@ -538,6 +553,30 @@ meta:
         </CardContent>
       </Card>
 
+      <!-- 大量选项多选 -->
+      <Card class="lg:col-span-2">
+        <CardHeader class="pb-3">
+          <CardTitle class="text-base">大量选项多选</CardTitle>
+          <CardDescription>50 个选项的多选场景，测试性能表现</CardDescription>
+        </CardHeader>
+        <CardContent class="space-y-4">
+          <div class="flex gap-2 mb-3">
+            <Button size="sm" variant="outline" @click="handleSelectAll">全选</Button>
+            <Button size="sm" variant="outline" @click="handleClearAll">清空</Button>
+          </div>
+          <SSelect
+            v-model="largeValue"
+            :options="largeOptions"
+            multiple
+            clearable
+            placeholder="请选择"
+          />
+          <div class="text-sm text-muted-foreground">
+            已选: <code class="bg-muted px-1.5 py-0.5 rounded">{{ largeValue.length }} / 50</code>
+          </div>
+        </CardContent>
+      </Card>
+
       <!-- 对象比较 (by) -->
       <Card>
         <CardHeader class="pb-3">
@@ -634,6 +673,12 @@ meta:
                   <td class="py-2 pr-4"><code>boolean</code></td>
                   <td class="py-2 pr-4"><code>false</code></td>
                   <td class="py-2">是否多选</td>
+                </tr>
+                <tr class="border-b">
+                  <td class="py-2 pr-4 font-mono text-foreground">maxTags</td>
+                  <td class="py-2 pr-4"><code>number</code></td>
+                  <td class="py-2 pr-4"><code>3</code></td>
+                  <td class="py-2">多选时最多显示的 tag 数量，超出显示 +N</td>
                 </tr>
                 <tr class="border-b">
                   <td class="py-2 pr-4 font-mono text-foreground">by</td>

@@ -38,6 +38,8 @@ interface SSelectProps {
   clearable?: boolean
   /** 是否多选 */
   multiple?: boolean
+  /** 多选时最多显示的 tag 数量，超出显示 +N */
+  maxTags?: number
   /** 对象比较字段或函数，用于比较对象选项 */
   by?: string | ((a: AcceptableValue, b: AcceptableValue) => boolean)
   /** 自定义触发器样式 */
@@ -54,6 +56,7 @@ const props = withDefaults(defineProps<SSelectProps>(), {
   size: 'default',
   clearable: false,
   multiple: false,
+  maxTags: 3,
 })
 
 // 多选时 value 为数组，单选时为单个值或 undefined
@@ -98,6 +101,12 @@ const selectedTags = computed<SelectOption[]>(() => {
   const values = Array.isArray(props.modelValue) ? props.modelValue : []
   return values.map(v => optionsByValue.value.get(v)).filter(Boolean) as SelectOption[]
 })
+
+// 多选时实际显示的 tags（限制数量）
+const displayTags = computed(() => selectedTags.value.slice(0, props.maxTags))
+
+// 多选时超出限制的数量
+const remainingCount = computed(() => Math.max(0, selectedTags.value.length - props.maxTags))
 
 // 处理分组：支持 options 中的 group 字段或独立的 groups 配置
 const processedGroups = computed(() => {
@@ -202,7 +211,7 @@ function handleRemoveTag(value: AcceptableValue) {
           <div class="flex flex-wrap gap-1 flex-1 min-w-0">
             <template v-if="selectedTags.length > 0">
               <Badge
-                v-for="opt in selectedTags"
+                v-for="opt in displayTags"
                 :key="String(opt.value)"
                 variant="secondary"
                 class="gap-1 pr-1"
@@ -217,6 +226,10 @@ function handleRemoveTag(value: AcceptableValue) {
                 >
                   <X class="size-3" />
                 </span>
+              </Badge>
+              <!-- 超出数量显示 +N -->
+              <Badge v-if="remainingCount > 0" variant="secondary">
+                +{{ remainingCount }}
               </Badge>
             </template>
             <span v-else class="text-muted-foreground">{{ placeholder }}</span>
