@@ -346,7 +346,7 @@ function handleClearCustom() {
                       class="text-primary hover:underline"
                       >tweakcn.com</a
                     >
-                    复制 CSS 或链接
+                    复制链接
                   </div>
                   <div class="flex gap-2">
                     <Input

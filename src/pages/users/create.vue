@@ -4,13 +4,8 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
+import { SSelect } from '@/components/shared'
+import { roleOptions } from '@/constants/user'
 
 const username = ref('')
 const email = ref('')
@@ -69,15 +64,7 @@ meta:
 
           <div class="space-y-2">
             <Label for="role">角色</Label>
-            <Select v-model="role">
-              <SelectTrigger>
-                <SelectValue placeholder="选择角色" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="user">普通用户</SelectItem>
-                <SelectItem value="admin">管理员</SelectItem>
-              </SelectContent>
-            </Select>
+            <SSelect v-model="role" placeholder="选择角色" :options="roleOptions" />
           </div>
 
           <div class="space-y-2">

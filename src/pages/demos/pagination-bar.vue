@@ -3,9 +3,9 @@
  * SPaginationBar 交互式示例
  */
 import type { AcceptableValue } from "reka-ui";
-import { ref } from "vue";
+import { ref, computed } from "vue";
 import { Icon } from "@iconify/vue";
-import { SPaginationBar } from "@/components/shared";
+import { SPaginationBar, SSelect } from "@/components/shared";
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
@@ -16,13 +16,6 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 
 // 分页状态
 const page = ref(1);
@@ -36,6 +29,19 @@ const showSizeChanger = ref(true);
 // 模拟数据变化
 const pageSizes = [10, 20, 50, 100];
 
+// 选项配置
+const pageSizeOptions = computed(() =>
+  pageSizes.map(s => ({ label: String(s), value: String(s) }))
+);
+
+const totalOptions = [
+  { label: '50', value: '50' },
+  { label: '100', value: '100' },
+  { label: '200', value: '200' },
+  { label: '500', value: '500' },
+  { label: '1000', value: '1000' },
+];
+
 function handleChange(newPage: number, newPageSize: number) {
   console.log("页码:", newPage, "每页条数:", newPageSize);
 }
@@ -47,12 +53,16 @@ function updateTotal(newTotal: number) {
   page.value = 1;
 }
 
-function handlePageSizeChange(value: AcceptableValue) {
-  pageSize.value = Number(value);
+function handlePageSizeChange(value: AcceptableValue | undefined) {
+  if (value !== undefined) {
+    pageSize.value = Number(value);
+  }
 }
 
-function handleTotalChange(value: AcceptableValue) {
-  updateTotal(Number(value));
+function handleTotalChange(value: AcceptableValue | undefined) {
+  if (value !== undefined) {
+    updateTotal(Number(value));
+  }
 }
 </script>
 
@@ -114,32 +124,22 @@ meta:
 
               <div class="flex items-center gap-3">
                 <Label class="w-20 text-muted-foreground">每页条数</Label>
-                <Select :model-value="String(pageSize)" @update:model-value="handlePageSizeChange">
-                  <SelectTrigger class="w-20 h-8">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem v-for="size in pageSizes" :key="size" :value="String(size)">
-                      {{ size }}
-                    </SelectItem>
-                  </SelectContent>
-                </Select>
+                <SSelect
+                  :model-value="String(pageSize)"
+                  :options="pageSizeOptions"
+                  trigger-class="w-20 h-8"
+                  @change="handlePageSizeChange"
+                />
               </div>
 
               <div class="flex items-center gap-3">
                 <Label class="w-20 text-muted-foreground">总条数</Label>
-                <Select :model-value="String(total)" @update:model-value="handleTotalChange">
-                  <SelectTrigger class="w-20 h-8">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="50">50</SelectItem>
-                    <SelectItem value="100">100</SelectItem>
-                    <SelectItem value="200">200</SelectItem>
-                    <SelectItem value="500">500</SelectItem>
-                    <SelectItem value="1000">1000</SelectItem>
-                  </SelectContent>
-                </Select>
+                <SSelect
+                  :model-value="String(total)"
+                  :options="totalOptions"
+                  trigger-class="w-20 h-8"
+                  @change="handleTotalChange"
+                />
               </div>
             </div>
           </div>

@@ -5,7 +5,7 @@
  */
 import { ref, computed, defineComponent } from "vue";
 import { Icon } from "@iconify/vue";
-import { SDataTable } from "@/components/shared";
+import { SDataTable, SSelect } from "@/components/shared";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -17,13 +17,6 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import type {
   RowSelection,
   ColumnConfig,
@@ -209,6 +202,31 @@ const data = ref<User[]>([
 ]);
 
 // ========== 配置项 ==========
+
+// 选项配置
+const sizeOptions = [
+  { label: '超小', value: 'xs' },
+  { label: '小', value: 'sm' },
+  { label: '中', value: 'md' },
+  { label: '大', value: 'lg' },
+]
+
+const selectionTypeOptions = [
+  { label: '多选', value: 'multiple' },
+  { label: '单选', value: 'single' },
+]
+
+const paginationPositionOptions = [
+  { label: '左对齐', value: 'left' },
+  { label: '居中', value: 'center' },
+  { label: '右对齐', value: 'right' },
+]
+
+const scrollYOptions = [
+  { label: '200px', value: '200' },
+  { label: '500px', value: '500' },
+  { label: '700px', value: '700' },
+]
 
 // 表格大小
 const size = ref<"xs" | "sm" | "md" | "lg">("md");
@@ -518,17 +536,7 @@ meta:
             <div class="space-y-3">
               <div class="flex items-center gap-3">
                 <Label class="w-16 text-muted-foreground">大小</Label>
-                <Select v-model="size">
-                  <SelectTrigger class="w-full">
-                    <SelectValue placeholder="选择大小" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="xs">超小</SelectItem>
-                    <SelectItem value="sm">小</SelectItem>
-                    <SelectItem value="md">中</SelectItem>
-                    <SelectItem value="lg">大</SelectItem>
-                  </SelectContent>
-                </Select>
+                <SSelect v-model="size" :options="sizeOptions" placeholder="选择大小" />
               </div>
 
               <div class="flex items-center gap-3">
@@ -578,15 +586,7 @@ meta:
 
               <div class="flex items-center gap-3">
                 <Label class="w-16 text-muted-foreground">模式</Label>
-                <Select v-model="selectionType" :disabled="!enableSelection">
-                  <SelectTrigger class="w-full">
-                    <SelectValue placeholder="选择模式" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="multiple">多选</SelectItem>
-                    <SelectItem value="single">单选</SelectItem>
-                  </SelectContent>
-                </Select>
+                <SSelect v-model="selectionType" :options="selectionTypeOptions" :disabled="!enableSelection" placeholder="选择模式" />
               </div>
 
               <p class="text-xs text-muted-foreground">
@@ -661,19 +661,12 @@ meta:
 
               <div class="flex items-center gap-3">
                 <Label class="w-16 text-muted-foreground">位置</Label>
-                <Select
+                <SSelect
                   v-model="paginationPosition"
+                  :options="paginationPositionOptions"
                   :disabled="!enablePagination"
-                >
-                  <SelectTrigger class="w-full">
-                    <SelectValue placeholder="选择位置" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="left">左对齐</SelectItem>
-                    <SelectItem value="center">居中</SelectItem>
-                    <SelectItem value="right">右对齐</SelectItem>
-                  </SelectContent>
-                </Select>
+                  placeholder="选择位置"
+                />
               </div>
 
               <label class="flex items-center gap-2 cursor-pointer">
@@ -810,16 +803,7 @@ meta:
 
               <div v-if="enableScrollY" class="flex items-center gap-3">
                 <Label class="w-16 text-muted-foreground">高度</Label>
-                <Select v-model="scrollYValue">
-                  <SelectTrigger class="w-full">
-                    <SelectValue placeholder="选择高度" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="200">200px</SelectItem>
-                    <SelectItem value="500">500px</SelectItem>
-                    <SelectItem value="700">700px</SelectItem>
-                  </SelectContent>
-                </Select>
+                <SSelect v-model="scrollYValue" :options="scrollYOptions" placeholder="选择高度" />
               </div>
 
               <label class="flex items-center gap-2 cursor-pointer">

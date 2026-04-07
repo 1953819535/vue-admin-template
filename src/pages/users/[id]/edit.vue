@@ -5,13 +5,8 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
+import { SSelect } from '@/components/shared'
+import { roleOptions, statusOptions } from '@/constants/user'
 
 const route = useRoute()
 const userId = route.params.id
@@ -68,28 +63,12 @@ meta:
 
           <div class="space-y-2">
             <Label for="role">角色</Label>
-            <Select v-model="role">
-              <SelectTrigger>
-                <SelectValue placeholder="选择角色" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="user">普通用户</SelectItem>
-                <SelectItem value="admin">管理员</SelectItem>
-              </SelectContent>
-            </Select>
+            <SSelect v-model="role" placeholder="选择角色" :options="roleOptions" />
           </div>
 
           <div class="space-y-2">
             <Label for="status">状态</Label>
-            <Select v-model="status">
-              <SelectTrigger>
-                <SelectValue placeholder="选择状态" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="active">活跃</SelectItem>
-                <SelectItem value="inactive">禁用</SelectItem>
-              </SelectContent>
-            </Select>
+            <SSelect v-model="status" placeholder="选择状态" :options="statusOptions" />
           </div>
 
           <div class="pt-4 flex gap-4">
