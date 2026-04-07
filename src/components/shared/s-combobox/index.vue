@@ -1,10 +1,11 @@
 <script setup lang="ts">
-import type { AcceptableValue } from "reka-ui";
-import type { HTMLAttributes } from "vue";
-import { computed, onBeforeUnmount, ref, watch } from "vue";
-import { Check, ChevronsUpDown, X } from "lucide-vue-next";
-import { cn } from "@/lib/utils";
-import { Button } from "@/components/ui/button";
+import type { AcceptableValue } from 'reka-ui'
+import type { HTMLAttributes } from 'vue'
+import { computed, ref, watch } from 'vue'
+import { useDebounceFn } from '@vueuse/core'
+import { Check, ChevronsUpDown, X } from 'lucide-vue-next'
+import { cn } from '@/lib/utils'
+import { Button } from '@/components/ui/button'
 import {
   Command,
   CommandEmpty,
@@ -12,313 +13,207 @@ import {
   CommandInput,
   CommandItem,
   CommandList,
-} from "@/components/ui/command";
+} from '@/components/ui/command'
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from "@/components/ui/popover";
-import { Badge } from "@/components/ui/badge";
-import type {
-  ComboboxOption,
-  ComboboxOptionGroup,
-  RemoteSearchFn,
-} from "./types";
+} from '@/components/ui/popover'
+import { Badge } from '@/components/ui/badge'
+import type { ComboboxOption, ComboboxOptionGroup, RemoteSearchFn } from './types'
 
-defineOptions({ inheritAttrs: false });
+defineOptions({ inheritAttrs: false })
 
 interface SComboboxProps {
-  modelValue?: AcceptableValue | AcceptableValue[];
-  options?: ComboboxOption[];
-  groups?: ComboboxOptionGroup[];
-  placeholder?: string;
-  searchPlaceholder?: string;
-  disabled?: boolean;
-  size?: "sm" | "default";
-  clearable?: boolean;
-  multiple?: boolean;
-  maxTags?: number;
-  by?: string | ((a: AcceptableValue, b: AcceptableValue) => boolean);
-  remoteMethod?: RemoteSearchFn;
-  loading?: boolean;
-  triggerClass?: HTMLAttributes["class"];
-  contentClass?: HTMLAttributes["class"];
-  class?: HTMLAttributes["class"];
+  modelValue?: AcceptableValue | AcceptableValue[]
+  options?: ComboboxOption[]
+  groups?: ComboboxOptionGroup[]
+  placeholder?: string
+  searchPlaceholder?: string
+  disabled?: boolean
+  size?: 'sm' | 'default'
+  clearable?: boolean
+  multiple?: boolean
+  maxTags?: number
+  by?: string | ((a: AcceptableValue, b: AcceptableValue) => boolean)
+  remoteMethod?: RemoteSearchFn
+  loading?: boolean
+  triggerClass?: HTMLAttributes['class']
+  contentClass?: HTMLAttributes['class']
 }
 
 const props = withDefaults(defineProps<SComboboxProps>(), {
   options: () => [],
-  placeholder: "请选择",
-  searchPlaceholder: "搜索...",
-  size: "default",
+  placeholder: '请选择',
+  searchPlaceholder: '搜索...',
+  size: 'default',
   clearable: false,
   multiple: false,
   maxTags: 3,
-});
+})
 
 const emit = defineEmits<{
-  "update:modelValue": [value: AcceptableValue | AcceptableValue[] | undefined];
-  change: [value: AcceptableValue | AcceptableValue[] | undefined];
-  "visible-change": [visible: boolean];
-  clear: [];
-  search: [query: string];
-}>();
+  'update:modelValue': [value: AcceptableValue | AcceptableValue[] | undefined]
+  'change': [value: AcceptableValue | AcceptableValue[] | undefined]
+  'visible-change': [visible: boolean]
+  'clear': []
+  'search': [query: string]
+}>()
 
-const open = ref(false);
-const searchQuery = ref("");
-const remoteOptions = ref<ComboboxOption[]>([]);
-const remoteLoading = ref(false);
-let searchVersion = 0;
+const open = ref(false)
+const searchQuery = ref('')
+const remoteOptions = ref<ComboboxOption[]>([])
+const remoteLoading = ref(false)
 
-// 选项缓存：解决远端搜索关闭后，已选项丢失 label 导致 Tag 消失的问题
-const optionCache = new Map<AcceptableValue, ComboboxOption>();
+// 简化的缓存：仅用于远程搜索时保留已选项的 label 显示
+const selectedCache = new Map<AcceptableValue, ComboboxOption>()
 
-const allOptions = computed(() =>
-  props.groups ? props.groups.flatMap((g) => g.options) : props.options,
-);
-
+// 当前显示的选项（远程优先，否则静态）
 const displayOptions = computed(() => {
   if (props.remoteMethod && searchQuery.value) {
-    return remoteOptions.value;
+    return remoteOptions.value
   }
-  return allOptions.value ?? [];
-});
+  return props.groups ? props.groups.flatMap(g => g.options) : props.options
+})
 
-// 监听展示数据，动态更新缓存
-watch(
-  displayOptions,
-  (opts) => {
-    opts.forEach((opt) => optionCache.set(opt.value, opt));
-  },
-  { immediate: true },
-);
+// 缓存当前显示的选项
+watch(displayOptions, (opts) => {
+  opts.forEach(opt => selectedCache.set(opt.value, opt))
+}, { immediate: true })
 
-const optionsByValue = computed(() => {
-  const map = new Map<AcceptableValue, ComboboxOption>();
-  allOptions.value?.forEach((opt) => map.set(opt.value, opt));
-  if (props.remoteMethod && searchQuery.value) {
-    remoteOptions.value.forEach((opt) => map.set(opt.value, opt));
-  }
-  return map;
-});
-
-function findOptionByValue(value: AcceptableValue): ComboboxOption | undefined {
-  const byProp = props.by;
-  if (byProp) {
-    if (typeof byProp === "string") {
-      const targetValue = (value as Record<string, any>)?.[byProp];
-      const checkProp = (opt: ComboboxOption) =>
-        (opt.value as Record<string, any>)?.[byProp] === targetValue;
-
-      return (
-        allOptions.value?.find(checkProp) ||
-        remoteOptions.value.find(checkProp) ||
-        Array.from(optionCache.values()).find(checkProp)
-      );
-    }
-    const checkFn = (opt: ComboboxOption) => byProp(opt.value, value);
-    return (
-      allOptions.value?.find(checkFn) ||
-      remoteOptions.value.find(checkFn) ||
-      Array.from(optionCache.values()).find(checkFn)
-    );
-  }
-  return optionsByValue.value.get(value) ?? optionCache.get(value);
+// 比较两个值是否相等
+function isEqual(a: AcceptableValue, b: AcceptableValue): boolean {
+  if (!props.by) return a === b
+  if (typeof props.by === 'function') return props.by(a, b)
+  // by 为字符串时，比较对象属性
+  const byKey = props.by as string
+  const getVal = (v: AcceptableValue) =>
+    typeof v === 'object' && v !== null ? (v as Record<string, any>)[byKey] : undefined
+  return getVal(a) === getVal(b)
 }
 
+// 查找选项
+function findOption(value: AcceptableValue): ComboboxOption | undefined {
+  const match = (opt: ComboboxOption) => isEqual(opt.value, value)
+  // 先从缓存找，再从当前显示的找
+  return selectedCache.get(value) ?? displayOptions.value.find(match)
+}
+
+// 单选当前选项
 const selectedOption = computed(() => {
-  if (props.multiple) return null;
-  if (props.modelValue === undefined || props.modelValue === null) return null;
-  return findOptionByValue(props.modelValue) ?? null;
-});
+  if (props.multiple || props.modelValue == null) return null
+  return findOption(props.modelValue)
+})
 
-const selectedTags = computed<ComboboxOption[]>(() => {
-  if (!props.multiple) return [];
-  const values = Array.isArray(props.modelValue) ? props.modelValue : [];
-  return values
-    .map((v) => findOptionByValue(v))
-    .filter(Boolean) as ComboboxOption[];
-});
+// 多选标签列表
+const selectedTags = computed(() => {
+  if (!props.multiple || !Array.isArray(props.modelValue)) return []
+  return props.modelValue.map(v => findOption(v)).filter(Boolean) as ComboboxOption[]
+})
 
-const displayTags = computed(() => selectedTags.value.slice(0, props.maxTags));
-const remainingCount = computed(() =>
-  Math.max(0, selectedTags.value.length - props.maxTags),
-);
+const displayTags = computed(() => selectedTags.value.slice(0, props.maxTags))
+const remainingCount = computed(() => Math.max(0, selectedTags.value.length - props.maxTags))
 
-const selectedValuesSet = computed(() => {
-  if (!props.multiple || props.by) return null;
-  return new Set(Array.isArray(props.modelValue) ? props.modelValue : []);
-});
-
-const processedGroups = computed(() => {
-  if (props.groups?.length) return props.groups;
-  if (!displayOptions.value.length) return [];
-
-  const groupMap = new Map<string, ComboboxOption[]>();
-  for (const opt of displayOptions.value) {
-    const groupKey = opt.group || "";
-    if (!groupMap.has(groupKey)) groupMap.set(groupKey, []);
-    groupMap.get(groupKey)!.push(opt);
-  }
-
-  if (groupMap.size === 1 && groupMap.has("")) {
-    return [{ label: "", options: displayOptions.value }];
-  }
-
-  return Array.from(groupMap.entries()).map(([label, options]) => ({
-    label,
-    options,
-  }));
-});
-
-// 修复：添加 !props.disabled 限制
 const showClear = computed(() => {
-  if (!props.clearable || props.disabled) return false;
-  if (props.multiple) {
-    return Array.isArray(props.modelValue) && props.modelValue.length > 0;
-  }
-  return (
-    props.modelValue !== undefined &&
-    props.modelValue !== null &&
-    props.modelValue !== ""
-  );
-});
+  if (!props.clearable || props.disabled) return false
+  if (props.multiple) return Array.isArray(props.modelValue) && props.modelValue.length > 0
+  return props.modelValue != null && props.modelValue !== ''
+})
 
-function isEqual(val1: AcceptableValue, val2: AcceptableValue): boolean {
-  if (props.by) {
-    if (typeof props.by === "string") {
-      return (
-        (val1 as Record<string, any>)?.[props.by] ===
-        (val2 as Record<string, any>)?.[props.by]
-      );
-    }
-    return props.by(val1, val2);
+// 选项 key（防止对象值变成 "[object Object]"）
+function getOptionKey(opt: ComboboxOption): string {
+  const v = opt.value
+  if (typeof v === 'object' && v !== null) {
+    return JSON.stringify(v)
   }
-  return val1 === val2;
+  return String(v ?? '__empty__')
 }
 
-// 修复：安全的 key 生成函数，防止对象直接 toString 变成 "[object Object]"
-function getOptionKey(opt: ComboboxOption): string | number {
-  if (typeof opt.value === "object" && opt.value !== null) {
-    if (props.by && typeof props.by === "string") {
-      return String((opt.value as any)[props.by]);
-    }
-    return JSON.stringify(opt.value);
+// 多选时已选值的 Set（O(1) 查找），仅当无 by prop 时使用
+const selectedValuesSet = computed(() => {
+  if (!props.multiple || props.by) return null
+  return new Set(Array.isArray(props.modelValue) ? props.modelValue : [])
+})
+
+// 判断是否选中
+function isSelected(value: AcceptableValue): boolean {
+  if (!props.multiple) {
+    return props.modelValue != null && isEqual(props.modelValue, value)
   }
-  return String(opt.value);
+  // 有 by prop 时用遍历比较，否则用 Set O(1) 查找
+  if (selectedValuesSet.value) {
+    return selectedValuesSet.value.has(value)
+  }
+  const arr = Array.isArray(props.modelValue) ? props.modelValue : []
+  return arr.some(v => isEqual(v, value))
 }
+
+// 远程搜索版本号（防止竞态）
+let searchVersion = 0
 
 async function handleRemoteSearch(query: string) {
-  if (!props.remoteMethod) return;
-
-  const currentVersion = ++searchVersion;
-  remoteLoading.value = true;
-  emit("search", query);
-
+  if (!props.remoteMethod) return
+  const version = ++searchVersion
+  remoteLoading.value = true
+  emit('search', query)
   try {
-    const results = await props.remoteMethod(query);
-    if (currentVersion === searchVersion) {
-      remoteOptions.value = results;
-    }
-  } catch (error) {
-    if (currentVersion === searchVersion) {
-      console.error("Remote search failed:", error);
-      remoteOptions.value = [];
-    }
+    const results = await props.remoteMethod(query)
+    if (version === searchVersion) remoteOptions.value = results
+  } catch {
+    if (version === searchVersion) remoteOptions.value = []
   } finally {
-    if (currentVersion === searchVersion) {
-      remoteLoading.value = false;
-    }
+    if (version === searchVersion) remoteLoading.value = false
   }
 }
 
-let debounceTimer: ReturnType<typeof setTimeout> | null = null;
+// 远程搜索防抖
+const debouncedRemoteSearch = useDebounceFn(handleRemoteSearch, 300)
+
 watch(searchQuery, (query) => {
-  if (!props.remoteMethod || !open.value) return;
-  if (debounceTimer) clearTimeout(debounceTimer);
-  debounceTimer = setTimeout(() => handleRemoteSearch(query), 300);
-});
-
-onBeforeUnmount(() => {
-  if (debounceTimer) clearTimeout(debounceTimer);
-});
-
-function customFilter(val: string | AcceptableValue, search: string): number {
-  if (!search) return 1;
-  const option = findOptionByValue(val as AcceptableValue);
-  if (option?.label?.toLowerCase().includes(search.toLowerCase())) return 1;
-  return 0;
-}
+  if (!props.remoteMethod || !open.value) return
+  debouncedRemoteSearch(query)
+})
 
 watch(open, (isOpen) => {
+  emit('visible-change', isOpen)
   if (!isOpen) {
-    if (debounceTimer) {
-      clearTimeout(debounceTimer);
-      debounceTimer = null;
-    }
-    searchQuery.value = "";
-    if (props.remoteMethod) {
-      remoteOptions.value = [];
-      searchVersion = 0;
-    }
+    searchQuery.value = ''
+    remoteOptions.value = []
+    searchVersion = 0
   }
-  emit("visible-change", isOpen);
-});
+})
 
 function handleSelect(value: AcceptableValue) {
   if (props.multiple) {
-    const currentValues = Array.isArray(props.modelValue)
-      ? props.modelValue
-      : [];
-    const isExist = currentValues.some((v) => isEqual(v, value));
-    const newValues = isExist
-      ? currentValues.filter((v) => !isEqual(v, value))
-      : [...currentValues, value];
-    emit("update:modelValue", newValues);
-    emit("change", newValues);
-    searchQuery.value = ""; // 多选模式下清空搜索，方便连续选择
+    const arr = Array.isArray(props.modelValue) ? props.modelValue : []
+    const exists = arr.some(v => isEqual(v, value))
+    const newValue = exists ? arr.filter(v => !isEqual(v, value)) : [...arr, value]
+    emit('update:modelValue', newValue)
+    emit('change', newValue)
+    searchQuery.value = ''
   } else {
-    const isSame =
-      props.modelValue !== undefined &&
-      props.modelValue !== null &&
-      isEqual(props.modelValue as AcceptableValue, value);
-    const newValue = isSame ? undefined : value;
-    emit("update:modelValue", newValue);
-    emit("change", newValue);
-    open.value = false; // 单选关闭即可，依赖 watch(open) 自动清空搜索
+    const same = props.modelValue != null && isEqual(props.modelValue, value)
+    const newValue = same ? undefined : value
+    emit('update:modelValue', newValue)
+    emit('change', newValue)
+    open.value = false
   }
 }
 
-function handleClear(event: MouseEvent | PointerEvent) {
-  event.stopPropagation();
-  event.preventDefault();
-  emit("update:modelValue", props.multiple ? [] : undefined);
-  emit("change", props.multiple ? [] : undefined);
-  emit("clear");
+function handleClear(e: Event) {
+  e.stopPropagation()
+  e.preventDefault()
+  const newValue = props.multiple ? [] : undefined
+  emit('update:modelValue', newValue)
+  emit('change', newValue)
+  emit('clear')
 }
 
 function handleRemoveTag(value: AcceptableValue) {
-  if (!props.multiple || !Array.isArray(props.modelValue)) return;
-  const newValue = props.modelValue.filter((v) => !isEqual(v, value));
-  emit("update:modelValue", newValue);
-  emit("change", newValue);
-}
-
-function isSelected(value: AcceptableValue): boolean {
-  if (props.multiple) {
-    if (selectedValuesSet.value) {
-      return selectedValuesSet.value.has(value);
-    }
-    const currentValues = Array.isArray(props.modelValue)
-      ? props.modelValue
-      : [];
-    return currentValues.some((v) => isEqual(v, value));
-  }
-  return (
-    props.modelValue !== undefined &&
-    props.modelValue !== null &&
-    isEqual(props.modelValue as AcceptableValue, value)
-  );
+  if (!props.multiple || !Array.isArray(props.modelValue)) return
+  const newValue = props.modelValue.filter(v => !isEqual(v, value))
+  emit('update:modelValue', newValue)
+  emit('change', newValue)
 }
 </script>
 
@@ -330,16 +225,9 @@ function isSelected(value: AcceptableValue): boolean {
           variant="outline"
           role="combobox"
           :aria-expanded="open"
-          :aria-disabled="disabled"
           :disabled="disabled"
           :size="size"
-          :class="
-            cn(
-              'w-full justify-between font-normal',
-              showClear && 'pr-12',
-              triggerClass,
-            )
-          "
+          :class="cn('w-full justify-between font-normal', showClear && 'pr-12', triggerClass)"
         >
           <span v-if="$slots.prefix" class="mr-2 shrink-0">
             <slot name="prefix" />
@@ -347,16 +235,9 @@ function isSelected(value: AcceptableValue): boolean {
 
           <template v-if="multiple">
             <div class="flex flex-wrap gap-1 flex-1 min-w-0">
-              <template v-if="selectedTags.length > 0">
-                <Badge
-                  v-for="opt in displayTags"
-                  :key="getOptionKey(opt)"
-                  variant="secondary"
-                  class="gap-1 pr-1"
-                >
-                  <slot name="tag" :option="opt">
-                    {{ opt.label }}
-                  </slot>
+              <template v-if="selectedTags.length">
+                <Badge v-for="opt in displayTags" :key="getOptionKey(opt)" variant="secondary" class="gap-1 pr-1">
+                  <slot name="tag" :option="opt">{{ opt.label }}</slot>
                   <span
                     class="hover:bg-secondary-foreground/20 rounded-sm cursor-pointer"
                     @pointerdown.stop.prevent="handleRemoveTag(opt.value)"
@@ -365,86 +246,70 @@ function isSelected(value: AcceptableValue): boolean {
                     <X class="size-3" />
                   </span>
                 </Badge>
-                <Badge v-if="remainingCount > 0" variant="secondary">
-                  +{{ remainingCount }}
-                </Badge>
+                <Badge v-if="remainingCount > 0" variant="secondary">+{{ remainingCount }}</Badge>
               </template>
-              <span v-else class="text-muted-foreground">{{
-                placeholder
-              }}</span>
+              <span v-else class="text-muted-foreground">{{ placeholder }}</span>
             </div>
           </template>
 
           <template v-else>
             <span v-if="selectedOption" class="flex-1 truncate">
-              <slot name="label" :option="selectedOption">
-                {{ selectedOption.label }}
-              </slot>
+              <slot name="label" :option="selectedOption">{{ selectedOption.label }}</slot>
             </span>
-            <span v-else class="text-muted-foreground flex-1 truncate">{{
-              placeholder
-            }}</span>
+            <span v-else class="text-muted-foreground flex-1 truncate">{{ placeholder }}</span>
           </template>
 
           <ChevronsUpDown class="ml-2 size-4 shrink-0 opacity-50" />
         </Button>
       </PopoverTrigger>
 
-      <PopoverContent
-        :class="cn('p-0', contentClass)"
-        align="start"
-        :style="{ width: 'var(--reka-popover-trigger-width)' }"
-      >
-        <Command
-          :by="by"
-          :filter-function="customFilter"
-          :should-filter="!remoteMethod"
-        >
-          <CommandInput
-            v-model="searchQuery"
-            :placeholder="searchPlaceholder"
-            class="h-9"
-          />
-
+      <PopoverContent :class="cn('p-0', contentClass)" align="start" :style="{ width: 'var(--reka-popover-trigger-width)' }">
+        <Command :by="by" :should-filter="!remoteMethod">
+          <CommandInput v-model="searchQuery" :placeholder="searchPlaceholder" class="h-9" />
           <CommandList>
-            <div
-              v-if="remoteLoading || loading"
-              class="py-6 text-center text-sm text-muted-foreground"
-            >
+            <div v-if="remoteLoading || loading" class="py-6 text-center text-sm text-muted-foreground">
               加载中...
             </div>
 
             <template v-else>
-              <CommandGroup
-                v-for="group in processedGroups"
-                :key="group.label"
-                :heading="group.label || undefined"
-              >
-                <!-- 替换原先的 String(opt.value) 防止对象报 Duplicate keys 警告 -->
-                <CommandItem
-                  v-for="opt in group.options"
-                  :key="getOptionKey(opt)"
-                  :value="opt.value"
-                  :disabled="opt.disabled"
-                  @select="handleSelect(opt.value)"
-                >
-                  <Check
-                    :class="
-                      cn(
-                        'mr-2 size-4',
-                        isSelected(opt.value) ? 'opacity-100' : 'opacity-0',
-                      )
-                    "
-                  />
-                  <slot name="option" :option="opt">
-                    {{ opt.label }}
-                  </slot>
-                </CommandItem>
-              </CommandGroup>
+              <!-- 无选项时的空状态 -->
+              <div v-if="!displayOptions.length && !groups?.length" class="py-6 text-center text-sm text-muted-foreground">
+                <slot name="empty">暂无数据</slot>
+              </div>
 
-              <CommandEmpty>
-                <slot name="empty">无匹配结果</slot>
-              </CommandEmpty>
+              <template v-else>
+                <template v-if="groups?.length">
+                  <CommandGroup v-for="g in groups" :key="g.label" :heading="g.label">
+                    <CommandItem
+                      v-for="opt in g.options"
+                      :key="getOptionKey(opt)"
+                      :value="opt.value"
+                      :disabled="opt.disabled"
+                      @select="handleSelect(opt.value)"
+                    >
+                      <Check :class="cn('mr-2 size-4', isSelected(opt.value) ? 'opacity-100' : 'opacity-0')" />
+                      <slot name="option" :option="opt">{{ opt.label }}</slot>
+                    </CommandItem>
+                  </CommandGroup>
+                </template>
+
+                <CommandGroup v-else>
+                  <CommandItem
+                    v-for="opt in displayOptions"
+                    :key="getOptionKey(opt)"
+                    :value="opt.value"
+                    :disabled="opt.disabled"
+                    @select="handleSelect(opt.value)"
+                  >
+                    <Check :class="cn('mr-2 size-4', isSelected(opt.value) ? 'opacity-100' : 'opacity-0')" />
+                    <slot name="option" :option="opt">{{ opt.label }}</slot>
+                  </CommandItem>
+                </CommandGroup>
+
+                <CommandEmpty>
+                  <slot name="empty">无匹配结果</slot>
+                </CommandEmpty>
+              </template>
             </template>
           </CommandList>
 
@@ -455,7 +320,7 @@ function isSelected(value: AcceptableValue): boolean {
 
     <span
       v-if="showClear"
-      class="absolute right-8 top-1/2 -translate-y-1/2 flex items-center justify-center opacity-0 transition-opacity group-hover:opacity-100 hover:opacity-80 cursor-pointer"
+      class="absolute right-8 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 cursor-pointer"
       @pointerdown.stop.prevent="handleClear"
       @click.stop.prevent
     >

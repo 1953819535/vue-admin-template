@@ -66,17 +66,6 @@ const disabledItemOptions = [
 
 // ========== 分组选项 ==========
 const groupValue = ref<string>();
-const groupOptions = [
-  { label: '北京', value: 'bj', group: '华北' },
-  { label: '天津', value: 'tj', group: '华北' },
-  { label: '上海', value: 'sh', group: '华东' },
-  { label: '杭州', value: 'hz', group: '华东' },
-  { label: '广州', value: 'gz', group: '华南' },
-  { label: '深圳', value: 'sz', group: '华南' },
-];
-
-// 使用 groups 配置
-const groupValue2 = ref<string>();
 const cityGroups = [
   {
     label: '华北地区',
@@ -341,30 +330,16 @@ meta:
         </CardContent>
       </Card>
 
-      <!-- 分组选项 - 使用 group 字段 -->
+      <!-- 分组选项 -->
       <Card>
         <CardHeader class="pb-3">
           <CardTitle class="text-base">分组选项</CardTitle>
-          <CardDescription>通过 options 中的 group 字段分组</CardDescription>
-        </CardHeader>
-        <CardContent class="space-y-4">
-          <SCombobox v-model="groupValue" :options="groupOptions" placeholder="请选择城市" />
-          <div class="text-sm text-muted-foreground">
-            当前值: <code class="bg-muted px-1.5 py-0.5 rounded">{{ groupValue ?? '未选择' }}</code>
-          </div>
-        </CardContent>
-      </Card>
-
-      <!-- 分组选项 - 使用 groups 配置 -->
-      <Card>
-        <CardHeader class="pb-3">
-          <CardTitle class="text-base">分组选项 (groups)</CardTitle>
           <CardDescription>通过 groups 属性配置分组</CardDescription>
         </CardHeader>
         <CardContent class="space-y-4">
-          <SCombobox v-model="groupValue2" :groups="cityGroups" placeholder="请选择城市" />
+          <SCombobox v-model="groupValue" :groups="cityGroups" placeholder="请选择城市" />
           <div class="text-sm text-muted-foreground">
-            当前值: <code class="bg-muted px-1.5 py-0.5 rounded">{{ groupValue2 ?? '未选择' }}</code>
+            当前值: <code class="bg-muted px-1.5 py-0.5 rounded">{{ groupValue ?? '未选择' }}</code>
           </div>
         </CardContent>
       </Card>
