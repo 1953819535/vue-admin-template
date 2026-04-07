@@ -3,7 +3,7 @@ import Logo from '@/components/app/Logo.vue'
 import Actions from '@/components/app/Actions.vue'
 import HorizontalMenu from '@/components/app/HorizontalMenu.vue'
 import Announcement from '@/components/app/Announcement.vue'
-import BackToTop from '@/components/shared/back-to-top/index.vue'
+import BackToTop from '@/components/app/BackToTop.vue'
 </script>
 
 <template>

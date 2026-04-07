@@ -22,7 +22,7 @@ import {
 import { Checkbox } from "@/components/ui/checkbox";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Empty, EmptyMedia, EmptyDescription } from "@/components/ui/empty";
-import { SPaginationBar } from "@/components/shared/spagination";
+import { SPaginationBar } from "@/components/shared";
 
 defineSlots<
   {

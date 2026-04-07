@@ -5,7 +5,7 @@
  */
 import { ref, computed, defineComponent } from "vue";
 import { Icon } from "@iconify/vue";
-import { SDataTable } from "@/components/shared/sdata-table";
+import { SDataTable } from "@/components/shared";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -30,7 +30,7 @@ import type {
   SortInfo,
   ExpandableConfig,
   ScrollConfig,
-} from "@/components/shared/sdata-table";
+} from "@/components/shared";
 
 interface User {
   id: number;

@@ -22,7 +22,7 @@ pnpm dlx shadcn-vue@latest add table checkbox radio-group empty
 
 ```vue
 <script setup lang="ts">
-import { SDataTable } from "@/components/shared/sdata-table";
+import { SDataTable } from "@/components/shared";
 
 const columns = [
   { key: "id", title: "ID", width: 80 },
@@ -51,7 +51,7 @@ const data = [
 
 ```vue
 <script setup lang="ts">
-import { SDataTable } from "@/components/shared/sdata-table";
+import { SDataTable } from "@/components/shared";
 
 const columns = [
   { key: "id", title: "ID", width: 80, sortable: true },
@@ -79,8 +79,8 @@ const data = [
 ```vue
 <script setup lang="ts">
 import { ref } from "vue";
-import { SDataTable } from "@/components/shared/sdata-table";
-import type { SortInfo } from "@/components/shared/sdata-table";
+import { SDataTable } from "@/components/shared";
+import type { SortInfo } from "@/components/shared";
 
 const columns = [
   { key: "id", title: "ID", sortable: true },
@@ -131,7 +131,7 @@ async function fetchData() {
 ```vue
 <script setup lang="ts">
 import { ref } from "vue";
-import { SDataTable } from "@/components/shared/sdata-table";
+import { SDataTable } from "@/components/shared";
 
 const columns = [
   { key: "name", title: "用户名", sortable: true },
@@ -175,7 +175,7 @@ const columns = [
 
 ```vue
 <script setup lang="ts">
-import { SDataTable } from "@/components/shared/sdata-table";
+import { SDataTable } from "@/components/shared";
 
 const data = [...]; // 大量数据
 
@@ -199,7 +199,7 @@ const pagination = {
 ```vue
 <script setup lang="ts">
 import { ref } from "vue";
-import { SDataTable } from "@/components/shared/sdata-table";
+import { SDataTable } from "@/components/shared";
 
 const data = ref([]);
 const pagination = ref({
@@ -233,7 +233,7 @@ async function handlePageChange(page: number) {
 ```vue
 <script setup lang="ts">
 import { ref } from "vue";
-import { SDataTable } from "@/components/shared/sdata-table";
+import { SDataTable } from "@/components/shared";
 
 const selectedRowKeys = ref<(string | number)[]>([]);
 
@@ -421,7 +421,7 @@ function getRowEvents(row: any, index: number) {
 
 ```vue
 <script setup lang="ts">
-import { SDataTable } from "@/components/shared/sdata-table";
+import { SDataTable } from "@/components/shared";
 
 const expandable = {
   expandedRowRender: (row) => `详情：${row.description}`,

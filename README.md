@@ -62,9 +62,9 @@ src/
 │   │   ├── dropdown-menu/
 │   │   └── ...
 │   ├── shared/          # 通用封装组件（S 前缀）
-│   │   ├── sdata-table/     # SDataTable 数据表格
-│   │   ├── spagination/     # SPaginationBar 分页条
-│   │   └── stoaster/        # SToaster 消息提示
+│   │   ├── s-data-table/     # SDataTable 数据表格
+│   │   ├── s-pagination/     # SPaginationBar 分页条
+│   │   └── s-chart/          # SChart 图表
 │   ├── app/             # 业务组件
 │   │   ├── Actions.vue      # 顶部操作栏
 │   │   ├── Logo.vue         # Logo 组件
@@ -270,7 +270,7 @@ src/components/
 | 目录 | 导入路径 | 组件名 | 说明 |
 |------|---------|--------|------|
 | `ui/` | `@/components/ui/button` | `Button` | shadcn-vue 原组件 |
-| `shared/` | `@/components/shared/sdata-table` | `SDataTable` | 通用封装，S 前缀 |
+| `shared/` | `@/components/shared` | `SDataTable` | 通用封装，S 前缀 |
 | `app/` | `@/components/app/Logo` | `Logo` | 业务组件 |
 
 **注意**：

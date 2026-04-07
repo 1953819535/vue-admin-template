@@ -152,9 +152,9 @@ src/components/
 │   ├── card/
 │   └── avatar/
 ├── shared/                # 通用封装组件（S 前缀命名）
-│   ├── sdata-table/       # SDataTable 数据表格
-│   ├── spagination/       # SPaginationBar 分页条
-│   └── stoaster/          # SToaster 消息提示
+│   ├── s-data-table/       # SDataTable 数据表格
+│   ├── s-pagination/       # SPaginationBar 分页条
+│   └── s-chart/            # SChart 图表
 └── app/                   # 应用业务组件
     ├── ThemeSwitcher.vue  # 主题风格切换器
     ├── Logo.vue           # Logo 组件

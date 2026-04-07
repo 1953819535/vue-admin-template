@@ -5,7 +5,7 @@
 import type { AcceptableValue } from "reka-ui";
 import { ref } from "vue";
 import { Icon } from "@iconify/vue";
-import { SPaginationBar } from "@/components/shared/spagination";
+import { SPaginationBar } from "@/components/shared";
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
