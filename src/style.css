@@ -168,6 +168,13 @@
   * {
     @apply border-border outline-ring/50;
   }
+
+  /* 确保根容器高度正确，防止布局溢出 */
+  html, body, #app {
+    height: 100%;
+    overflow: hidden;
+  }
+
   body {
     @apply bg-background text-foreground;
   }
