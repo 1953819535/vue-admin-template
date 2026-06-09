@@ -13,14 +13,14 @@ src/themes/
 
 ## 可用主题
 
-| 主题名称 | 中文标题 | 描述 |
-|---------|---------|------|
-| modern-minimal | 现代极简 | 简洁现代的设计风格，低饱和度配色 |
-| catppuccin | Catppuccin | 柔和 pastel 色调，温暖的深色模式 |
-| cyberpunk | 赛博朋克 | 霓虹色彩、高对比度、未来科幻感 |
-| claude | Claude | Anthropic Claude 官方风格配色 |
-| vercel | Vercel | Vercel 官方黑白极简风格 |
-| ... | ... | 完整列表见 `theme-names-zh.json` |
+| 主题名称       | 中文标题   | 描述                             |
+| -------------- | ---------- | -------------------------------- |
+| modern-minimal | 现代极简   | 简洁现代的设计风格，低饱和度配色 |
+| catppuccin     | Catppuccin | 柔和 pastel 色调，温暖的深色模式 |
+| cyberpunk      | 赛博朋克   | 霓虹色彩、高对比度、未来科幻感   |
+| claude         | Claude     | Anthropic Claude 官方风格配色    |
+| vercel         | Vercel     | Vercel 官方黑白极简风格          |
+| ...            | ...        | 完整列表见 `theme-names-zh.json` |
 
 ## 使用方式
 
@@ -28,34 +28,34 @@ src/themes/
 
 ```vue
 <script setup>
-import { useAppStore } from '@/stores/modules/app'
+import { useAppStore } from "@/stores/modules/app";
 
-const appStore = useAppStore()
+const appStore = useAppStore();
 
 // 切换主题风格
-appStore.setThemeName('catppuccin')
+appStore.setThemeName("catppuccin");
 
 // 切换明暗模式
-appStore.setMode('dark')       // 暗色
-appStore.setMode('light')      // 亮色
-appStore.setMode('system')     // 跟随系统
+appStore.setMode("dark"); // 暗色
+appStore.setMode("light"); // 亮色
+appStore.setMode("system"); // 跟随系统
 
 // 获取当前状态
-console.log(appStore.currentTheme)  // 当前主题名称
-console.log(appStore.mode)          // 明暗模式
-console.log(appStore.isDark)        // 是否为暗色
+console.log(appStore.currentTheme); // 当前主题名称
+console.log(appStore.mode); // 明暗模式
+console.log(appStore.isDark); // 是否为暗色
 </script>
 ```
 
 ### 获取主题列表
 
 ```ts
-import { availableThemes } from '@/stores/modules/app'
+import { availableThemes } from "@/stores/modules/app";
 
 // availableThemes 是一个数组，包含所有可用主题
-availableThemes.forEach(theme => {
-  console.log(theme.name, theme.title, theme.description)
-})
+availableThemes.forEach((theme) => {
+  console.log(theme.name, theme.title, theme.description);
+});
 ```
 
 ## 更新主题数据
@@ -73,18 +73,21 @@ curl -sL "https://raw.githubusercontent.com/jnsahaj/tweakcn/main/public/r/regist
 创建临时脚本 `extract-themes.cjs`：
 
 ```javascript
-const fs = require('fs')
-const registry = JSON.parse(fs.readFileSync('registry.json', 'utf8'))
+const fs = require("fs");
+const registry = JSON.parse(fs.readFileSync("registry.json", "utf8"));
 
-const themes = registry.items.map(item => ({
+const themes = registry.items.map((item) => ({
   name: item.name,
   title: item.title,
   description: item.description,
-  cssVars: item.cssVars
-}))
+  cssVars: item.cssVars,
+}));
 
-fs.writeFileSync('src/themes/tweakcn-themes.json', JSON.stringify(themes, null, 2))
-console.log('Extracted', themes.length, 'themes')
+fs.writeFileSync(
+  "src/themes/tweakcn-themes.json",
+  JSON.stringify(themes, null, 2),
+);
+console.log("Extracted", themes.length, "themes");
 ```
 
 运行脚本：
@@ -128,6 +131,7 @@ grep -o '"name": "[^"]*"' src/themes/tweakcn-themes.json | sed 's/"name": "//;s/
 ### 持久化存储
 
 使用 `pinia-plugin-persistedstate` 自动持久化：
+
 - `currentTheme`：当前主题名称
 - `mode`：明暗模式
 
@@ -165,13 +169,13 @@ src/components/
 
 本项目使用 shadcn-vue 组件库，主题系统依赖以下组件：
 
-| 组件 | 命令 | 用途 |
-|-----|------|------|
-| Button | `pnpm dlx shadcn-vue@latest add button` | 按钮组件 |
+| 组件         | 命令                                           | 用途     |
+| ------------ | ---------------------------------------------- | -------- |
+| Button       | `pnpm dlx shadcn-vue@latest add button`        | 按钮组件 |
 | DropdownMenu | `pnpm dlx shadcn-vue@latest add dropdown-menu` | 下拉菜单 |
-| Separator | `pnpm dlx shadcn-vue@latest add separator` | 分隔线 |
-| Card | `pnpm dlx shadcn-vue@latest add card` | 卡片容器 |
-| Avatar | `pnpm dlx shadcn-vue@latest add avatar` | 用户头像 |
+| Separator    | `pnpm dlx shadcn-vue@latest add separator`     | 分隔线   |
+| Card         | `pnpm dlx shadcn-vue@latest add card`          | 卡片容器 |
+| Avatar       | `pnpm dlx shadcn-vue@latest add avatar`        | 用户头像 |
 
 批量安装：
 

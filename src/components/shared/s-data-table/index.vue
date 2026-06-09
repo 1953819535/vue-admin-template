@@ -1,46 +1,31 @@
 <script setup lang="ts" generic="T extends Record<string, any>">
-import type {
-  ColumnConfig,
-  DataTableProps,
-  PaginationConfig,
-  CellContext,
-  HeaderContext,
-  RowEvents,
-  SortInfo,
-} from "./types";
-import { computed, ref, useSlots, watch } from "vue";
-import { cn, toPx } from "@/lib/utils";
-import { Icon } from "@iconify/vue";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import { Checkbox } from "@/components/ui/checkbox";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { Empty, EmptyMedia, EmptyDescription } from "@/components/ui/empty";
-import { SPaginationBar } from "@/components/shared";
+import type { ColumnConfig, DataTableProps, PaginationConfig, CellContext, HeaderContext, RowEvents, SortInfo } from './types'
+import { computed, ref, useSlots, watch } from 'vue'
+import { cn, toPx } from '@/lib/utils'
+import { Icon } from '@iconify/vue'
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
+import { Checkbox } from '@/components/ui/checkbox'
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
+import { Empty, EmptyMedia, EmptyDescription } from '@/components/ui/empty'
+import { SPaginationBar } from '@/components/shared'
 
 defineSlots<
   {
-    empty: () => any;
-    expandedRow: (ctx: { row: T; index: number }) => any;
+    empty: () => any
+    expandedRow: (ctx: { row: T; index: number }) => any
   } & {
-    [K in `cell-${string}`]?: (ctx: CellContext<T>) => any;
+    [K in `cell-${string}`]?: (ctx: CellContext<T>) => any
   } & {
-    [K in `header-${string}`]?: (ctx: HeaderContext) => any;
+    [K in `header-${string}`]?: (ctx: HeaderContext) => any
   }
->();
+>()
 
 const props = withDefaults(defineProps<DataTableProps<T>>(), {
   columns: () => [],
   loading: false,
-  rowKey: "id",
-  emptyText: "暂无数据",
-  size: "md",
+  rowKey: 'id',
+  emptyText: '暂无数据',
+  size: 'md',
   showHeader: true,
   bordered: false,
   pagination: false,
@@ -48,621 +33,566 @@ const props = withDefaults(defineProps<DataTableProps<T>>(), {
   remote: false,
   expandable: undefined,
   scroll: undefined,
-});
+})
 
 const emit = defineEmits<{
-  "update:selectedRowKeys": [keys: (string | number)[]];
-  "update:page": [page: number];
-  "update:pageSize": [pageSize: number];
-  "update:sort": [sort: SortInfo | undefined];
-  "update:expandedRowKeys": [keys: (string | number)[]];
-}>();
+  'update:selectedRowKeys': [keys: (string | number)[]]
+  'update:page': [page: number]
+  'update:pageSize': [pageSize: number]
+  'update:sort': [sort: SortInfo | undefined]
+  'update:expandedRowKeys': [keys: (string | number)[]]
+}>()
 
-const slots = useSlots();
+const slots = useSlots()
 
-const internalPage = ref(1);
-const internalPageSize = ref(10);
-const internalSort = ref<SortInfo | undefined>(undefined);
+const internalPage = ref(1)
+const internalPageSize = ref(10)
+const internalSort = ref<SortInfo | undefined>(undefined)
 
 const paginationConfig = computed<PaginationConfig>(() => {
-  if (typeof props.pagination === "object") return props.pagination;
-  return {};
-});
+  if (typeof props.pagination === 'object') return props.pagination
+  return {}
+})
 
 const sortConfig = computed(() => {
   if (props.sort?.field && props.sort?.order) {
-    return { field: props.sort.field, order: props.sort.order };
+    return { field: props.sort.field, order: props.sort.order }
   }
-  return internalSort.value;
-});
+  return internalSort.value
+})
 
-const hasPagination = computed(() => props.pagination !== false);
+const hasPagination = computed(() => props.pagination !== false)
 
 const currentPage = computed({
   get: () => paginationConfig.value.page ?? internalPage.value,
   set: (val) => {
-    internalPage.value = val;
-    emit("update:page", val);
+    internalPage.value = val
+    emit('update:page', val)
   },
-});
+})
 
 const currentPageSize = computed({
   get: () => paginationConfig.value.pageSize ?? internalPageSize.value,
   set: (val) => {
-    internalPageSize.value = val;
-    emit("update:pageSize", val);
+    internalPageSize.value = val
+    emit('update:pageSize', val)
   },
-});
+})
 
 const paginationTotal = computed(() => {
-  if (!hasPagination.value) return 0;
-  return props.remote ? (paginationConfig.value.total ?? 0) : props.data.length;
-});
+  if (!hasPagination.value) return 0
+  return props.remote ? (paginationConfig.value.total ?? 0) : props.data.length
+})
 
-function compareValues<T>(
-  a: T,
-  b: T,
-  field: keyof T,
-  order: "ascend" | "descend",
-): number {
-  const aValue = (a as any)[field];
-  const bValue = (b as any)[field];
+function compareValues<T>(a: T, b: T, field: keyof T, order: 'ascend' | 'descend'): number {
+  const aValue = (a as any)[field]
+  const bValue = (b as any)[field]
 
-  if (aValue == null && bValue == null) return 0;
-  if (aValue == null) return order === "ascend" ? -1 : 1;
-  if (bValue == null) return order === "ascend" ? 1 : -1;
+  if (aValue == null && bValue == null) return 0
+  if (aValue == null) return order === 'ascend' ? -1 : 1
+  if (bValue == null) return order === 'ascend' ? 1 : -1
 
-  if (typeof aValue === "string" && typeof bValue === "string") {
-    return order === "ascend"
-      ? aValue.localeCompare(bValue)
-      : bValue.localeCompare(aValue);
+  if (typeof aValue === 'string' && typeof bValue === 'string') {
+    return order === 'ascend' ? aValue.localeCompare(bValue) : bValue.localeCompare(aValue)
   }
 
-  const compare = aValue < bValue ? -1 : aValue > bValue ? 1 : 0;
-  return order === "ascend" ? compare : -compare;
+  const compare = aValue < bValue ? -1 : aValue > bValue ? 1 : 0
+  return order === 'ascend' ? compare : -compare
 }
 
 const paginatedData = computed(() => {
-  let result = props.data;
+  let result = props.data
 
   if (!props.remote && sortConfig.value) {
-    const { field, order } = sortConfig.value;
-    const column = props.columns.find((col) => col.key === field);
+    const { field, order } = sortConfig.value
+    const column = props.columns.find((col) => col.key === field)
 
     result = [...result].sort((a, b) => {
       if (column?.sortFn) {
-        return column.sortFn(a, b, order);
+        return column.sortFn(a, b, order)
       }
-      return compareValues(a, b, field, order);
-    });
+      return compareValues(a, b, field, order)
+    })
   }
 
-  if (!hasPagination.value || props.remote) return result;
+  if (!hasPagination.value || props.remote) return result
 
-  const start = (currentPage.value - 1) * currentPageSize.value;
-  const end = start + currentPageSize.value;
-  return result.slice(start, end);
-});
+  const start = (currentPage.value - 1) * currentPageSize.value
+  const end = start + currentPageSize.value
+  return result.slice(start, end)
+})
 
 const paginationPositionClass = computed(() => {
-  if (!hasPagination.value) return "";
-  const position = paginationConfig.value.position ?? "right";
+  if (!hasPagination.value) return ''
+  const position = paginationConfig.value.position ?? 'right'
   return {
-    left: "justify-start",
-    center: "justify-center",
-    right: "justify-end",
-  }[position];
-});
+    left: 'justify-start',
+    center: 'justify-center',
+    right: 'justify-end',
+  }[position]
+})
 
 function handlePageChange(page: number) {
-  currentPage.value = page;
+  currentPage.value = page
 }
 
 function handlePageSizeChange(pageSize: number) {
-  currentPageSize.value = pageSize;
+  currentPageSize.value = pageSize
 }
 
-function getColumnSortOrder(column: ColumnConfig): "ascend" | "descend" | undefined {
-  return sortConfig.value?.field === column.key ? sortConfig.value.order : undefined;
+function getColumnSortOrder(column: ColumnConfig): 'ascend' | 'descend' | undefined {
+  return sortConfig.value?.field === column.key ? sortConfig.value.order : undefined
 }
 
 const columnSortOrders = computed(() => {
-  const orders = new Map<string, "ascend" | "descend" | undefined>();
+  const orders = new Map<string, 'ascend' | 'descend' | undefined>()
   for (const col of props.columns) {
-    orders.set(col.key, getColumnSortOrder(col));
+    orders.set(col.key, getColumnSortOrder(col))
   }
-  return orders;
-});
+  return orders
+})
 
-function getNextSortOrder(
-  column: ColumnConfig,
-): "ascend" | "descend" | undefined {
-  const directions = column.sortDirections ?? ["ascend", "descend"];
-  const currentOrder = getColumnSortOrder(column);
+function getNextSortOrder(column: ColumnConfig): 'ascend' | 'descend' | undefined {
+  const directions = column.sortDirections ?? ['ascend', 'descend']
+  const currentOrder = getColumnSortOrder(column)
 
   if (!currentOrder) {
-    return directions[0];
+    return directions[0]
   }
 
-  const currentIndex = directions.indexOf(currentOrder);
+  const currentIndex = directions.indexOf(currentOrder)
   if (currentIndex === directions.length - 1) {
-    return undefined;
+    return undefined
   }
-  return directions[currentIndex + 1];
+  return directions[currentIndex + 1]
 }
 
 function handleSortClick(column: ColumnConfig) {
-  if (!column.sortable) return;
+  if (!column.sortable) return
 
-  const nextOrder = getNextSortOrder(column);
-  const newSort: SortInfo | undefined = nextOrder
-    ? { field: column.key, order: nextOrder }
-    : undefined;
+  const nextOrder = getNextSortOrder(column)
+  const newSort: SortInfo | undefined = nextOrder ? { field: column.key, order: nextOrder } : undefined
 
-  internalSort.value = newSort;
+  internalSort.value = newSort
 
-  emit("update:sort", newSort);
+  emit('update:sort', newSort)
 }
 
-const internalSelectedRowKeys = ref<(string | number)[]>([]);
+const internalSelectedRowKeys = ref<(string | number)[]>([])
 
-const expandableConfig = computed(() => props.expandable ?? {});
+const expandableConfig = computed(() => props.expandable ?? {})
 
 const hasExpandable = computed(() => {
-  if (expandableConfig.value.expandedRowRender) return true;
-  if (!slots.expandedRow) return false;
+  if (expandableConfig.value.expandedRowRender) return true
+  if (!slots.expandedRow) return false
   // Vue 插槽即使无内容也会注册，需调用检测实际渲染结果
-  const content = slots.expandedRow({ row: {} as T, index: 0 });
-  return !!(content && (Array.isArray(content) ? content.length > 0 : true));
-});
+  const content = slots.expandedRow({ row: {} as T, index: 0 })
+  return !!(content && (Array.isArray(content) ? content.length > 0 : true))
+})
 
-const internalExpandedRowKeys = ref<(string | number)[]>([]);
+const internalExpandedRowKeys = ref<(string | number)[]>([])
 
 watch(
   () => [props.expandable, props.data],
   () => {
     if (expandableConfig.value.expandAll && props.data.length > 0) {
-      internalExpandedRowKeys.value = props.data.map((row, index) =>
-        getRowKey(row, index),
-      );
+      internalExpandedRowKeys.value = props.data.map((row, index) => getRowKey(row, index))
     } else if (expandableConfig.value.defaultExpandedRowKeys) {
-      internalExpandedRowKeys.value =
-        expandableConfig.value.defaultExpandedRowKeys;
+      internalExpandedRowKeys.value = expandableConfig.value.defaultExpandedRowKeys
     }
   },
   { immediate: true },
-);
+)
 
 const expandedKeys = computed(() => {
   if (expandableConfig.value.expandedRowKeys !== undefined) {
-    return expandableConfig.value.expandedRowKeys;
+    return expandableConfig.value.expandedRowKeys
   }
-  return internalExpandedRowKeys.value;
-});
+  return internalExpandedRowKeys.value
+})
 
-const expandedKeysSet = computed(() => new Set(expandedKeys.value));
+const expandedKeysSet = computed(() => new Set(expandedKeys.value))
 
-const everExpandedKeys = ref<(string | number)[]>([]);
+const everExpandedKeys = ref<(string | number)[]>([])
 
-const everExpandedKeysSet = computed(() => new Set(everExpandedKeys.value));
+const everExpandedKeysSet = computed(() => new Set(everExpandedKeys.value))
 
-const shouldKeepExpanded = computed(
-  () => expandableConfig.value.keepExpanded ?? false,
-);
+const shouldKeepExpanded = computed(() => expandableConfig.value.keepExpanded ?? false)
 
 // 开启缓存时同步已展开的行
 watch(shouldKeepExpanded, (newVal, oldVal) => {
   if (newVal && !oldVal) {
-    everExpandedKeys.value = [...expandedKeys.value];
+    everExpandedKeys.value = [...expandedKeys.value]
   }
-});
+})
 
 // 数据变化时清理不存在的缓存 key，防止内存无限增长
 watch(
   () => props.data,
   () => {
     if (shouldKeepExpanded.value && everExpandedKeys.value.length > 0) {
-      const currentKeySet = new Set(
-        props.data.map((row, index) => getRowKey(row, index)),
-      );
-      everExpandedKeys.value = everExpandedKeys.value.filter((key) =>
-        currentKeySet.has(key),
-      );
+      const currentKeySet = new Set(props.data.map((row, index) => getRowKey(row, index)))
+      everExpandedKeys.value = everExpandedKeys.value.filter((key) => currentKeySet.has(key))
     }
   },
-);
+)
 
 function isRowExpandable(row: T): boolean {
-  if (!hasExpandable.value) return false;
+  if (!hasExpandable.value) return false
   if (expandableConfig.value.rowExpandable) {
-    return expandableConfig.value.rowExpandable(row);
+    return expandableConfig.value.rowExpandable(row)
   }
-  return true;
+  return true
 }
 
 function handleExpandToggle(row: T, index: number) {
-  const key = rowKeyCache.value[index];
-  const wasExpanded = expandedKeysSet.value.has(key);
+  const key = rowKeyCache.value[index]
+  const wasExpanded = expandedKeysSet.value.has(key)
 
-  if (
-    !wasExpanded &&
-    shouldKeepExpanded.value &&
-    !everExpandedKeysSet.value.has(key)
-  ) {
-    everExpandedKeys.value = [...everExpandedKeys.value, key];
+  if (!wasExpanded && shouldKeepExpanded.value && !everExpandedKeysSet.value.has(key)) {
+    everExpandedKeys.value = [...everExpandedKeys.value, key]
   }
 
-  const newExpandedKeys = wasExpanded
-    ? expandedKeys.value.filter((k) => k !== key)
-    : [...expandedKeys.value, key];
+  const newExpandedKeys = wasExpanded ? expandedKeys.value.filter((k) => k !== key) : [...expandedKeys.value, key]
 
   if (expandableConfig.value.expandedRowKeys === undefined) {
-    internalExpandedRowKeys.value = newExpandedKeys;
+    internalExpandedRowKeys.value = newExpandedKeys
   }
 
-  emit("update:expandedRowKeys", newExpandedKeys);
-  expandableConfig.value.onExpand?.(!wasExpanded, row);
+  emit('update:expandedRowKeys', newExpandedKeys)
+  expandableConfig.value.onExpand?.(!wasExpanded, row)
 }
 
-const scrollConfig = computed(() => props.scroll ?? {});
+const scrollConfig = computed(() => props.scroll ?? {})
 
-const hasStickyHeader = computed(() => !!scrollConfig.value.y);
+const hasStickyHeader = computed(() => !!scrollConfig.value.y)
 
 /** 选择列/展开列宽度（对应 Tailwind w-12 = 48px） */
-const SELECTION_COLUMN_WIDTH = 48;
+const SELECTION_COLUMN_WIDTH = 48
 
-const hasFixedColumns = computed(
-  () => props.columns.some((col) => col.fixed === "left" || col.fixed === "right"),
-);
+const hasFixedColumns = computed(() => props.columns.some((col) => col.fixed === 'left' || col.fixed === 'right'))
 
-const hasHorizontalScroll = computed(
-  () => scrollConfig.value.x === true || hasFixedColumns.value,
-);
+const hasHorizontalScroll = computed(() => scrollConfig.value.x === true || hasFixedColumns.value)
 
 const leftOffsets = computed(() => {
-  const offsets: Map<string, number> = new Map();
-  let offset = 0;
+  const offsets: Map<string, number> = new Map()
+  let offset = 0
 
   if (hasSelection.value) {
-    offset += SELECTION_COLUMN_WIDTH;
+    offset += SELECTION_COLUMN_WIDTH
   }
   if (hasExpandable.value) {
-    offset += SELECTION_COLUMN_WIDTH;
+    offset += SELECTION_COLUMN_WIDTH
   }
 
   for (const col of props.columns) {
     if (col.fixed === 'left') {
-      offsets.set(col.key, offset);
-      offset += Number(col.width) || 0;
+      offsets.set(col.key, offset)
+      offset += Number(col.width) || 0
     }
   }
-  return offsets;
-});
+  return offsets
+})
 
 const rightOffsets = computed(() => {
-  const offsets: Map<string, number> = new Map();
-  let offset = 0;
+  const offsets: Map<string, number> = new Map()
+  let offset = 0
 
   for (let i = props.columns.length - 1; i >= 0; i--) {
-    const col = props.columns[i];
+    const col = props.columns[i]
     if (col.fixed === 'right') {
-      offsets.set(col.key, offset);
-      offset += Number(col.width) || 0;
+      offsets.set(col.key, offset)
+      offset += Number(col.width) || 0
     }
   }
-  return offsets;
-});
+  return offsets
+})
 
 // 预计算所有列的固定样式
 const columnFixedStyles = computed(() => {
-  const styles = new Map<string, Record<string, string>>();
+  const styles = new Map<string, Record<string, string>>()
   for (const col of props.columns) {
     if (col.fixed === 'left') {
-      const offset = leftOffsets.value.get(col.key) ?? 0;
-      styles.set(col.key, { left: `${offset}px` });
+      const offset = leftOffsets.value.get(col.key) ?? 0
+      styles.set(col.key, { left: `${offset}px` })
     } else if (col.fixed === 'right') {
-      const offset = rightOffsets.value.get(col.key) ?? 0;
-      styles.set(col.key, { right: `${offset}px` });
+      const offset = rightOffsets.value.get(col.key) ?? 0
+      styles.set(col.key, { right: `${offset}px` })
     }
   }
-  return styles;
-});
+  return styles
+})
 
 // 预计算所有列的宽度样式
 const columnWidthStyles = computed(() => {
-  const styles = new Map<string, Record<string, string>>();
+  const styles = new Map<string, Record<string, string>>()
   for (const col of props.columns) {
-    const style: Record<string, string> = {};
+    const style: Record<string, string> = {}
     if (col.width) {
-      const widthPx = toPx(col.width);
-      if (widthPx) style.width = widthPx;
+      const widthPx = toPx(col.width)
+      if (widthPx) style.width = widthPx
     }
     if (col.minWidth) {
-      const minWidthPx = toPx(col.minWidth);
-      if (minWidthPx) style.minWidth = minWidthPx;
+      const minWidthPx = toPx(col.minWidth)
+      if (minWidthPx) style.minWidth = minWidthPx
     }
     if (col.maxWidth) {
-      const maxWidthPx = toPx(col.maxWidth);
-      if (maxWidthPx) style.maxWidth = maxWidthPx;
+      const maxWidthPx = toPx(col.maxWidth)
+      if (maxWidthPx) style.maxWidth = maxWidthPx
     }
     if (Object.keys(style).length > 0) {
-      styles.set(col.key, style);
+      styles.set(col.key, style)
     }
   }
-  return styles;
-});
+  return styles
+})
 
 // 预计算合并样式，避免模板中每次渲染创建新对象
 const mergedColumnStyles = computed(() => {
-  const styles = new Map<string, Record<string, string>>();
+  const styles = new Map<string, Record<string, string>>()
   for (const col of props.columns) {
-    const widthStyle = columnWidthStyles.value.get(col.key);
-    const fixedStyle = columnFixedStyles.value.get(col.key);
+    const widthStyle = columnWidthStyles.value.get(col.key)
+    const fixedStyle = columnFixedStyles.value.get(col.key)
     if (widthStyle || fixedStyle) {
-      styles.set(col.key, { ...widthStyle, ...fixedStyle });
+      styles.set(col.key, { ...widthStyle, ...fixedStyle })
     }
   }
-  return styles;
-});
+  return styles
+})
 
 const selectionColumnLeftClass = computed(() => {
-  if (!hasHorizontalScroll.value) return "";
-  return hasExpandable.value ? "left-12" : "left-0";
-});
+  if (!hasHorizontalScroll.value) return ''
+  return hasExpandable.value ? 'left-12' : 'left-0'
+})
 
 const selectedKeys = computed(() => {
   if (props.rowSelection?.selectedRowKeys !== undefined) {
-    return props.rowSelection.selectedRowKeys;
+    return props.rowSelection.selectedRowKeys
   }
-  return internalSelectedRowKeys.value;
-});
+  return internalSelectedRowKeys.value
+})
 
-const selectedKeysSet = computed(() => new Set(selectedKeys.value));
+const selectedKeysSet = computed(() => new Set(selectedKeys.value))
 
-const hasSelection = computed(() => props.rowSelection?.enabled);
+const hasSelection = computed(() => props.rowSelection?.enabled)
 
 const totalColumns = computed(() => {
-  let count = props.columns.length;
-  if (hasSelection.value) count += 1;
-  if (hasExpandable.value) count += 1;
-  return count;
-});
+  let count = props.columns.length
+  if (hasSelection.value) count += 1
+  if (hasExpandable.value) count += 1
+  return count
+})
 
 const SIZE_STYLES = {
-  xs: { text: "text-xs", cell: "py-1 px-1.5", selection: "py-1" },
-  sm: { text: "text-sm", cell: "py-2 px-3", selection: "py-2" },
-  md: { text: "", cell: "py-3 px-4", selection: "py-3" },
-  lg: { text: "text-base", cell: "py-4 px-6", selection: "py-4" },
-} as const;
+  xs: { text: 'text-xs', cell: 'py-1 px-1.5', selection: 'py-1' },
+  sm: { text: 'text-sm', cell: 'py-2 px-3', selection: 'py-2' },
+  md: { text: '', cell: 'py-3 px-4', selection: 'py-3' },
+  lg: { text: 'text-base', cell: 'py-4 px-6', selection: 'py-4' },
+} as const
 
-const sizeStyle = computed(() => SIZE_STYLES[props.size]);
+const sizeStyle = computed(() => SIZE_STYLES[props.size])
 
 const ALIGN_CLASSES = {
-  center: "text-center justify-center",
-  right: "text-right justify-end",
-} as const;
+  center: 'text-center justify-center',
+  right: 'text-right justify-end',
+} as const
 
-function getAlignClass(align?: "left" | "center" | "right") {
-  return align
-    ? (ALIGN_CLASSES[align as keyof typeof ALIGN_CLASSES] ?? "")
-    : "";
+function getAlignClass(align?: 'left' | 'center' | 'right') {
+  return align ? (ALIGN_CLASSES[align as keyof typeof ALIGN_CLASSES] ?? '') : ''
 }
 
 // 统一的单元格边框样式（使用阴影代替 border，避免 border-collapse 与 sticky 冲突）
-const borderedCellClass = computed(() =>
-  props.bordered ? "shadow-[inset_-1px_0_0_var(--border)]" : ""
-);
+const borderedCellClass = computed(() => (props.bordered ? 'shadow-[inset_-1px_0_0_var(--border)]' : ''))
 
 const expandColumnClass = computed(() =>
   cn(
     sizeStyle.value.selection,
-    "w-12 text-center",
-    hasHorizontalScroll.value && "min-w-12 max-w-12 sticky left-0 bg-background",
+    'w-12 text-center',
+    hasHorizontalScroll.value && 'min-w-12 max-w-12 sticky left-0 bg-background',
     borderedCellClass.value,
   ),
-);
+)
 
 const selectionColumnClass = computed(() =>
   cn(
     sizeStyle.value.selection,
-    "w-12 text-center",
-    hasHorizontalScroll.value && "min-w-12 max-w-12 sticky bg-background",
+    'w-12 text-center',
+    hasHorizontalScroll.value && 'min-w-12 max-w-12 sticky bg-background',
     selectionColumnLeftClass.value,
     borderedCellClass.value,
   ),
-);
+)
 
-const rightFixedColumns = computed(() =>
-  props.columns.filter((col) => col.fixed === 'right'),
-);
+const rightFixedColumns = computed(() => props.columns.filter((col) => col.fixed === 'right'))
 
-const firstRightFixedKey = computed(() => rightFixedColumns.value[0]?.key);
+const firstRightFixedKey = computed(() => rightFixedColumns.value[0]?.key)
 
 /** 固定列的边框样式（右固定列第一个需要左边框分割线） */
 function getFixedBorderedClass(column: ColumnConfig, isLast: boolean) {
-  if (!props.bordered) return "";
+  if (!props.bordered) return ''
 
   if (column.fixed === 'right' && column.key === firstRightFixedKey.value) {
-    return isLast
-      ? "shadow-[inset_1px_0_0_var(--border)]"
-      : "shadow-[inset_1px_0_0_var(--border),inset_-1px_0_0_var(--border)]";
+    return isLast ? 'shadow-[inset_1px_0_0_var(--border)]' : 'shadow-[inset_1px_0_0_var(--border),inset_-1px_0_0_var(--border)]'
   }
 
-  return isLast ? "" : "shadow-[inset_-1px_0_0_var(--border)]";
+  return isLast ? '' : 'shadow-[inset_-1px_0_0_var(--border)]'
 }
 
 /** 获取列的固定样式类名（统一表头和数据列的固定列逻辑） */
 function getColumnFixedClass(column: ColumnConfig, isLast: boolean) {
   return cn(
-    column.fixed
-      ? getFixedBorderedClass(column, isLast)
-      : (isLast ? '' : borderedCellClass.value),
+    column.fixed ? getFixedBorderedClass(column, isLast) : isLast ? '' : borderedCellClass.value,
     column.fixed === 'left' && 'sticky left-0 bg-background',
     column.fixed === 'right' && 'sticky right-0 bg-background',
-  );
+  )
 }
 
 function getRowKey(row: T, index: number): string | number {
-  if (typeof props.rowKey === "function") {
-    return props.rowKey(row);
+  if (typeof props.rowKey === 'function') {
+    return props.rowKey(row)
   }
-  return (row as any)[props.rowKey] ?? index;
+  return (row as any)[props.rowKey] ?? index
 }
 
 function getRowEvents(row: T, index: number): RowEvents<T> {
-  return typeof props.customRow === "function"
-    ? props.customRow(row, index)
-    : (props.customRow ?? {});
+  return typeof props.customRow === 'function' ? props.customRow(row, index) : (props.customRow ?? {})
 }
 
-function handleRowEvent(
-  type: keyof RowEvents<T>,
-  row: T,
-  index: number,
-  event: MouseEvent,
-) {
-  getRowEvents(row, index)[type]?.(row, index, event);
+function handleRowEvent(type: keyof RowEvents<T>, row: T, index: number, event: MouseEvent) {
+  getRowEvents(row, index)[type]?.(row, index, event)
 }
 
 function isRowClickable(row: T, index: number): boolean {
-  return !!getRowEvents(row, index).onClick;
+  return !!getRowEvents(row, index).onClick
 }
 
 function isRowDisabled(row: T): boolean {
-  return props.rowSelection?.getCheckboxProps?.(row)?.disabled ?? false;
+  return props.rowSelection?.getCheckboxProps?.(row)?.disabled ?? false
 }
 
 // 数据行样式计算，避免模板中复杂条件
 function getDataRowClass(row: T, rowIndex: number): string {
-  const rowKey = rowKeyCache.value[rowIndex];
+  const rowKey = rowKeyCache.value[rowIndex]
   return cn(
     sizeStyle.value.cell,
-    props.bordered && rowIndex < paginatedData.value.length - 1 && "border-b",
-    selectedKeysSet.value.has(rowKey) && "bg-accent/50",
-    isRowClickable(row, rowIndex) && "cursor-pointer hover:bg-accent/30",
-    expandedKeysSet.value.has(rowKey) && "bg-accent/20",
-  );
+    props.bordered && rowIndex < paginatedData.value.length - 1 && 'border-b',
+    selectedKeysSet.value.has(rowKey) && 'bg-accent/50',
+    isRowClickable(row, rowIndex) && 'cursor-pointer hover:bg-accent/30',
+    expandedKeysSet.value.has(rowKey) && 'bg-accent/20',
+  )
 }
 
-const isSingleSelect = computed(() => props.rowSelection?.type === "single");
+const isSingleSelect = computed(() => props.rowSelection?.type === 'single')
 
 watch(isSingleSelect, (newVal, oldVal) => {
   if (newVal && !oldVal && selectedKeys.value.length > 1) {
-    updateSelection([]);
+    updateSelection([])
   }
-});
+})
 
 const selectionState = computed(() => {
-  const selectableKeys: (string | number)[] = [];
-  const selectableKeySet = new Set<(string | number)>();
+  const selectableKeys: (string | number)[] = []
+  const selectableKeySet = new Set<string | number>()
 
   paginatedData.value.forEach((row, i) => {
     if (!isRowDisabled(row)) {
-      const key = rowKeyCache.value[i];
-      selectableKeys.push(key);
-      selectableKeySet.add(key);
+      const key = rowKeyCache.value[i]
+      selectableKeys.push(key)
+      selectableKeySet.add(key)
     }
-  });
+  })
 
-  const selectableCount = selectableKeys.length;
+  const selectableCount = selectableKeys.length
   if (selectableCount === 0) {
-    return { isAllSelected: false, isIndeterminate: false, selectableKeySet };
+    return { isAllSelected: false, isIndeterminate: false, selectableKeySet }
   }
 
-  const selectedCount = selectableKeys.filter((key) =>
-    selectedKeysSet.value.has(key),
-  ).length;
+  const selectedCount = selectableKeys.filter((key) => selectedKeysSet.value.has(key)).length
   return {
     isAllSelected: selectedCount === selectableCount,
     isIndeterminate: selectedCount > 0 && selectedCount < selectableCount,
     selectableKeySet,
-  };
-});
+  }
+})
 
 // 全选复选框变化处理
 // reka-ui 传入的值：indeterminate→true, checked→false, unchecked→true
-function handleSelectAllChange(value: boolean | "indeterminate") {
-  handleSelectAll(value === true);
+function handleSelectAllChange(value: boolean | 'indeterminate') {
+  handleSelectAll(value === true)
 }
 
 function updateSelection(newSelectedKeys: (string | number)[]) {
   if (props.rowSelection?.selectedRowKeys === undefined) {
-    internalSelectedRowKeys.value = newSelectedKeys;
+    internalSelectedRowKeys.value = newSelectedKeys
   }
 
-  emit("update:selectedRowKeys", newSelectedKeys);
+  emit('update:selectedRowKeys', newSelectedKeys)
 
-  const selectedRows = paginatedData.value.filter((_, i) =>
-    newSelectedKeys.includes(rowKeyCache.value[i]),
-  );
-  props.rowSelection?.onChange?.(newSelectedKeys, selectedRows);
+  const selectedRows = paginatedData.value.filter((_, i) => newSelectedKeys.includes(rowKeyCache.value[i]))
+  props.rowSelection?.onChange?.(newSelectedKeys, selectedRows)
 }
 
 function handleRowSelect(_row: T, index: number, checked: boolean) {
-  const key = rowKeyCache.value[index];
+  const key = rowKeyCache.value[index]
 
   if (isSingleSelect.value) {
-    updateSelection(checked ? [key] : []);
+    updateSelection(checked ? [key] : [])
   } else {
-    const newSelectedKeys = checked
-      ? [...selectedKeys.value, key]
-      : selectedKeys.value.filter((k) => k !== key);
-    updateSelection(newSelectedKeys);
+    const newSelectedKeys = checked ? [...selectedKeys.value, key] : selectedKeys.value.filter((k) => k !== key)
+    updateSelection(newSelectedKeys)
   }
 }
 
 function handleSelectAll(checked: boolean) {
-  const { selectableKeySet } = selectionState.value;
+  const { selectableKeySet } = selectionState.value
   if (checked) {
-    const newKeys = new Set(selectedKeys.value);
-    selectableKeySet.forEach((key) => newKeys.add(key));
-    updateSelection([...newKeys]);
+    const newKeys = new Set(selectedKeys.value)
+    selectableKeySet.forEach((key) => newKeys.add(key))
+    updateSelection([...newKeys])
   } else {
-    const newKeys = selectedKeys.value.filter((k) => !selectableKeySet.has(k));
-    updateSelection(newKeys);
+    const newKeys = selectedKeys.value.filter((k) => !selectableKeySet.has(k))
+    updateSelection(newKeys)
   }
 }
 
 function renderHeader(column: ColumnConfig, index: number) {
-  const ctx: HeaderContext = { column, index };
+  const ctx: HeaderContext = { column, index }
 
   if (column.headerRender) {
-    return column.headerRender(ctx);
+    return column.headerRender(ctx)
   }
 
-  const slotName = `header-${column.key}`;
+  const slotName = `header-${column.key}`
   if (slots[slotName as keyof typeof slots]) {
-    return (slots[slotName as keyof typeof slots] as any)(ctx);
+    return (slots[slotName as keyof typeof slots] as any)(ctx)
   }
 
-  return column.title;
+  return column.title
 }
 
 function renderCell(column: ColumnConfig, row: T, index: number) {
-  const value = (row as any)[column.key];
-  const ctx: CellContext = { value, row, index };
+  const value = (row as any)[column.key]
+  const ctx: CellContext = { value, row, index }
 
   if (column.customRender) {
-    return column.customRender(ctx);
+    return column.customRender(ctx)
   }
 
-  const slotName = `cell-${column.key}`;
+  const slotName = `cell-${column.key}`
   if (slots[slotName as keyof typeof slots]) {
-    return (slots[slotName as keyof typeof slots] as any)(ctx);
+    return (slots[slotName as keyof typeof slots] as any)(ctx)
   }
 
-  return value;
+  return value
 }
 
-function getSortIcon(order: "ascend" | "descend" | undefined) {
-  if (order === "ascend") return "lucide:arrow-up";
-  if (order === "descend") return "lucide:arrow-down";
-  return "lucide:arrow-up-down";
+function getSortIcon(order: 'ascend' | 'descend' | undefined) {
+  if (order === 'ascend') return 'lucide:arrow-up'
+  if (order === 'descend') return 'lucide:arrow-down'
+  return 'lucide:arrow-up-down'
 }
 
-const rowKeyCache = computed(() =>
-  paginatedData.value.map((row, index) => getRowKey(row, index)),
-);
+const rowKeyCache = computed(() => paginatedData.value.map((row, index) => getRowKey(row, index)))
 </script>
 
 <template>
@@ -672,61 +602,35 @@ const rowKeyCache = computed(() =>
       :class="[hasStickyHeader && 'overflow-y-auto', hasHorizontalScroll && 'overflow-x-auto']"
       :style="hasStickyHeader ? { maxHeight: toPx(scrollConfig.y) } : undefined"
     >
-      <div
-        v-if="props.loading"
-        class="absolute inset-0 bg-background/80 backdrop-blur-sm flex items-center justify-center z-30"
-      >
-        <Icon
-          icon="lucide:loader-2"
-          class="size-5 animate-spin text-muted-foreground"
-        />
+      <div v-if="props.loading" class="absolute inset-0 bg-background/80 backdrop-blur-sm flex items-center justify-center z-30">
+        <Icon icon="lucide:loader-2" class="size-5 animate-spin text-muted-foreground" />
       </div>
 
       <Table
         :class="
           cn(
             sizeStyle.text,
-            hasStickyHeader &&
-              'min-h-0 flex-1 [&_[data-slot=table-container]]:min-h-full',
-            !hasHorizontalScroll && '[&_[data-slot=table-container]]:overflow-x-hidden [&_td]:whitespace-normal [&_td]:break-all [&_th]:whitespace-normal [&_th]:break-words',
+            hasStickyHeader && 'min-h-0 flex-1 [&_[data-slot=table-container]]:min-h-full',
+            !hasHorizontalScroll &&
+              '[&_[data-slot=table-container]]:overflow-x-hidden [&_td]:whitespace-normal [&_td]:break-all [&_th]:whitespace-normal [&_th]:break-words',
           )
         "
       >
-        <TableHeader
-          v-if="props.showHeader"
-          :class="hasStickyHeader && 'sticky top-0 bg-background z-20'"
-        >
+        <TableHeader v-if="props.showHeader" :class="hasStickyHeader && 'sticky top-0 bg-background z-20'">
           <TableRow :class="cn(props.bordered && (hasStickyHeader ? 'shadow-[inset_0_-1px_0_var(--border)]' : 'border-b'), 'hover:!bg-transparent')">
             <!-- 展开列 -->
-            <TableHead
-              v-if="hasExpandable"
-              :class="expandColumnClass"
-            />
+            <TableHead v-if="hasExpandable" :class="expandColumnClass" />
             <!-- 选择列 -->
-            <TableHead
-              v-if="hasSelection"
-              :class="cn(selectionColumnClass, '[&:has([role=checkbox])]:pr-2')"
-            >
+            <TableHead v-if="hasSelection" :class="cn(selectionColumnClass, '[&:has([role=checkbox])]:pr-2')">
               <div class="flex items-center justify-center" @click.stop>
                 <Checkbox
                   v-if="!isSingleSelect"
-                  :model-value="
-                    selectionState.isIndeterminate
-                      ? 'indeterminate'
-                      : selectionState.isAllSelected
-                  "
+                  :model-value="selectionState.isIndeterminate ? 'indeterminate' : selectionState.isAllSelected"
                   class="data-[state=indeterminate]:bg-primary data-[state=indeterminate]:text-primary-foreground data-[state=indeterminate]:border-primary"
                   @update:model-value="handleSelectAllChange"
                 >
                   <template #default="{ state }">
-                    <Icon
-                      :icon="
-                        state === 'indeterminate'
-                          ? 'lucide:minus'
-                          : 'lucide:check'
-                      "
-                      class="size-3.5"
-                    />
+                    <Icon :icon="state === 'indeterminate' ? 'lucide:minus' : 'lucide:check'" class="size-3.5" />
                   </template>
                 </Checkbox>
               </div>
@@ -739,27 +643,19 @@ const rowKeyCache = computed(() =>
                 cn(
                   sizeStyle.cell,
                   getAlignClass(column.align),
-                  column.sortable &&
-                    'cursor-pointer select-none hover:bg-accent/50',
+                  column.sortable && 'cursor-pointer select-none hover:bg-accent/50',
                   getColumnFixedClass(column, index === props.columns.length - 1),
                 )
               "
               :style="mergedColumnStyles.get(column.key)"
               @click="column.sortable && handleSortClick(column)"
             >
-              <div
-                class="flex items-center gap-2"
-                :class="getAlignClass(column.align)"
-              >
+              <div class="flex items-center gap-2" :class="getAlignClass(column.align)">
                 <component :is="() => renderHeader(column, index)" />
                 <span v-if="column.sortable" class="flex items-center">
                   <Icon
                     :icon="getSortIcon(columnSortOrders.get(column.key))"
-                    :class="
-                      columnSortOrders.get(column.key)
-                        ? 'size-4 text-primary'
-                        : 'size-4 text-muted-foreground/50'
-                    "
+                    :class="columnSortOrders.get(column.key) ? 'size-4 text-primary' : 'size-4 text-muted-foreground/50'"
                   />
                 </span>
               </div>
@@ -785,27 +681,17 @@ const rowKeyCache = computed(() =>
           </TableRow>
 
           <template v-else>
-            <template
-              v-for="(row, rowIndex) in paginatedData"
-              :key="rowKeyCache[rowIndex]"
-            >
+            <template v-for="(row, rowIndex) in paginatedData" :key="rowKeyCache[rowIndex]">
               <!-- 数据行 -->
               <TableRow
                 :class="getDataRowClass(row, rowIndex)"
                 @click="handleRowEvent('onClick', row, rowIndex, $event)"
                 @dblclick="handleRowEvent('onDblclick', row, rowIndex, $event)"
-                @mouseenter="
-                  handleRowEvent('onMouseenter', row, rowIndex, $event)
-                "
-                @mouseleave="
-                  handleRowEvent('onMouseleave', row, rowIndex, $event)
-                "
+                @mouseenter="handleRowEvent('onMouseenter', row, rowIndex, $event)"
+                @mouseleave="handleRowEvent('onMouseleave', row, rowIndex, $event)"
               >
                 <!-- 展开列 -->
-                <TableCell
-                  v-if="hasExpandable"
-                  :class="expandColumnClass"
-                >
+                <TableCell v-if="hasExpandable" :class="expandColumnClass">
                   <div class="flex items-center justify-center">
                     <button
                       v-if="isRowExpandable(row)"
@@ -814,45 +700,27 @@ const rowKeyCache = computed(() =>
                       @click.stop="handleExpandToggle(row, rowIndex)"
                     >
                       <Icon
-                        :icon="
-                          expandedKeysSet.has(rowKeyCache[rowIndex])
-                            ? 'lucide:chevron-down'
-                            : 'lucide:chevron-right'
-                        "
+                        :icon="expandedKeysSet.has(rowKeyCache[rowIndex]) ? 'lucide:chevron-down' : 'lucide:chevron-right'"
                         class="size-4 text-muted-foreground"
                       />
                     </button>
                   </div>
                 </TableCell>
                 <!-- 选择列 -->
-                <TableCell
-                  v-if="hasSelection"
-                  :class="cn(selectionColumnClass, '[&:has([role=checkbox])]:pr-2')"
-                >
+                <TableCell v-if="hasSelection" :class="cn(selectionColumnClass, '[&:has([role=checkbox])]:pr-2')">
                   <div class="flex items-center justify-center" @click.stop>
                     <RadioGroup
                       v-if="isSingleSelect"
-                      :model-value="
-                        selectedKeysSet.has(rowKeyCache[rowIndex])
-                          ? rowKeyCache[rowIndex].toString()
-                          : undefined
-                      "
-                      @update:model-value="
-                        (val) => val && handleRowSelect(row, rowIndex, true)
-                      "
+                      :model-value="selectedKeysSet.has(rowKeyCache[rowIndex]) ? rowKeyCache[rowIndex].toString() : undefined"
+                      @update:model-value="(val) => val && handleRowSelect(row, rowIndex, true)"
                     >
-                      <RadioGroupItem
-                        :value="rowKeyCache[rowIndex].toString()"
-                        :disabled="isRowDisabled(row)"
-                      />
+                      <RadioGroupItem :value="rowKeyCache[rowIndex].toString()" :disabled="isRowDisabled(row)" />
                     </RadioGroup>
                     <Checkbox
                       v-else
                       :model-value="selectedKeysSet.has(rowKeyCache[rowIndex])"
                       :disabled="isRowDisabled(row)"
-                      @update:model-value="
-                        (v) => handleRowSelect(row, rowIndex, v === true)
-                      "
+                      @update:model-value="(v) => handleRowSelect(row, rowIndex, v === true)"
                     />
                   </div>
                 </TableCell>
@@ -860,13 +728,7 @@ const rowKeyCache = computed(() =>
                 <TableCell
                   v-for="(column, colIndex) in props.columns"
                   :key="column.key"
-                  :class="
-                    cn(
-                      sizeStyle.cell,
-                      getAlignClass(column.align),
-                      getColumnFixedClass(column, colIndex === props.columns.length - 1),
-                    )
-                  "
+                  :class="cn(sizeStyle.cell, getAlignClass(column.align), getColumnFixedClass(column, colIndex === props.columns.length - 1))"
                   :style="mergedColumnStyles.get(column.key)"
                 >
                   <component :is="() => renderCell(column, row, rowIndex)" />
@@ -878,30 +740,15 @@ const rowKeyCache = computed(() =>
                 v-if="
                   hasExpandable &&
                   isRowExpandable(row) &&
-                  (shouldKeepExpanded
-                    ? everExpandedKeysSet.has(rowKeyCache[rowIndex])
-                    : expandedKeysSet.has(rowKeyCache[rowIndex]))
+                  (shouldKeepExpanded ? everExpandedKeysSet.has(rowKeyCache[rowIndex]) : expandedKeysSet.has(rowKeyCache[rowIndex]))
                 "
-                v-show="
-                  !shouldKeepExpanded ||
-                  expandedKeysSet.has(rowKeyCache[rowIndex])
-                "
+                v-show="!shouldKeepExpanded || expandedKeysSet.has(rowKeyCache[rowIndex])"
                 :key="'expanded-' + rowKeyCache[rowIndex]"
                 :class="cn('bg-accent/10 hover:!bg-accent/10', props.bordered && 'border-b')"
               >
                 <TableCell :colspan="totalColumns" class="p-4">
-                  <component
-                    v-if="expandableConfig.expandedRowRender"
-                    :is="
-                      () => expandableConfig.expandedRowRender!(row, rowIndex)
-                    "
-                  />
-                  <slot
-                    v-else-if="slots.expandedRow"
-                    name="expandedRow"
-                    :row="row"
-                    :index="rowIndex"
-                  />
+                  <component v-if="expandableConfig.expandedRowRender" :is="() => expandableConfig.expandedRowRender!(row, rowIndex)" />
+                  <slot v-else-if="slots.expandedRow" name="expandedRow" :row="row" :index="rowIndex" />
                 </TableCell>
               </TableRow>
             </template>
@@ -926,24 +773,20 @@ const rowKeyCache = computed(() =>
 </template>
 
 <style scoped>
-.data-table-scroll:deep([data-slot="table-container"]) {
+.data-table-scroll:deep([data-slot='table-container']) {
   scrollbar-width: thin;
   scrollbar-color: var(--muted-foreground) var(--border);
 }
-.data-table-scroll:deep([data-slot="table-container"]::-webkit-scrollbar) {
+.data-table-scroll:deep([data-slot='table-container']::-webkit-scrollbar) {
   display: block;
   width: 8px;
   height: 8px;
 }
-.data-table-scroll:deep(
-  [data-slot="table-container"]::-webkit-scrollbar-thumb
-) {
+.data-table-scroll:deep([data-slot='table-container']::-webkit-scrollbar-thumb) {
   background: var(--muted-foreground);
   border-radius: 4px;
 }
-.data-table-scroll:deep(
-  [data-slot="table-container"]::-webkit-scrollbar-track
-) {
+.data-table-scroll:deep([data-slot='table-container']::-webkit-scrollbar-track) {
   background: var(--border);
 }
 </style>

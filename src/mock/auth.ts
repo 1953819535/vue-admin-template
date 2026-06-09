@@ -26,13 +26,7 @@ const MOCK_USERS: Record<string, { password: string; userInfo: UserInfo }> = {
       email: 'user@example.com',
       phone: '13800138001',
       roles: ['user'],
-      permissions: [
-        'dashboard:view',
-        'system:view',
-        'system:settings:view',
-        'users:view',
-        'users:list',
-      ],
+      permissions: ['dashboard:view', 'system:view', 'system:settings:view', 'users:view', 'users:list'],
     },
   },
   editor: {
@@ -45,14 +39,7 @@ const MOCK_USERS: Record<string, { password: string; userInfo: UserInfo }> = {
       email: 'editor@example.com',
       phone: '13800138002',
       roles: ['editor'],
-      permissions: [
-        'dashboard:view',
-        'users:view',
-        'users:list',
-        'users:add',
-        'users:edit',
-        'users:delete',
-      ],
+      permissions: ['dashboard:view', 'users:view', 'users:list', 'users:add', 'users:edit', 'users:delete'],
     },
   },
 }
@@ -126,7 +113,19 @@ export async function mockLogout(): Promise<void> {
 
 // 导出测试用户信息，方便开发调试
 export const TEST_USERS = {
-  admin: { username: 'admin', password: 'admin123', desc: '超级管理员 - 拥有所有权限' },
-  user: { username: 'user', password: 'user123', desc: '普通用户 - 只有查看权限' },
-  editor: { username: 'editor', password: 'editor123', desc: '编辑员 - 可以增删改用户' },
+  admin: {
+    username: 'admin',
+    password: 'admin123',
+    desc: '超级管理员 - 拥有所有权限',
+  },
+  user: {
+    username: 'user',
+    password: 'user123',
+    desc: '普通用户 - 只有查看权限',
+  },
+  editor: {
+    username: 'editor',
+    password: 'editor123',
+    desc: '编辑员 - 可以增删改用户',
+  },
 }

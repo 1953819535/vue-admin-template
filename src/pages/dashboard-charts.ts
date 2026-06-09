@@ -31,10 +31,12 @@ export const revenueLineOptions: ApexOptions = {
   ...createAxisFormatters('$'),
 }
 
-export const revenueSeries = [{
-  name: '收入',
-  data: [1200, 1500, 1100, 2100, 2400, 2800],
-}]
+export const revenueSeries = [
+  {
+    name: '收入',
+    data: [1200, 1500, 1100, 2100, 2400, 2800],
+  },
+]
 
 /** 面积图 - 用户增长 */
 export const userAreaOptions: ApexOptions = {
@@ -48,10 +50,12 @@ export const userAreaOptions: ApexOptions = {
   ...createAxisFormatters('人'),
 }
 
-export const userSeries = [{
-  name: '新增用户',
-  data: [120, 180, 150, 220, 280, 350],
-}]
+export const userSeries = [
+  {
+    name: '新增用户',
+    data: [120, 180, 150, 220, 280, 350],
+  },
+]
 
 /** 柱状图 - 月度销售 */
 export const salesBarOptions: ApexOptions = {
@@ -67,10 +71,12 @@ export const salesBarOptions: ApexOptions = {
   ...createAxisFormatters('件'),
 }
 
-export const salesSeries = [{
-  name: '销量',
-  data: [420, 380, 290, 520, 180],
-}]
+export const salesSeries = [
+  {
+    name: '销量',
+    data: [420, 380, 290, 520, 180],
+  },
+]
 
 /** 环形图 - 销售分类占比 */
 export const categoryDonutOptions: ApexOptions = {
@@ -96,10 +102,13 @@ export const metricsRadarOptions: ApexOptions = {
   },
 }
 
-export const metricsSeries = [{
-  name: '本月',
-  data: [85, 62, 78, 90, 75, 55],
-}, {
-  name: '上月',
-  data: [70, 55, 65, 80, 60, 45],
-}]
+export const metricsSeries = [
+  {
+    name: '本月',
+    data: [85, 62, 78, 90, 75, 55],
+  },
+  {
+    name: '上月',
+    data: [70, 55, 65, 80, 60, 45],
+  },
+]

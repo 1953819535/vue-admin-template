@@ -1,8 +1,8 @@
 <script setup lang="ts">
-import Logo from "@/components/app/Logo.vue";
-import Actions from "@/components/app/Actions.vue";
-import VerticalMenu from "@/components/app/VerticalMenu.vue";
-import Announcement from "@/components/app/Announcement.vue";
+import Logo from '@/components/app/Logo.vue'
+import Actions from '@/components/app/Actions.vue'
+import VerticalMenu from '@/components/app/VerticalMenu.vue'
+import Announcement from '@/components/app/Announcement.vue'
 import BackToTop from '@/components/app/BackToTop.vue'
 </script>
 

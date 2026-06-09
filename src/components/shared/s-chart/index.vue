@@ -107,7 +107,7 @@ watch(
       chartInstance.updateOptions(newOptions, true, true, false)
     }
   },
-  { deep: true }
+  { deep: true },
 )
 
 // 监听数据变化
@@ -118,7 +118,7 @@ watch(
       chartInstance.updateSeries(newSeries)
     }
   },
-  { deep: true }
+  { deep: true },
 )
 
 // 清理

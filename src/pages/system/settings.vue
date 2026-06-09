@@ -6,6 +6,19 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Checkbox } from '@/components/ui/checkbox'
 
+definePage({
+  meta: {
+    title: '参数配置',
+    menuIcon: 'lucide:sliders-horizontal',
+    menuGroup: '系统设置',
+    menuOrder: 31,
+    menuIndent: true,
+    requiresAuth: true,
+    roles: ['admin'],
+    permissions: ['system:settings'],
+  },
+})
+
 const settings = ref({
   siteName: '后台管理系统',
   siteUrl: 'https://admin.example.com',
@@ -16,19 +29,6 @@ const settings = ref({
 })
 </script>
 
-<route lang="yaml">
-meta:
-  layout: default
-  title: 参数配置
-  menuIcon: lucide:sliders-horizontal
-  menuGroup: 系统设置
-  menuOrder: 31
-  menuIndent: true
-  requiresAuth: true
-  roles: [admin]
-  permissions: [system:settings]
-</route>
-
 <template>
   <Card>
     <CardHeader>
@@ -38,18 +38,12 @@ meta:
       <div class="space-y-4">
         <div class="space-y-2">
           <Label for="siteName">站点名称</Label>
-          <Input
-            id="siteName"
-            v-model="settings.siteName"
-          />
+          <Input id="siteName" v-model="settings.siteName" />
         </div>
 
         <div class="space-y-2">
           <Label for="siteUrl">站点地址</Label>
-          <Input
-            id="siteUrl"
-            v-model="settings.siteUrl"
-          />
+          <Input id="siteUrl" v-model="settings.siteUrl" />
         </div>
 
         <div class="flex items-center gap-3">
@@ -64,28 +58,16 @@ meta:
 
         <div class="space-y-2">
           <Label for="maxLoginAttempts">最大登录尝试次数</Label>
-          <Input
-            id="maxLoginAttempts"
-            v-model="settings.maxLoginAttempts"
-            type="number"
-            class="w-32"
-          />
+          <Input id="maxLoginAttempts" v-model="settings.maxLoginAttempts" type="number" class="w-32" />
         </div>
 
         <div class="space-y-2">
           <Label for="sessionTimeout">会话超时时间 (分钟)</Label>
-          <Input
-            id="sessionTimeout"
-            v-model="settings.sessionTimeout"
-            type="number"
-            class="w-32"
-          />
+          <Input id="sessionTimeout" v-model="settings.sessionTimeout" type="number" class="w-32" />
         </div>
 
         <div class="pt-4">
-          <Button>
-            保存配置
-          </Button>
+          <Button> 保存配置 </Button>
         </div>
       </div>
     </CardContent>

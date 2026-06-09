@@ -1,57 +1,31 @@
-import type { RouteLocationRaw, RouteLocationPathRaw } from 'vue-router'
+import type { RouteLocationRaw } from 'vue-router'
 import { useRoute } from 'vue-router'
-import routes from '~pages'
+import { routes } from 'vue-router/auto-routes'
 import { generateMenus } from '@/utils/menu'
+import type { NavItem, NavGroup, NavProps } from '@/utils/menu'
 import { useAuthStore } from '@/stores/modules/auth'
 import { computed } from 'vue'
 
-// Types
-export interface NavItem {
-  title: string
-  to: RouteLocationRaw
-  icon?: string
-  indent?: boolean
-  roles?: string[]
-  permissions?: string[]
-}
+// 重新导出类型供组件使用
+export type { NavItem, NavGroup, NavProps }
 
-export interface NavGroup {
-  title: string
-  icon?: string
-  items: NavItem[]
+/** 权限检查辅助函数 */
+function hasItemPermission(item: NavItem, authStore: ReturnType<typeof useAuthStore>) {
+  return authStore.hasAccess({ roles: item.roles, permissions: item.permissions })
 }
-
-export interface NavProps {
-  groups?: NavGroup[]
-  items?: NavItem[]
-}
-
-// 原始菜单数据
-const rawMenuConfig = generateMenus(routes)
 
 /** 根据权限过滤菜单 */
-function filterMenusByPermission(
-  menus: NavProps,
-  authStore: ReturnType<typeof useAuthStore>
-): NavProps {
-  const filteredItems = menus.items?.filter(item => authStore.hasAccess({
-    roles: item.roles,
-    permissions: item.permissions,
-  }))
+function filterMenusByPermission(menus: NavProps, authStore: ReturnType<typeof useAuthStore>): NavProps {
+  const filteredItems = menus.items?.filter((item: NavItem) => hasItemPermission(item, authStore))
+  const filteredGroups = menus.groups
+    ?.map((group: NavGroup) => ({ ...group, items: group.items.filter((item: NavItem) => hasItemPermission(item, authStore)) }))
+    .filter((group: NavGroup) => group.items.length > 0)
 
-  const filteredGroups = menus.groups?.map(group => ({
-    ...group,
-    items: group.items.filter(item => authStore.hasAccess({
-      roles: item.roles,
-      permissions: item.permissions,
-    }))
-  })).filter(group => group.items.length > 0)
-
-  return {
-    items: filteredItems,
-    groups: filteredGroups,
-  }
+  return { items: filteredItems, groups: filteredGroups }
 }
+
+// 静态菜单配置只计算一次（routes 是编译时确定的静态数据）
+const rawMenuConfig = generateMenus(routes)
 
 export function useMenus() {
   const authStore = useAuthStore()
@@ -70,20 +44,15 @@ export function useMenus() {
 // 路由激活判断
 function extractPath(to: RouteLocationRaw): string {
   if (typeof to === 'string') return to
-  if ('path' in to) return (to as RouteLocationPathRaw).path
-  return ''
+  return 'path' in to ? to.path ?? '' : ''
 }
 
 export function useNavActive() {
   const route = useRoute()
 
-  function isActive(to: RouteLocationRaw) {
-    return route.path === extractPath(to)
-  }
+  const isActive = (to: RouteLocationRaw) => route.path === extractPath(to)
 
-  function isGroupActive(group: NavGroup) {
-    return group.items.some(item => isActive(item.to))
-  }
+  const isGroupActive = (group: NavGroup) => group.items.some((item) => isActive(item.to))
 
   return { isActive, isGroupActive }
 }

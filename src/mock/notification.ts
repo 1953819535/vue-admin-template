@@ -86,7 +86,7 @@ export async function fetchNotifications(): Promise<NotificationItem[]> {
 /** 标记通知已读 */
 export async function markNotificationRead(id: number): Promise<void> {
   await delay(100)
-  const notification = mockNotifications.find(n => n.id === id)
+  const notification = mockNotifications.find((n) => n.id === id)
   if (notification) {
     notification.read = true
   }
@@ -95,13 +95,13 @@ export async function markNotificationRead(id: number): Promise<void> {
 /** 标记全部已读 */
 export async function markAllNotificationsRead(): Promise<void> {
   await delay(100)
-  mockNotifications.forEach(n => n.read = true)
+  mockNotifications.forEach((n) => (n.read = true))
 }
 
 /** 删除通知 */
 export async function deleteNotification(id: number): Promise<void> {
   await delay(100)
-  const index = mockNotifications.findIndex(n => n.id === id)
+  const index = mockNotifications.findIndex((n) => n.id === id)
   if (index > -1) {
     mockNotifications.splice(index, 1)
   }
@@ -110,7 +110,7 @@ export async function deleteNotification(id: number): Promise<void> {
 /** 清空已读通知 */
 export async function clearReadNotifications(): Promise<void> {
   await delay(100)
-  const unread = mockNotifications.filter(n => !n.read)
+  const unread = mockNotifications.filter((n) => !n.read)
   mockNotifications.length = 0
   mockNotifications.push(...unread)
 }
@@ -118,7 +118,15 @@ export async function clearReadNotifications(): Promise<void> {
 /** 通知类型配置 */
 export const notificationTypeConfig: Record<NotificationType, { label: string; icon: string; color: string }> = {
   system: { label: '系统', icon: 'lucide:settings', color: 'text-blue-500' },
-  todo: { label: '待办', icon: 'lucide:clipboard-check', color: 'text-orange-500' },
+  todo: {
+    label: '待办',
+    icon: 'lucide:clipboard-check',
+    color: 'text-orange-500',
+  },
   notice: { label: '公告', icon: 'lucide:megaphone', color: 'text-green-500' },
-  message: { label: '消息', icon: 'lucide:message-circle', color: 'text-purple-500' },
+  message: {
+    label: '消息',
+    icon: 'lucide:message-circle',
+    color: 'text-purple-500',
+  },
 }

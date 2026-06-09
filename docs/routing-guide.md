@@ -1,22 +1,23 @@
-# Nuxt 风格路由方案
+# Vue Router 5 文件路由方案
 
-基于 `vite-plugin-pages` + `vite-plugin-vue-layouts` 实现的文件系统路由，类似 Nuxt 的约定式路由。
+基于 Vue Router 5 内置文件路由系统 + `vite-plugin-vue-layouts` 实现的文件系统路由。
 
 ## 概述
 
-| 特性 | 说明 |
-|------|------|
-| 文件路由 | `src/pages/` 目录自动生成路由 |
-| 布局系统 | `src/layouts/` 目录自动注册布局 |
-| 动态路由 | `[id].vue` 文件名语法 |
-| 嵌套子路由 | 目录结构自动生成子路由 |
-| 路由元信息 | `<route>` block 定义 meta |
+| 特性       | 说明                               |
+| ---------- | ---------------------------------- |
+| 文件路由   | `src/pages/` 目录自动生成路由      |
+| 布局系统   | `src/layouts/` 目录自动注册布局    |
+| 动态路由   | `[id].vue` 文件名语法              |
+| 嵌套子路由 | 目录结构自动生成子路由             |
+| 路由元信息 | `definePage()` 宏定义 meta         |
+| 类型安全   | 自动生成路由类型，支持类型安全参数 |
 
 ## 安装
 
 ```bash
-pnpm add -D vite-plugin-pages vite-plugin-vue-layouts
 pnpm add vue-router
+pnpm add -D vite-plugin-vue-layouts
 ```
 
 ## 配置
@@ -27,16 +28,16 @@ pnpm add vue-router
 import path from 'node:path'
 import { defineConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
-import Pages from 'vite-plugin-pages'
+import VueRouter from 'vue-router/vite'
 import Layouts from 'vite-plugin-vue-layouts'
 
 export default defineConfig({
   plugins: [
-    vue(),
-    Pages({
-      dirs: 'src/pages',
-      extensions: ['vue'],
+    VueRouter({
+      // 排除不需要生成路由的文件
+      exclude: ['**/components/**', '**/__*', '**/__*/**/*', '**/*.component.vue'],
     }),
+    vue(),
     Layouts({
       layoutsDirs: 'src/layouts',
       defaultLayout: 'default',
@@ -54,8 +55,8 @@ export default defineConfig({
 
 ```ts
 import { createRouter, createWebHistory } from 'vue-router'
+import { routes } from 'vue-router/auto-routes'
 import { setupLayouts } from 'virtual:generated-layouts'
-import routes from '~pages'
 
 const router = createRouter({
   history: createWebHistory(),
@@ -90,7 +91,7 @@ app.mount('#app')
 
 ```ts
 /// <reference types="vite/client" />
-/// <reference types="vite-plugin-pages/client" />
+/// <reference types="vue-router/auto-routes" />
 /// <reference types="vite-plugin-vue-layouts/client" />
 ```
 
@@ -100,7 +101,6 @@ app.mount('#app')
 src/
 ├── layouts/              # 布局组件
 │   ├── default.vue       # 默认布局
-│   ├── admin.vue         # 管理布局
 │   └── blank.vue         # 空白布局
 │
 ├── pages/                # 页面组件（自动生成路由）
@@ -123,33 +123,34 @@ src/
 │       └── logs.vue      # /system/logs
 │
 └── router/
-    └── index.ts          # 路由入口
+    ├── index.ts          # 路由入口
+    └── guard.ts          # 路由守卫
 ```
 
 ## 路由规则
 
 ### 文件名到路由映射
 
-| 文件路径 | 生成的路由 |
-|----------|-----------|
-| `pages/index.vue` | `/` |
-| `pages/login.vue` | `/login` |
-| `pages/users/index.vue` | `/users` |
-| `pages/users/create.vue` | `/users/create` |
-| `pages/users/[id]/index.vue` | `/users/:id` |
-| `pages/users/[id]/edit.vue` | `/users/:id/edit` |
-| `pages/[...path].vue` | `/:path(.*)*` (捕获所有路由) |
+| 文件路径                     | 生成的路由                   |
+| ---------------------------- | ---------------------------- |
+| `pages/index.vue`            | `/`                          |
+| `pages/login.vue`            | `/login`                     |
+| `pages/users/index.vue`      | `/users`                     |
+| `pages/users/create.vue`     | `/users/create`              |
+| `pages/users/[id]/index.vue` | `/users/:id`                 |
+| `pages/users/[id]/edit.vue`  | `/users/:id/edit`            |
+| `pages/[...path].vue`        | `/:path(.*)*` (捕获所有路由) |
 
 ### 忽略路由生成
 
-使用 `_` 前缀的文件不会生成路由，适合放置组件、工具函数等：
+使用 `_` 前缀的文件或配置 `exclude` 排除的文件不会生成路由：
 
-| 文件路径 | 是否生成路由 |
-|----------|-------------|
-| `pages/_helper.vue` | ❌ 不生成 |
-| `pages/users/_form.vue` | ❌ 不生成 |
-| `pages/_components/button.vue` | ❌ 不生成 |
-| `pages/dashboard.vue` | ✅ 生成 `/dashboard` |
+| 文件路径                       | 是否生成路由         |
+| ------------------------------ | -------------------- |
+| `pages/_helper.vue`            | ❌ 不生成            |
+| `pages/users/_form.vue`        | ❌ 不生成            |
+| `pages/_components/button.vue` | ❌ 不生成            |
+| `pages/dashboard.vue`          | ✅ 生成 `/dashboard` |
 
 **推荐用法**：将页面内部组件放在 `_components/` 目录：
 
@@ -168,21 +169,62 @@ pages/
         └── _detail-panel.vue  # 不生成路由
 ```
 
-### `<route>` block 不影响路由生成
+### definePage() 宏
 
-路由生成只取决于文件是否存在，`<route>` block 仅用于添加额外配置：
+Vue Router 5 使用 `definePage()` 宏定义路由元信息：
 
 ```vue
-<!-- 即使不定义 route block，路由依然生成 -->
 <script setup lang="ts">
+definePage({
+  meta: {
+    title: '用户管理',
+    menuTitle: '用户列表',
+    menuIcon: 'lucide:users',
+    menuGroup: '用户管理',
+    menuGroupIcon: 'lucide:users',
+    menuOrder: 10,
+    requiresAuth: true,
+    permissions: ['users:list'],
+  },
+})
 </script>
 
 <template>
   <div>页面内容</div>
 </template>
-
-<!-- 生成的路由: { path: '/xxx', meta: {} } 使用 default 布局 -->
 ```
+
+### 布局配置
+
+**重要**：默认布局无需指定，只有空白布局需要显式配置：
+
+```vue
+<!-- 使用默认布局（无需指定） -->
+<script setup lang="ts">
+definePage({
+  meta: {
+    title: '仪表盘',
+    requiresAuth: true,
+  },
+})
+</script>
+
+<!-- 使用空白布局（需要指定） -->
+<script setup lang="ts">
+definePage({
+  meta: {
+    layout: 'blank',
+    menuHidden: true,
+    constant: true,
+  },
+})
+</script>
+```
+
+| meta.layout | 使用的布局            |
+| ----------- | --------------------- |
+| `'blank'`   | `layouts/blank.vue`   |
+| 未指定      | `layouts/default.vue` |
 
 ### 子路由规则
 
@@ -207,7 +249,7 @@ pages/
 布局组件必须使用 `<RouterView />` 渲染页面内容：
 
 ```vue
-<!-- src/layouts/admin.vue -->
+<!-- src/layouts/default.vue -->
 <template>
   <div class="flex min-h-screen">
     <aside class="w-64 border-r">
@@ -220,146 +262,194 @@ pages/
     <main class="flex-1">
       <header>顶部导航</header>
       <div class="p-6">
-        <RouterView />  <!-- 页面内容渲染位置 -->
+        <RouterView />
+        <!-- 页面内容渲染位置 -->
       </div>
     </main>
   </div>
 </template>
 ```
 
-### 指定页面布局
-
-在页面中使用 `<route>` block 指定布局：
-
-```vue
-<!-- src/pages/dashboard.vue -->
-<script setup lang="ts">
-</script>
-
-<route lang="yaml">
-meta:
-  layout: admin
-  title: 仪表盘
-  requiresAuth: true
-</route>
-
-<template>
-  <div>
-    <h2>仪表盘</h2>
-    <!-- 页面内容 -->
-  </div>
-</template>
-```
-
-### 布局选择规则
-
-| meta.layout | 使用的布局 |
-|-------------|-----------|
-| `'admin'` | `layouts/admin.vue` |
-| `'blank'` | `layouts/blank.vue` |
-| 未指定 | `layouts/default.vue` |
-
-## setupLayouts 原理
+### setupLayouts 原理
 
 `setupLayouts` 将扁平路由转换为嵌套路由：
 
 **输入（扁平路由）：**
+
 ```ts
-[
-  { path: '/dashboard', component: DashboardPage, meta: { layout: 'admin' } }
-]
+;[{ path: '/dashboard', component: DashboardPage, meta: { layout: 'blank' } }]
 ```
 
 **输出（嵌套路由）：**
+
 ```ts
-[
+;[
   {
     path: '/dashboard',
-    component: AdminLayout,     // 布局作为父路由
+    component: BlankLayout, // 布局作为父路由
     children: [
-      { path: '', component: DashboardPage }  // 页面作为子路由
-    ]
-  }
+      { path: '', component: DashboardPage }, // 页面作为子路由
+    ],
+    meta: { isLayout: true },
+  },
 ]
 ```
 
 **渲染流程：**
+
 ```
 访问 /dashboard
-  → 匹配 AdminLayout（渲染侧边栏）
-    → AdminLayout 内 <RouterView />
+  → 匹配 BlankLayout（渲染布局外壳）
+    → BlankLayout 内 <RouterView />
       → 匹配 DashboardPage（渲染页面内容）
+```
+
+## 类型安全
+
+### 动态路由参数
+
+Vue Router 5 自动生成路由类型，使用泛型获取类型安全的参数：
+
+```vue
+<script setup lang="ts">
+import { useRoute } from 'vue-router'
+
+// 使用泛型指定路由路径
+const route = useRoute<'/users/[id]/'>()
+const userId = route.params.id // 类型安全，自动推断为 string
+</script>
+```
+
+### 路由名称
+
+生成的路由名称基于文件路径：
+
+| 文件路径                     | 路由名称     |
+| ---------------------------- | ------------ |
+| `pages/index.vue`            | `/`          |
+| `pages/users/index.vue`      | `/users`     |
+| `pages/users/[id]/index.vue` | `/users/:id` |
+
+使用 `router.push()` 时可以使用路径或名称：
+
+```ts
+router.push('/users')
+router.push({ name: '/users' })
+router.push('/users/123')
 ```
 
 ## 路由元信息
 
 ### 可用的 meta 字段
 
-```yaml
-<route lang="yaml">
-meta:
-  layout: admin           # 布局名称
-  title: 用户管理         # 页面标题
-  requiresAuth: true      # 是否需要登录
-  roles: [admin, manager] # 允许的角色
-</route>
+```ts
+definePage({
+  meta: {
+    layout: 'blank', // 布局名称（仅空白布局需要指定）
+    title: '用户管理', // 页面标题
+    menuTitle: '用户列表', // 菜单显示标题
+    menuIcon: 'lucide:users', // 菜单图标
+    menuGroup: '用户管理', // 菜单分组
+    menuGroupIcon: 'lucide:users', // 分组图标
+    menuOrder: 10, // 菜单排序
+    menuHidden: true, // 隐藏菜单项
+    requiresAuth: true, // 是否需要登录
+    roles: ['admin'], // 允许的角色
+    permissions: ['users:list'], // 允许的权限
+    constant: true, // 常量路由（不需要权限检查）
+  },
+})
 ```
 
 ### 重定向
 
-```yaml
-<route lang="yaml">
-redirect: /dashboard
-</route>
+```ts
+definePage({
+  redirect: '/dashboard',
+})
 ```
 
-### 路由命名
+## 路由守卫
 
-```yaml
-<route lang="yaml">
-name: UserList
-</route>
+Vue Router 5 推荐使用返回值代替 `next()` 回调：
+
+```ts
+// src/router/guard.ts
+import type { Router } from 'vue-router'
+
+const WHITE_LIST = ['/login', '/404', '/403']
+
+export function setupRouterGuard(router: Router) {
+  router.beforeEach(async (to) => {
+    // 白名单或常量路由，直接放行
+    if (WHITE_LIST.includes(to.path) || to.meta.constant) {
+      return true
+    }
+
+    // 未登录，重定向到登录页
+    if (!authStore.isLogin) {
+      return {
+        path: '/login',
+        query: { redirect: to.fullPath },
+      }
+    }
+
+    // 已登录，放行
+    return true
+  })
+}
 ```
+
+## 获取路由数据
+
+### 静态路由（构建时）
+
+```ts
+import { routes } from 'vue-router/auto-routes'
+```
+
+### 运行时路由
+
+```ts
+import { useRouter } from 'vue-router'
+
+const router = useRouter()
+const routes = router.getRoutes() // 获取运行时已解析的路由
+```
+
+**注意**：`router.getRoutes()` 返回的路由包含布局处理后的结构，带有 `isLayout: true` 标记。
 
 ## 权限控制
 
-### 方案一：路由守卫
+### 路由级权限
+
+在 `definePage()` 中配置 `roles` 或 `permissions`：
 
 ```ts
-// src/router/index.ts
-router.beforeEach((to, from, next) => {
-  const requiresAuth = to.meta.requiresAuth
-  const roles = to.meta.roles as string[] | undefined
-  
-  const user = getUser() // 从 store/localStorage 获取
-  
-  if (requiresAuth && !user) {
-    next({ path: '/login', query: { redirect: to.fullPath } })
-  } else if (roles && !roles.includes(user?.role)) {
-    next('/403')
-  } else {
-    next()
-  }
+definePage({
+  meta: {
+    roles: ['admin', 'manager'],
+    permissions: ['users:list'],
+  },
 })
 ```
 
-### 方案二：动态路由过滤
+### 按钮级权限
 
-```ts
-function filterRoutesByRole(routes: any[], role: string) {
-  return routes.filter(route => {
-    const allowedRoles = route.meta?.roles
-    if (!allowedRoles) return true
-    return allowedRoles.includes(role)
-  })
-}
+使用 `useAuth` Hook：
 
-const userRole = getUser()?.role || 'guest'
-const filteredRoutes = filterRoutesByRole(generatedRoutes, userRole)
+```vue
+<script setup lang="ts">
+import { useAuth } from '@/composables/useAuth'
 
-const router = createRouter({
-  routes: setupLayouts(filteredRoutes),
-})
+const { hasAuth, hasRole } = useAuth()
+</script>
+
+<template>
+  <Button v-if="hasAuth('users:add')">新增</Button>
+  <Button v-if="hasAuth('users:delete')">删除</Button>
+  <AdminPanel v-if="hasRole('admin')" />
+</template>
 ```
 
 ## 编程式导航
@@ -372,12 +462,12 @@ const route = useRoute()
 
 // 跳转
 router.push('/dashboard')
-router.push({ name: 'UserList' })
+router.push({ name: '/users' })
 router.push({ path: '/users', query: { page: 1 } })
 
 // 带参数跳转
 router.push(`/users/${userId}`)
-router.push({ name: 'UserDetail', params: { id: userId } })
+router.push({ name: '/users/:id', params: { id: userId } })
 
 // 获取当前路由信息
 const userId = route.params.id
@@ -396,7 +486,8 @@ const layout = route.meta.layout
 <template>
   <div>
     <h2>用户管理</h2>
-    <RouterView />  <!-- 必须包含 -->
+    <RouterView />
+    <!-- 必须包含 -->
   </div>
 </template>
 ```
@@ -422,42 +513,49 @@ pages/users/[id]/edit.vue   # 匹配 /users/:id/edit
 ```vue
 <!-- src/pages/[...path].vue -->
 <script setup lang="ts">
+definePage({
+  meta: {
+    layout: 'blank',
+    menuHidden: true,
+    constant: true,
+  },
+})
 </script>
-
-<route lang="yaml">
-meta:
-  layout: blank
-</route>
 
 <template>
   <div>页面未找到</div>
 </template>
 ```
 
-### Q: 布局能否动态切换？
+### Q: 为什么菜单出现重复？
 
-当前方案通过静态 `meta.layout` 指定。如需动态布局，可自定义 `setupLayouts`：
+使用 `router.getRoutes()` 时会包含布局包装路由（`isLayout: true`），需要过滤：
 
 ```ts
-// 自定义 setupLayouts
-export function setupLayouts(routes: RouteRecordRaw[]) {
-  return routes.map(route => ({
-    path: route.path,
-    component: () => {
-      // 动态逻辑
-      const layout = route.meta?.layout || 'default'
-      return layouts[layout]
-    },
-    children: [{ path: '', component: route.component }],
-  }))
+function generateMenus(routes: RouteRecordRaw[]) {
+  for (const route of routes) {
+    if (route.meta?.isLayout) continue // 过滤布局包装路由
+    // ...处理菜单
+  }
 }
 ```
 
-## 与手动配置对比
+### Q: 为什么使用 router.getRoutes() 而不是 vue-router/auto-routes？
 
-| 特性 | 文件路由 | 手动配置 |
-|------|---------|---------|
-| 开发效率 | 高（约定优于配置） | 低（需要手动编写） |
-| 灵活性 | 受文件规则约束 | 完全自由 |
-| 动态布局 | 需自定义 | 直接支持 |
-| 适用场景 | 中小型项目 | 复杂权限/动态路由 |
+`vue-router/auto-routes` 是静态数据，不包含布局处理后的完整路径。`router.getRoutes()` 返回运行时已解析的路由，包含完整路径和布局信息。
+
+## 与 vite-plugin-pages 对比
+
+| 特性      | Vue Router 5      | vite-plugin-pages |
+| --------- | ----------------- | ----------------- |
+| 路由生成  | 内置，无需插件    | 需要插件          |
+| meta 配置 | `definePage()` 宏 | `<route>` block   |
+| 类型安全  | 自动生成类型      | 需要额外配置      |
+| 维护成本  | 官方维护          | 社区维护          |
+| 版本要求  | vue-router ≥ 5.0  | vue-router 4      |
+
+## 参考文档
+
+- [Vue Router 5 文件路由](https://router.vuejs.org/zh/file-based-routing/file-based-routing.html)
+- [Vue Router 5 官方文档](https://router.vuejs.org/)
+- [vite-plugin-vue-layouts](https://github.com/JohnCampionJr/vite-plugin-vue-layouts)

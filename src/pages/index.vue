@@ -1,9 +1,8 @@
 <script setup lang="ts">
+definePage({
+  redirect: '/dashboard',
+})
 </script>
-
-<route lang="yaml">
-redirect: /dashboard
-</route>
 
 <template>
   <!-- 重定向到仪表盘 -->

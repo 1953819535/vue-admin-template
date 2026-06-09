@@ -8,7 +8,16 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { SSelect } from '@/components/shared'
 import { roleOptions, statusOptions } from '@/constants/user'
 
-const route = useRoute()
+definePage({
+  meta: {
+    title: '编辑用户',
+    menuHidden: true,
+    requiresAuth: true,
+    permissions: ['users:edit'],
+  },
+})
+
+const route = useRoute<'/users/[id]/edit'>()
 const userId = route.params.id
 
 const username = ref('张三')
@@ -17,23 +26,12 @@ const role = ref('admin')
 const status = ref('active')
 </script>
 
-<route lang="yaml">
-meta:
-  layout: default
-  title: 编辑用户
-  menuHidden: true
-  requiresAuth: true
-  permissions: [users:edit]
-</route>
-
 <template>
   <div class="max-w-2xl">
     <div class="flex items-center justify-between mb-6">
       <h3 class="text-xl font-semibold">编辑用户 (ID: {{ userId }})</h3>
       <Button variant="link" as-child>
-        <RouterLink to="/users">
-          返回列表
-        </RouterLink>
+        <RouterLink to="/users"> 返回列表 </RouterLink>
       </Button>
     </div>
 
@@ -45,20 +43,12 @@ meta:
         <form class="space-y-4">
           <div class="space-y-2">
             <Label for="username">用户名</Label>
-            <Input
-              id="username"
-              v-model="username"
-              type="text"
-            />
+            <Input id="username" v-model="username" type="text" />
           </div>
 
           <div class="space-y-2">
             <Label for="email">邮箱</Label>
-            <Input
-              id="email"
-              v-model="email"
-              type="email"
-            />
+            <Input id="email" v-model="email" type="email" />
           </div>
 
           <div class="space-y-2">
@@ -72,13 +62,9 @@ meta:
           </div>
 
           <div class="pt-4 flex gap-4">
-            <Button type="submit">
-              保存修改
-            </Button>
+            <Button type="submit"> 保存修改 </Button>
             <RouterLink to="/users">
-              <Button variant="outline">
-                取消
-              </Button>
+              <Button variant="outline"> 取消 </Button>
             </RouterLink>
           </div>
         </form>

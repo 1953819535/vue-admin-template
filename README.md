@@ -16,15 +16,15 @@
 
 ## 技术栈
 
-| 类别 | 技术 |
-|------|------|
-| 框架 | Vue 3.5 + TypeScript 5.9 |
-| 构建 | Vite 8 |
-| 路由 | vue-router + vite-plugin-pages + vite-plugin-vue-layouts |
-| 样式 | Tailwind CSS 4 |
-| 组件 | shadcn-vue (reka-ui) |
-| 状态 | Pinia + pinia-plugin-persistedstate |
-| 图标 | @iconify/vue (lucide) |
+| 类别 | 技术                                                     |
+| ---- | -------------------------------------------------------- |
+| 框架 | Vue 3.5 + TypeScript 5.9                                 |
+| 构建 | Vite 8                                                   |
+| 路由 | vue-router 5 + vite-plugin-vue-layouts |
+| 样式 | Tailwind CSS 4                                           |
+| 组件 | shadcn-vue (reka-ui)                                     |
+| 状态 | Pinia + pinia-plugin-persistedstate                      |
+| 图标 | @iconify/vue (lucide)                                    |
 
 ## 快速开始
 
@@ -113,29 +113,49 @@ src/
 
 ## 文件路由
 
-使用 `vite-plugin-pages` 实现 Nuxt 风格的文件路由：
+使用 **Vue Router 5** 内置文件路由系统：
 
-| 文件路径 | 路由地址 |
-|---------|---------|
-| `src/pages/index.vue` | `/` |
-| `src/pages/dashboard.vue` | `/dashboard` |
-| `src/pages/users/index.vue` | `/users` |
-| `src/pages/users/[id]/index.vue` | `/users/:id` |
-| `src/pages/users/create.vue` | `/users/create` |
+| 文件路径                         | 路由地址        |
+| -------------------------------- | --------------- |
+| `src/pages/index.vue`            | `/`             |
+| `src/pages/dashboard.vue`        | `/dashboard`    |
+| `src/pages/users/index.vue`      | `/users`        |
+| `src/pages/users/[id]/index.vue` | `/users/:id`    |
+| `src/pages/users/create.vue`     | `/users/create` |
 
 ### 路由元信息
 
-在 `.vue` 文件中使用 `<route>` 块定义：
+在页面中使用 `definePage()` 宏定义：
 
 ```vue
-<route lang="yaml">
-meta:
-  layout: default
-  title: 用户管理
-  requiresAuth: true
-  permissions: [users:list]
-  roles: [admin]
-</route>
+<script setup lang="ts">
+definePage({
+  meta: {
+    title: '用户管理',
+    menuTitle: '用户列表',
+    menuIcon: 'lucide:users',
+    menuGroup: '用户管理',
+    menuOrder: 10,
+    requiresAuth: true,
+    permissions: ['users:list'],
+  },
+})
+</script>
+```
+
+### 布局配置
+
+只有需要非默认布局时才指定 `layout`：
+
+```vue
+<script setup lang="ts">
+definePage({
+  meta: {
+    layout: 'blank',  // 仅空白布局需要指定
+    menuHidden: true,
+  },
+})
+</script>
 ```
 
 ### 权限系统
@@ -148,15 +168,15 @@ meta:
 
 ```vue
 <script setup>
-import { useAuth } from '@/composables/useAuth'
-const { hasAuth, hasRole } = useAuth()
+import { useAuth } from "@/composables/useAuth";
+const { hasAuth, hasRole } = useAuth();
 </script>
 
 <template>
   <!-- 权限控制 -->
   <Button v-if="hasAuth('users:add')">新增</Button>
   <Button v-if="hasAuth('users:delete')">删除</Button>
-  
+
   <!-- 角色控制 -->
   <AdminPanel v-if="hasRole('admin')" />
 </template>
@@ -164,28 +184,22 @@ const { hasAuth, hasRole } = useAuth()
 
 **测试账号**：
 
-| 用户名 | 密码 | 权限 |
-|--------|------|------|
-| admin | admin123 | 超级管理员（所有权限） |
-| editor | editor123 | 用户增删改 |
-| user | user123 | 仅查看 |
+| 用户名 | 密码      | 权限                   |
+| ------ | --------- | ---------------------- |
+| admin  | admin123  | 超级管理员（所有权限） |
+| editor | editor123 | 用户增删改             |
+| user   | user123   | 仅查看                 |
 
 ## 布局系统
 
-通过 `meta.layout` 指定布局：
+通过 `vite-plugin-vue-layouts` 自动处理布局：
 
-| 布局 | 说明 | 使用场景 |
-|------|------|---------|
-| `admin` | 带侧边栏的后台布局 | 管理页面 |
-| `blank` | 空白布局 | 登录、注册、404 |
+| 布局      | 说明               | 使用场景        |
+| --------- | ------------------ | --------------- |
+| `default` | 默认布局（侧边栏） | 管理页面        |
+| `blank`   | 空白布局           | 登录、注册、404 |
 
-```vue
-<!-- 使用 admin 布局 -->
-<route lang="yaml">
-meta:
-  layout: admin
-</route>
-```
+**注意**：使用 `default` 布局的页面无需指定 `layout`，插件会自动应用。只有 `blank` 布局需要显式配置。
 
 ## UI 组件 (shadcn-vue)
 
@@ -200,13 +214,13 @@ meta:
 
 ### 已安装组件
 
-| 组件 | 说明 |
-|------|------|
-| Button | 按钮 |
+| 组件         | 说明     |
+| ------------ | -------- |
+| Button       | 按钮     |
 | DropdownMenu | 下拉菜单 |
-| Separator | 分隔线 |
-| Card | 卡片 |
-| Avatar | 头像 |
+| Separator    | 分隔线   |
+| Card         | 卡片     |
+| Avatar       | 头像     |
 
 ### 安装新组件
 
@@ -224,14 +238,14 @@ pnpm dlx shadcn-vue@latest add input select table dialog form
 
 ```vue
 <script setup lang="ts">
-import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu'
+} from "@/components/ui/dropdown-menu";
 </script>
 
 <template>
@@ -241,7 +255,7 @@ import {
     </CardHeader>
     <CardContent>
       <Button>点击我</Button>
-      
+
       <DropdownMenu>
         <DropdownMenuTrigger as-child>
           <Button variant="outline">打开菜单</Button>
@@ -267,33 +281,34 @@ src/components/
 
 **命名规范**：
 
-| 目录 | 导入路径 | 组件名 | 说明 |
-|------|---------|--------|------|
-| `ui/` | `@/components/ui/button` | `Button` | shadcn-vue 原组件 |
-| `shared/` | `@/components/shared` | `SDataTable` | 通用封装，S 前缀 |
-| `app/` | `@/components/app/Logo` | `Logo` | 业务组件 |
+| 目录      | 导入路径                 | 组件名       | 说明              |
+| --------- | ------------------------ | ------------ | ----------------- |
+| `ui/`     | `@/components/ui/button` | `Button`     | shadcn-vue 原组件 |
+| `shared/` | `@/components/shared`    | `SDataTable` | 通用封装，S 前缀  |
+| `app/`    | `@/components/app/Logo`  | `Logo`       | 业务组件          |
 
 **注意**：
+
 - `ui/` 目录下的组件由 shadcn-vue CLI 管理，请勿手动修改
 - `shared/` 目录使用 S 前缀命名，避免与 ui 组件混淆
 
 ### 常用组件列表
 
-| 组件 | 安装命令 | 用途 |
-|------|---------|------|
-| Input | `pnpm dlx shadcn-vue@latest add input` | 输入框 |
-| Select | `pnpm dlx shadcn-vue@latest add select` | 下拉选择 |
-| Checkbox | `pnpm dlx shadcn-vue@latest add checkbox` | 复选框 |
-| RadioGroup | `pnpm dlx shadcn-vue@latest add radio-group` | 单选组 |
-| Switch | `pnpm dlx shadcn-vue@latest add switch` | 开关 |
-| Table | `pnpm dlx shadcn-vue@latest add table` | 表格 |
-| Dialog | `pnpm dlx shadcn-vue@latest add dialog` | 对话框 |
-| Form | `pnpm dlx shadcn-vue@latest add form` | 表单 |
-| Tabs | `pnpm dlx shadcn-vue@latest add tabs` | 标签页 |
-| Toast | `pnpm dlx shadcn-vue@latest add toast` | 消息提示 |
-| Tooltip | `pnpm dlx shadcn-vue@latest add tooltip` | 文字提示 |
-| Badge | `pnpm dlx shadcn-vue@latest add badge` | 徽标 |
-| Skeleton | `pnpm dlx shadcn-vue@latest add skeleton` | 骨架屏 |
+| 组件       | 安装命令                                     | 用途     |
+| ---------- | -------------------------------------------- | -------- |
+| Input      | `pnpm dlx shadcn-vue@latest add input`       | 输入框   |
+| Select     | `pnpm dlx shadcn-vue@latest add select`      | 下拉选择 |
+| Checkbox   | `pnpm dlx shadcn-vue@latest add checkbox`    | 复选框   |
+| RadioGroup | `pnpm dlx shadcn-vue@latest add radio-group` | 单选组   |
+| Switch     | `pnpm dlx shadcn-vue@latest add switch`      | 开关     |
+| Table      | `pnpm dlx shadcn-vue@latest add table`       | 表格     |
+| Dialog     | `pnpm dlx shadcn-vue@latest add dialog`      | 对话框   |
+| Form       | `pnpm dlx shadcn-vue@latest add form`        | 表单     |
+| Tabs       | `pnpm dlx shadcn-vue@latest add tabs`        | 标签页   |
+| Toast      | `pnpm dlx shadcn-vue@latest add toast`       | 消息提示 |
+| Tooltip    | `pnpm dlx shadcn-vue@latest add tooltip`     | 文字提示 |
+| Badge      | `pnpm dlx shadcn-vue@latest add badge`       | 徽标     |
+| Skeleton   | `pnpm dlx shadcn-vue@latest add skeleton`    | 骨架屏   |
 
 ## 主题系统
 
@@ -302,29 +317,29 @@ src/components/
 ### 切换主题
 
 ```typescript
-import { useAppStore } from '@/stores/modules/app'
+import { useAppStore } from "@/stores/modules/app";
 
-const appStore = useAppStore()
+const appStore = useAppStore();
 
 // 切换主题风格
-appStore.setThemeName('catppuccin')
+appStore.setThemeName("catppuccin");
 
 // 切换明暗模式
-appStore.setMode('dark')    // 暗色
-appStore.setMode('light')   // 亮色
-appStore.setMode('system')  // 跟随系统
+appStore.setMode("dark"); // 暗色
+appStore.setMode("light"); // 亮色
+appStore.setMode("system"); // 跟随系统
 ```
 
 ### 可用主题
 
-| 主题名称 | 中文标题 | 描述 |
-|---------|---------|------|
-| modern-minimal | 现代极简 | 默认主题，简洁现代 |
-| catppuccin | Catppuccin | 柔和 pastel 色调 |
-| cyberpunk | 赛博朋克 | 霓虹色彩，未来感 |
-| claude | Claude | Anthropic Claude 风格 |
-| vercel | Vercel | Vercel 官方风格 |
-| ... | ... | 完整列表见 `src/themes/` |
+| 主题名称       | 中文标题   | 描述                     |
+| -------------- | ---------- | ------------------------ |
+| modern-minimal | 现代极简   | 默认主题，简洁现代       |
+| catppuccin     | Catppuccin | 柔和 pastel 色调         |
+| cyberpunk      | 赛博朋克   | 霓虹色彩，未来感         |
+| claude         | Claude     | Anthropic Claude 风格    |
+| vercel         | Vercel     | Vercel 官方风格          |
+| ...            | ...        | 完整列表见 `src/themes/` |
 
 更多主题配置见 [src/themes/README.md](src/themes/README.md)
 
@@ -334,16 +349,20 @@ appStore.setMode('system')  // 跟随系统
 
 ```typescript
 // stores/modules/app.ts
-export const useAppStore = defineStore('app', () => {
-  const currentTheme = ref('modern-minimal')
-  const mode = ref<'light' | 'dark' | 'system'>('system')
+export const useAppStore = defineStore(
+  "app",
+  () => {
+    const currentTheme = ref("modern-minimal");
+    const mode = ref<"light" | "dark" | "system">("system");
 
-  return { currentTheme, mode }
-}, {
-  persist: {
-    pick: ['currentTheme', 'mode']
-  }
-})
+    return { currentTheme, mode };
+  },
+  {
+    persist: {
+      pick: ["currentTheme", "mode"],
+    },
+  },
+);
 ```
 
 ## 样式规范
@@ -355,12 +374,15 @@ export const useAppStore = defineStore('app', () => {
 ```html
 <!-- 推荐 -->
 <div class="bg-background text-foreground">
-<div class="bg-primary text-primary-foreground">
-<div class="text-muted-foreground">
-
-<!-- 避免 -->
-<div class="bg-white text-black">
-<div class="bg-gray-100">
+  <div class="bg-primary text-primary-foreground">
+    <div class="text-muted-foreground">
+      <!-- 避免 -->
+      <div class="bg-white text-black">
+        <div class="bg-gray-100"></div>
+      </div>
+    </div>
+  </div>
+</div>
 ```
 
 ### CSS 变量
@@ -382,12 +404,12 @@ export const useAppStore = defineStore('app', () => {
 
 ### 命名约定
 
-| 类型 | 规范 | 示例 |
-|------|------|------|
-| 组件 | PascalCase | `UserList.vue` |
-| 页面 | kebab-case | `user-list.vue` 或 `index.vue` |
-| Store | camelCase | `useAppStore` |
-| 类型 | PascalCase | `NavItem` |
+| 类型  | 规范       | 示例                           |
+| ----- | ---------- | ------------------------------ |
+| 组件  | PascalCase | `UserList.vue`                 |
+| 页面  | kebab-case | `user-list.vue` 或 `index.vue` |
+| Store | camelCase  | `useAppStore`                  |
+| 类型  | PascalCase | `NavItem`                      |
 
 ### 组件开发
 
@@ -395,26 +417,26 @@ export const useAppStore = defineStore('app', () => {
 <script setup lang="ts">
 // 1. 类型定义
 interface Props {
-  title: string
-  disabled?: boolean
+  title: string;
+  disabled?: boolean;
 }
 
 // 2. Props
 const props = withDefaults(defineProps<Props>(), {
   disabled: false,
-})
+});
 
 // 3. Emits
 const emit = defineEmits<{
-  click: [value: string]
-}>()
+  click: [value: string];
+}>();
 
 // 4. 响应式状态
-const loading = ref(false)
+const loading = ref(false);
 
 // 5. 方法
 function handleClick() {
-  emit('click', props.title)
+  emit("click", props.title);
 }
 </script>
 
@@ -431,7 +453,7 @@ function handleClick() {
 - [shadcn-vue](https://www.shadcn-vue.com/)
 - [reka-ui](https://reka-ui.dev/)
 - [Pinia](https://pinia.vuejs.org/)
-- [vite-plugin-pages](https://github.com/hannoeru/vite-plugin-pages)
+- [Vue Router 5](https://router.vuejs.org/)
 
 ## License
 

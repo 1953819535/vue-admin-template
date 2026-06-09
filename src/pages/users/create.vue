@@ -7,32 +7,30 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { SSelect } from '@/components/shared'
 import { roleOptions } from '@/constants/user'
 
+definePage({
+  meta: {
+    title: '新增用户',
+    menuIcon: 'lucide:user-plus',
+    menuGroup: '用户管理',
+    menuOrder: 11,
+    menuIndent: true,
+    requiresAuth: true,
+    permissions: ['users:add'],
+  },
+})
+
 const username = ref('')
 const email = ref('')
 const role = ref('user')
 const password = ref('')
 </script>
 
-<route lang="yaml">
-meta:
-  layout: default
-  title: 新增用户
-  menuIcon: lucide:user-plus
-  menuGroup: 用户管理
-  menuOrder: 11
-  menuIndent: true
-  requiresAuth: true
-  permissions: [users:add]
-</route>
-
 <template>
   <div class="max-w-2xl">
     <div class="flex items-center justify-between mb-6">
       <h3 class="text-xl font-semibold">新增用户</h3>
       <Button variant="link" as-child>
-        <RouterLink to="/users">
-          返回列表
-        </RouterLink>
+        <RouterLink to="/users"> 返回列表 </RouterLink>
       </Button>
     </div>
 
@@ -44,22 +42,12 @@ meta:
         <form class="space-y-4">
           <div class="space-y-2">
             <Label for="username">用户名</Label>
-            <Input
-              id="username"
-              v-model="username"
-              type="text"
-              placeholder="请输入用户名"
-            />
+            <Input id="username" v-model="username" type="text" placeholder="请输入用户名" />
           </div>
 
           <div class="space-y-2">
             <Label for="email">邮箱</Label>
-            <Input
-              id="email"
-              v-model="email"
-              type="email"
-              placeholder="请输入邮箱"
-            />
+            <Input id="email" v-model="email" type="email" placeholder="请输入邮箱" />
           </div>
 
           <div class="space-y-2">
@@ -69,22 +57,13 @@ meta:
 
           <div class="space-y-2">
             <Label for="password">初始密码</Label>
-            <Input
-              id="password"
-              v-model="password"
-              type="password"
-              placeholder="请输入初始密码"
-            />
+            <Input id="password" v-model="password" type="password" placeholder="请输入初始密码" />
           </div>
 
           <div class="pt-4 flex gap-4">
-            <Button type="submit">
-              创建用户
-            </Button>
+            <Button type="submit"> 创建用户 </Button>
             <RouterLink to="/users">
-              <Button variant="outline">
-                取消
-              </Button>
+              <Button variant="outline"> 取消 </Button>
             </RouterLink>
           </div>
         </form>

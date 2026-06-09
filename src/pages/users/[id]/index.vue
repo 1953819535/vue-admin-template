@@ -1,33 +1,33 @@
 <script setup lang="ts">
-import { useRoute } from "vue-router";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Separator } from "@/components/ui/separator";
+import { useRoute } from 'vue-router'
+import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Separator } from '@/components/ui/separator'
 
-const route = useRoute();
-const userId = route.params.id;
+definePage({
+  meta: {
+    title: '用户详情',
+    menuHidden: true,
+    requiresAuth: true,
+    permissions: ['users:view'],
+  },
+})
+
+const route = useRoute<'/users/[id]/'>()
+const userId = route.params.id
 
 // 模拟用户数据
 const user = {
   id: userId,
-  name: "张三",
-  email: "zhangsan@example.com",
-  role: "admin",
-  status: "active",
-  createdAt: "2024-01-15",
-  lastLogin: "2024-12-20 14:30",
-};
+  name: '张三',
+  email: 'zhangsan@example.com',
+  role: 'admin',
+  status: 'active',
+  createdAt: '2024-01-15',
+  lastLogin: '2024-12-20 14:30',
+}
 </script>
-
-<route lang="yaml">
-meta:
-  layout: default
-  title: 用户详情
-  menuHidden: true
-  requiresAuth: true
-  permissions: [users:view]
-</route>
 
 <template>
   <Card>
@@ -35,9 +35,7 @@ meta:
       <div class="flex items-center justify-between">
         <CardTitle>用户详情</CardTitle>
         <RouterLink to="/users">
-          <Button variant="ghost" size="sm">
-            返回列表
-          </Button>
+          <Button variant="ghost" size="sm"> 返回列表 </Button>
         </RouterLink>
       </div>
     </CardHeader>

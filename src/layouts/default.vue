@@ -40,7 +40,7 @@ watch(
       watermark.create()
     }
   },
-  { immediate: true }
+  { immediate: true },
 )
 
 onUnmounted(() => {

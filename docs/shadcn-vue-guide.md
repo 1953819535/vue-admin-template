@@ -4,13 +4,13 @@
 
 ## 项目配置概览
 
-| 配置项 | 值 |
-|--------|-----|
-| 风格 | new-york |
-| TypeScript | 启用 |
-| 基础色 | neutral |
-| CSS 变量 | 启用 |
-| 图标库 | lucide |
+| 配置项     | 值       |
+| ---------- | -------- |
+| 风格       | new-york |
+| TypeScript | 启用     |
+| 基础色     | neutral  |
+| CSS 变量   | 启用     |
+| 图标库     | lucide   |
 
 ## 核心依赖
 
@@ -39,10 +39,10 @@ src/
 `src/lib/utils.ts` 提供了 `cn()` 函数，用于合并 Tailwind 类名：
 
 ```ts
-import { cn } from "@/lib/utils"
+import { cn } from '@/lib/utils'
 
 // 使用示例
-cn("px-4 py-2", "bg-primary", props.class)
+cn('px-4 py-2', 'bg-primary', props.class)
 ```
 
 ## 添加新组件
@@ -87,24 +87,24 @@ import { Button } from '@/components/ui/button'
 
 ### variant（样式变体）
 
-| 变体 | 说明 |
-|------|------|
-| `default` | 主要按钮，深色背景 |
-| `destructive` | 危险操作，红色背景 |
-| `outline` | 边框按钮，透明背景 |
-| `secondary` | 次要按钮，浅色背景 |
-| `ghost` | 无背景，hover 时显示背景 |
-| `link` | 链接样式，下划线 |
+| 变体          | 说明                     |
+| ------------- | ------------------------ |
+| `default`     | 主要按钮，深色背景       |
+| `destructive` | 危险操作，红色背景       |
+| `outline`     | 边框按钮，透明背景       |
+| `secondary`   | 次要按钮，浅色背景       |
+| `ghost`       | 无背景，hover 时显示背景 |
+| `link`        | 链接样式，下划线         |
 
 ### size（尺寸变体）
 
-| 尺寸 | 说明 |
-|------|------|
-| `default` | 标准尺寸 (h-9) |
-| `sm` | 小尺寸 (h-8) |
-| `lg` | 大尺寸 (h-10) |
-| `icon` | 图标按钮 (size-9) |
-| `icon-sm` | 小图标按钮 (size-8) |
+| 尺寸      | 说明                 |
+| --------- | -------------------- |
+| `default` | 标准尺寸 (h-9)       |
+| `sm`      | 小尺寸 (h-8)         |
+| `lg`      | 大尺寸 (h-10)        |
+| `icon`    | 图标按钮 (size-9)    |
+| `icon-sm` | 小图标按钮 (size-8)  |
 | `icon-lg` | 大图标按钮 (size-10) |
 
 ## CSS 变量
@@ -142,7 +142,9 @@ import { Button } from '@/components/ui/button'
 
 ```css
 @media (prefers-color-scheme: dark) {
-  :root { /* 暗色变量 */ }
+  :root {
+    /* 暗色变量 */
+  }
 }
 ```
 
@@ -177,29 +179,29 @@ import { cn } from '@/lib/utils'
 
 shadcn-vue 提供的常用组件：
 
-| 组件 | CLI 命令 |
-|------|----------|
-| Accordion | `npx shadcn-vue@latest add accordion` |
-| Alert | `npx shadcn-vue@latest add alert` |
-| Avatar | `npx shadcn-vue@latest add avatar` |
-| Badge | `npx shadcn-vue@latest add badge` |
-| Card | `npx shadcn-vue@latest add card` |
-| Checkbox | `npx shadcn-vue@latest add checkbox` |
-| Dialog | `npx shadcn-vue@latest add dialog` |
+| 组件         | CLI 命令                                  |
+| ------------ | ----------------------------------------- |
+| Accordion    | `npx shadcn-vue@latest add accordion`     |
+| Alert        | `npx shadcn-vue@latest add alert`         |
+| Avatar       | `npx shadcn-vue@latest add avatar`        |
+| Badge        | `npx shadcn-vue@latest add badge`         |
+| Card         | `npx shadcn-vue@latest add card`          |
+| Checkbox     | `npx shadcn-vue@latest add checkbox`      |
+| Dialog       | `npx shadcn-vue@latest add dialog`        |
 | DropdownMenu | `npx shadcn-vue@latest add dropdown-menu` |
-| Input | `npx shadcn-vue@latest add input` |
-| Label | `npx shadcn-vue@latest add label` |
-| Popover | `npx shadcn-vue@latest add popover` |
-| Progress | `npx shadcn-vue@latest add progress` |
-| Select | `npx shadcn-vue@latest add select` |
-| Separator | `npx shadcn-vue@latest add separator` |
-| Sheet | `npx shadcn-vue@latest add sheet` |
-| Skeleton | `npx shadcn-vue@latest add skeleton` |
-| Slider | `npx shadcn-vue@latest add slider` |
-| Switch | `npx shadcn-vue@latest add switch` |
-| Table | `npx shadcn-vue@latest add table` |
-| Tabs | `npx shadcn-vue@latest add tabs` |
-| Tooltip | `npx shadcn-vue@latest add tooltip` |
+| Input        | `npx shadcn-vue@latest add input`         |
+| Label        | `npx shadcn-vue@latest add label`         |
+| Popover      | `npx shadcn-vue@latest add popover`       |
+| Progress     | `npx shadcn-vue@latest add progress`      |
+| Select       | `npx shadcn-vue@latest add select`        |
+| Separator    | `npx shadcn-vue@latest add separator`     |
+| Sheet        | `npx shadcn-vue@latest add sheet`         |
+| Skeleton     | `npx shadcn-vue@latest add skeleton`      |
+| Slider       | `npx shadcn-vue@latest add slider`        |
+| Switch       | `npx shadcn-vue@latest add switch`        |
+| Table        | `npx shadcn-vue@latest add table`         |
+| Tabs         | `npx shadcn-vue@latest add tabs`          |
+| Tooltip      | `npx shadcn-vue@latest add tooltip`       |
 
 完整组件列表请参考：[shadcn-vue 组件文档](https://www.shadcn-vue.com/docs/components)
 
@@ -213,11 +215,11 @@ shadcn-vue 的组件代码直接复制到项目中，可以自由修改：
 
 ```ts
 // 添加新变体示例
-export const buttonVariants = cva("...", {
+export const buttonVariants = cva('...', {
   variants: {
     variant: {
       // ...现有变体
-      custom: "bg-purple-500 text-white hover:bg-purple-600",
+      custom: 'bg-purple-500 text-white hover:bg-purple-600',
     },
   },
 })

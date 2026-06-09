@@ -2,21 +2,21 @@
 import { Badge } from '@/components/ui/badge'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-</script>
 
-<route lang="yaml">
-meta:
-  layout: default
-  title: 系统设置
-  menuTitle: 基本信息
-  menuIcon: lucide:settings
-  menuGroup: 系统设置
-  menuGroupIcon: lucide:settings
-  menuOrder: 30
-  requiresAuth: true
-  roles: [admin]
-  permissions: [system:view]
-</route>
+definePage({
+  meta: {
+    title: '系统设置',
+    menuTitle: '基本信息',
+    menuIcon: 'lucide:settings',
+    menuGroup: '系统设置',
+    menuGroupIcon: 'lucide:settings',
+    menuOrder: 30,
+    requiresAuth: true,
+    roles: ['admin'],
+    permissions: ['system:view'],
+  },
+})
+</script>
 
 <template>
   <div>
@@ -24,15 +24,9 @@ meta:
 
     <Tabs default-value="info">
       <TabsList class="mb-6">
-        <TabsTrigger value="info">
-          基本信息
-        </TabsTrigger>
-        <TabsTrigger value="settings">
-          参数配置
-        </TabsTrigger>
-        <TabsTrigger value="logs">
-          操作日志
-        </TabsTrigger>
+        <TabsTrigger value="info"> 基本信息 </TabsTrigger>
+        <TabsTrigger value="settings"> 参数配置 </TabsTrigger>
+        <TabsTrigger value="logs"> 操作日志 </TabsTrigger>
       </TabsList>
 
       <TabsContent value="info">

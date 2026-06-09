@@ -4,15 +4,7 @@ import type { HTMLAttributes } from 'vue'
 import { computed, ref, useAttrs } from 'vue'
 import { X } from 'lucide-vue-next'
 import { cn } from '@/lib/utils'
-import {
-  Select,
-  SelectContent,
-  SelectGroup,
-  SelectItem,
-  SelectLabel,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
+import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Badge } from '@/components/ui/badge'
 import type { SelectOption, SelectOptionGroup } from './types'
 
@@ -45,23 +37,21 @@ const props = withDefaults(defineProps<SSelectProps>(), {
 
 const emit = defineEmits<{
   'update:modelValue': [value: AcceptableValue | AcceptableValue[] | undefined]
-  'change': [value: AcceptableValue | AcceptableValue[] | undefined]
+  change: [value: AcceptableValue | AcceptableValue[] | undefined]
   'visible-change': [visible: boolean]
-  'clear': []
+  clear: []
 }>()
 
 const attrs = useAttrs()
 const open = ref(false)
 
 // 所有选项
-const allOptions = computed(() =>
-  props.groups ? props.groups.flatMap(g => g.options) : props.options
-)
+const allOptions = computed(() => (props.groups ? props.groups.flatMap((g) => g.options) : props.options))
 
 // 选项查找 Map
 const optionsMap = computed(() => {
   const map = new Map<AcceptableValue, SelectOption>()
-  allOptions.value?.forEach(opt => map.set(opt.value, opt))
+  allOptions.value?.forEach((opt) => map.set(opt.value, opt))
   return map
 })
 
@@ -74,7 +64,7 @@ const selectedOption = computed(() => {
 // 多选标签
 const selectedTags = computed(() => {
   if (!props.multiple || !Array.isArray(props.modelValue)) return []
-  return props.modelValue.map(v => optionsMap.value.get(v)).filter(Boolean) as SelectOption[]
+  return props.modelValue.map((v) => optionsMap.value.get(v)).filter(Boolean) as SelectOption[]
 })
 
 const displayTags = computed(() => selectedTags.value.slice(0, props.maxTags))
@@ -93,8 +83,7 @@ function isEqual(a: AcceptableValue, b: AcceptableValue): boolean {
   if (!props.by) return a === b
   if (typeof props.by === 'function') return props.by(a, b)
   const byKey = props.by as string
-  const getVal = (v: AcceptableValue) =>
-    typeof v === 'object' && v !== null ? (v as Record<string, any>)[byKey] : undefined
+  const getVal = (v: AcceptableValue) => (typeof v === 'object' && v !== null ? (v as Record<string, any>)[byKey] : undefined)
   return getVal(a) === getVal(b)
 }
 
@@ -119,7 +108,7 @@ function handleClear(e: Event) {
 
 function handleRemoveTag(value: AcceptableValue) {
   if (!props.multiple || !Array.isArray(props.modelValue)) return
-  const newValue = props.modelValue.filter(v => !isEqual(v, value))
+  const newValue = props.modelValue.filter((v) => !isEqual(v, value))
   emit('update:modelValue', newValue)
   emit('change', newValue)
 }
@@ -185,12 +174,7 @@ function handleRemoveTag(value: AcceptableValue) {
           <template v-if="groups?.length">
             <SelectGroup v-for="g in groups" :key="g.label">
               <SelectLabel>{{ g.label }}</SelectLabel>
-              <SelectItem
-                v-for="opt in g.options"
-                :key="String(opt.value)"
-                :value="opt.value"
-                :disabled="opt.disabled"
-              >
+              <SelectItem v-for="opt in g.options" :key="String(opt.value)" :value="opt.value" :disabled="opt.disabled">
                 <slot name="option" :option="opt">{{ opt.label }}</slot>
               </SelectItem>
             </SelectGroup>
@@ -198,12 +182,7 @@ function handleRemoveTag(value: AcceptableValue) {
 
           <!-- 无分组模式 -->
           <template v-else>
-            <SelectItem
-              v-for="opt in options"
-              :key="String(opt.value)"
-              :value="opt.value"
-              :disabled="opt.disabled"
-            >
+            <SelectItem v-for="opt in options" :key="String(opt.value)" :value="opt.value" :disabled="opt.disabled">
               <slot name="option" :option="opt">{{ opt.label }}</slot>
             </SelectItem>
           </template>

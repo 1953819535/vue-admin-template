@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import NotificationPanel from "@/components/app/NotificationPanel.vue";
-import SettingsPanel from "@/components/app/SettingsPanel.vue";
-import UserMenu from "@/components/app/UserMenu.vue";
+import NotificationPanel from '@/components/app/NotificationPanel.vue'
+import SettingsPanel from '@/components/app/SettingsPanel.vue'
+import UserMenu from '@/components/app/UserMenu.vue'
 </script>
 
 <template>

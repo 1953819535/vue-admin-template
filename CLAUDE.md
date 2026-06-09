@@ -33,27 +33,58 @@ Vue 3 后台管理系统，Vite + TypeScript + Pinia + shadcn-vue + Tailwind CSS
 
 ### 文件路由
 
-使用 `vite-plugin-pages` 实现 Nuxt 风格文件路由：
+使用 **Vue Router 5** 内置文件路由系统，配合 `vite-plugin-vue-layouts` 实现布局：
 
-| 文件路径 | 路由地址 |
-|---------|---------|
-| `src/pages/index.vue` | `/` |
-| `src/pages/dashboard.vue` | `/dashboard` |
-| `src/pages/users/index.vue` | `/users` |
-| `src/pages/users/[id]/index.vue` | `/users/:id` |
-| `src/pages/users/create.vue` | `/users/create` |
+| 文件路径                         | 路由地址        |
+| -------------------------------- | --------------- |
+| `src/pages/index.vue`            | `/`             |
+| `src/pages/dashboard.vue`        | `/dashboard`    |
+| `src/pages/users/index.vue`      | `/users`        |
+| `src/pages/users/[id]/index.vue` | `/users/:id`    |
+| `src/pages/users/create.vue`     | `/users/create` |
 
-在页面中使用 `<route>` 块定义元信息：
+在页面中使用 `definePage()` 宏定义元信息：
 
 ```vue
-<route lang="yaml">
-meta:
-  layout: default
-  title: 用户管理
-  requiresAuth: true
-  permissions: [users:list]
-  roles: [admin]
-</route>
+<script setup lang="ts">
+definePage({
+  meta: {
+    title: '用户管理',
+    menuTitle: '用户列表',
+    menuIcon: 'lucide:users',
+    menuGroup: '用户管理',
+    menuGroupIcon: 'lucide:users',
+    menuOrder: 10,
+    requiresAuth: true,
+    permissions: ['users:list'],
+  },
+})
+</script>
+```
+
+**布局配置**：只有需要非默认布局（如 `blank`）时才指定 `layout`，其他情况由 `vite-plugin-vue-layouts` 自动处理：
+
+```vue
+<script setup lang="ts">
+definePage({
+  meta: {
+    layout: 'blank',  // 仅在需要空白布局时指定
+    menuHidden: true,
+    constant: true,
+  },
+})
+</script>
+```
+
+**动态路由参数**：使用泛型获取类型安全：
+
+```vue
+<script setup lang="ts">
+import { useRoute } from 'vue-router'
+
+const route = useRoute<'/users/[id]/'>()
+const userId = route.params.id  // 类型安全
+</script>
 ```
 
 ### 权限系统
@@ -64,8 +95,8 @@ meta:
 
 ```vue
 <script setup>
-import { useAuth } from '@/composables/useAuth'
-const { hasAuth, hasRole } = useAuth()
+import { useAuth } from "@/composables/useAuth";
+const { hasAuth, hasRole } = useAuth();
 </script>
 
 <template>
@@ -77,13 +108,14 @@ const { hasAuth, hasRole } = useAuth()
 
 ### 布局系统
 
-通过 `meta.layout` 指定布局，布局组件位于 `src/layouts/`：
+通过 `vite-plugin-vue-layouts` 自动处理布局，布局组件位于 `src/layouts/`：
 
-| 布局 | 说明 |
-|------|------|
-| `admin` | 带侧边栏的后台布局 |
-| `blank` | 空白布局（登录、404 等） |
-| `default` | 默认布局 |
+| 布局      | 说明                     |
+| --------- | ------------------------ |
+| `default` | 默认布局（后台侧边栏）   |
+| `blank`   | 空白布局（登录、404 等） |
+
+**注意**：使用 `default` 布局的页面无需在 `definePage` 中指定 `layout`，插件会自动应用默认布局。只有使用 `blank` 布局的页面才需要显式指定。
 
 ## 验证流程
 
@@ -136,17 +168,17 @@ pnpm dlx shadcn-vue@latest add dialog form tabs
 
 ## 语义化颜色速查
 
-| 变量 | 用途 |
-|------|------|
-| `background` / `foreground` | 页面背景与主要文字 |
-| `card` / `card-foreground` | 卡片背景与文字 |
-| `primary` / `primary-foreground` | 主要按钮/强调元素 |
-| `secondary` / `secondary-foreground` | 次要按钮/元素 |
-| `muted` / `muted-foreground` | 禁用/弱化状态 |
-| `accent` / `accent-foreground` | 悬停/焦点状态 |
-| `destructive` / `destructive-foreground` | 危险操作/错误状态 |
-| `border` | 边框颜色 |
-| `ring` | 焦点环颜色 |
-| `chart-1` ~ `chart-5` | 图表系列颜色 |
+| 变量                                     | 用途               |
+| ---------------------------------------- | ------------------ |
+| `background` / `foreground`              | 页面背景与主要文字 |
+| `card` / `card-foreground`               | 卡片背景与文字     |
+| `primary` / `primary-foreground`         | 主要按钮/强调元素  |
+| `secondary` / `secondary-foreground`     | 次要按钮/元素      |
+| `muted` / `muted-foreground`             | 禁用/弱化状态      |
+| `accent` / `accent-foreground`           | 悬停/焦点状态      |
+| `destructive` / `destructive-foreground` | 危险操作/错误状态  |
+| `border`                                 | 边框颜色           |
+| `ring`                                   | 焦点环颜色         |
+| `chart-1` ~ `chart-5`                    | 图表系列颜色       |
 
 侧边栏专用：`sidebar`、`sidebar-foreground`、`sidebar-accent` 等。

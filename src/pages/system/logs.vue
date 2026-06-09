@@ -16,12 +16,55 @@ import {
   PaginationPrevious,
 } from '@/components/ui/pagination'
 
+definePage({
+  meta: {
+    title: '操作日志',
+    menuIcon: 'lucide:file-text',
+    menuGroup: '系统设置',
+    menuOrder: 32,
+    menuIndent: true,
+    requiresAuth: true,
+    roles: ['admin'],
+    permissions: ['system:logs'],
+  },
+})
+
 const logs = ref([
-  { id: 1, time: '2024-12-20 14:30:22', user: '张三', action: '登录系统', ip: '192.168.1.100' },
-  { id: 2, time: '2024-12-20 14:25:10', user: '李四', action: '修改用户信息', ip: '192.168.1.101' },
-  { id: 3, time: '2024-12-20 14:20:05', user: '管理员', action: '系统配置更新', ip: '192.168.1.1' },
-  { id: 4, time: '2024-12-20 14:15:33', user: '张三', action: '查看用户列表', ip: '192.168.1.100' },
-  { id: 5, time: '2024-12-20 14:10:00', user: '王五', action: '登录失败', ip: '192.168.1.102' },
+  {
+    id: 1,
+    time: '2024-12-20 14:30:22',
+    user: '张三',
+    action: '登录系统',
+    ip: '192.168.1.100',
+  },
+  {
+    id: 2,
+    time: '2024-12-20 14:25:10',
+    user: '李四',
+    action: '修改用户信息',
+    ip: '192.168.1.101',
+  },
+  {
+    id: 3,
+    time: '2024-12-20 14:20:05',
+    user: '管理员',
+    action: '系统配置更新',
+    ip: '192.168.1.1',
+  },
+  {
+    id: 4,
+    time: '2024-12-20 14:15:33',
+    user: '张三',
+    action: '查看用户列表',
+    ip: '192.168.1.100',
+  },
+  {
+    id: 5,
+    time: '2024-12-20 14:10:00',
+    user: '王五',
+    action: '登录失败',
+    ip: '192.168.1.102',
+  },
 ])
 
 const searchUser = ref('')
@@ -37,19 +80,6 @@ const columns = [
 ]
 </script>
 
-<route lang="yaml">
-meta:
-  layout: default
-  title: 操作日志
-  menuIcon: lucide:file-text
-  menuGroup: 系统设置
-  menuOrder: 32
-  menuIndent: true
-  requiresAuth: true
-  roles: [admin]
-  permissions: [system:logs]
-</route>
-
 <template>
   <Card>
     <CardHeader>
@@ -60,25 +90,13 @@ meta:
       <div class="mb-4 flex flex-wrap items-end gap-4">
         <div class="space-y-2">
           <Label for="searchUser">搜索用户</Label>
-          <Input
-            id="searchUser"
-            v-model="searchUser"
-            placeholder="输入用户名..."
-            class="w-48"
-          />
+          <Input id="searchUser" v-model="searchUser" placeholder="输入用户名..." class="w-48" />
         </div>
         <div class="space-y-2">
           <Label for="searchDate">日期</Label>
-          <Input
-            id="searchDate"
-            v-model="searchDate"
-            type="date"
-            class="w-40"
-          />
+          <Input id="searchDate" v-model="searchDate" type="date" class="w-40" />
         </div>
-        <Button variant="secondary">
-          查询
-        </Button>
+        <Button variant="secondary"> 查询 </Button>
       </div>
 
       <!-- 数据表格 -->
@@ -92,11 +110,7 @@ meta:
             <PaginationFirst />
             <PaginationPrevious />
             <template v-for="item in items">
-              <PaginationItem
-                v-if="item.type === 'page'"
-                :value="item.value"
-                as-child
-              >
+              <PaginationItem v-if="item.type === 'page'" :value="item.value" as-child>
                 <Button variant="outline" size="icon">
                   {{ item.value }}
                 </Button>

@@ -16,16 +16,16 @@ export const useNotificationStore = defineStore('notification', () => {
   const isLoading = ref(false)
 
   // 计算属性
-  const unreadCount = computed(() => notifications.value.filter(n => !n.read).length)
+  const unreadCount = computed(() => notifications.value.filter((n) => !n.read).length)
   const hasUnread = computed(() => unreadCount.value > 0)
 
   const stats = computed(() => ({
     total: notifications.value.length,
     unread: unreadCount.value,
-    system: notifications.value.filter(n => n.type === 'system').length,
-    todo: notifications.value.filter(n => n.type === 'todo').length,
-    notice: notifications.value.filter(n => n.type === 'notice').length,
-    message: notifications.value.filter(n => n.type === 'message').length,
+    system: notifications.value.filter((n) => n.type === 'system').length,
+    todo: notifications.value.filter((n) => n.type === 'todo').length,
+    notice: notifications.value.filter((n) => n.type === 'notice').length,
+    message: notifications.value.filter((n) => n.type === 'message').length,
   }))
 
   // 按类型分组
@@ -36,7 +36,7 @@ export const useNotificationStore = defineStore('notification', () => {
       notice: [],
       message: [],
     }
-    notifications.value.forEach(n => {
+    notifications.value.forEach((n) => {
       groups[n.type].push(n)
     })
     return groups
@@ -55,7 +55,7 @@ export const useNotificationStore = defineStore('notification', () => {
   /** 标记单条已读 */
   async function markRead(id: number) {
     await markNotificationRead(id)
-    const notification = notifications.value.find(n => n.id === id)
+    const notification = notifications.value.find((n) => n.id === id)
     if (notification) {
       notification.read = true
     }
@@ -64,19 +64,19 @@ export const useNotificationStore = defineStore('notification', () => {
   /** 标记全部已读 */
   async function markAllRead() {
     await markAllNotificationsRead()
-    notifications.value.forEach(n => n.read = true)
+    notifications.value.forEach((n) => (n.read = true))
   }
 
   /** 删除通知 */
   async function removeNotification(id: number) {
     await deleteNotification(id)
-    notifications.value = notifications.value.filter(n => n.id !== id)
+    notifications.value = notifications.value.filter((n) => n.id !== id)
   }
 
   /** 清空已读通知 */
   async function clearRead() {
     await clearReadNotifications()
-    notifications.value = notifications.value.filter(n => !n.read)
+    notifications.value = notifications.value.filter((n) => !n.read)
   }
 
   return {

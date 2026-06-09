@@ -1,12 +1,28 @@
-import type { RouteRecordRaw, RouteMeta } from 'vue-router'
-import type { NavItem, NavGroup, NavProps } from '@/components/app/useNav'
+import type { RouteMeta, RouteLocationRaw } from 'vue-router'
 
-export type { NavItem, NavGroup, NavProps }
+// Types - 在此定义避免循环依赖
+export interface NavItem {
+  title: string
+  to: RouteLocationRaw
+  icon?: string
+  indent?: boolean
+  roles?: string[]
+  permissions?: string[]
+}
+
+export interface NavGroup {
+  title: string
+  icon?: string
+  items: NavItem[]
+}
+
+export interface NavProps {
+  groups?: NavGroup[]
+  items?: NavItem[]
+}
 
 interface InternalItem extends NavItem {
   order: number
-  roles?: string[]
-  permissions?: string[]
 }
 
 interface InternalGroup {
@@ -18,8 +34,8 @@ interface InternalGroup {
 
 const DEFAULT_ORDER = 999
 
-/** 保留权限信息转换为 NavItem */
-const toItem = (item: InternalItem): NavItem & { roles?: string[]; permissions?: string[] } => ({
+/** 转换为 NavItem（移除内部字段） */
+const toItem = (item: InternalItem): NavItem => ({
   title: item.title,
   to: item.to,
   icon: item.icon,
@@ -28,61 +44,87 @@ const toItem = (item: InternalItem): NavItem & { roles?: string[]; permissions?:
   permissions: item.permissions,
 })
 
-export function generateMenus(routes: RouteRecordRaw[]): NavProps {
+/** 扁平化路由类型（vue-router/auto-routes 生成的结构） */
+interface FlatRoute {
+  path: string
+  name?: string | symbol
+  meta?: RouteMeta
+  redirect?: string | object
+  children?: FlatRoute[]
+}
+
+/**
+ * 从扁平化路由生成菜单
+ * @param routes vue-router/auto-routes 生成的原始路由
+ */
+export function generateMenus(routes: FlatRoute[]): NavProps {
   const items: InternalItem[] = []
   const groupsMap = new Map<string, InternalGroup>()
 
-  function processRoute(route: RouteRecordRaw, parentPath = '') {
-    const meta = route.meta as RouteMeta | undefined
-    const fullPath = route.path.startsWith('/') ? route.path
-      : parentPath ? `${parentPath}/${route.path}` : route.path
+  // 递归处理路由
+  function processRoute(route: FlatRoute, parentPath: string) {
+    const meta = route.meta
+    // 拼接完整路径
+    const fullPath = route.path === '' ? parentPath : route.path.startsWith('/') ? route.path : `${parentPath}/${route.path}`
 
-    const menuTitle = meta?.menuTitle || meta?.title
-    if (meta?.menuHidden || !menuTitle || fullPath.includes('[')) return
+    // 有效路由：有 name 和 meta
+    if (route.name && meta) {
+      const menuTitle = meta.menuTitle || meta.title
 
-    const item: InternalItem = {
-      title: menuTitle,
-      to: fullPath,
-      icon: meta.menuIcon,
-      indent: meta.menuIndent,
-      order: meta.menuOrder ?? DEFAULT_ORDER,
-      roles: meta.roles,
-      permissions: meta.permissions,
-    }
+      // 跳过隐藏菜单、无标题、动态路由、重定向路由
+      if (!meta.menuHidden && menuTitle && !fullPath.includes('[') && !route.redirect) {
+        const menuItem: InternalItem = {
+          title: menuTitle,
+          to: fullPath,
+          icon: meta.menuIcon,
+          indent: meta.menuIndent,
+          order: meta.menuOrder ?? DEFAULT_ORDER,
+          roles: meta.roles,
+          permissions: meta.permissions,
+        }
 
-    if (meta.menuGroup) {
-      const group = groupsMap.get(meta.menuGroup)
-      if (group) {
-        group.items.push(item)
-        group.order = Math.min(group.order, item.order)
-        if (meta.menuGroupIcon && !group.icon) group.icon = meta.menuGroupIcon
-      } else {
-        groupsMap.set(meta.menuGroup, {
-          title: meta.menuGroup,
-          icon: meta.menuGroupIcon,
-          order: item.order,
-          items: [item],
-        })
+        if (meta.menuGroup) {
+          const group = groupsMap.get(meta.menuGroup)
+          if (group) {
+            group.items.push(menuItem)
+            group.order = Math.min(group.order, menuItem.order)
+            if (meta.menuGroupIcon && !group.icon) group.icon = meta.menuGroupIcon
+          } else {
+            groupsMap.set(meta.menuGroup, {
+              title: meta.menuGroup,
+              icon: meta.menuGroupIcon,
+              order: menuItem.order,
+              items: [menuItem],
+            })
+          }
+        } else {
+          items.push(menuItem)
+        }
       }
-    } else {
-      items.push(item)
     }
 
-    route.children?.forEach(child => processRoute(child, fullPath))
+    // 递归处理子路由
+    if (route.children) {
+      for (const child of route.children) {
+        processRoute(child, fullPath)
+      }
+    }
   }
 
-  for (const route of routes) processRoute(route)
+  for (const route of routes) {
+    processRoute(route, '')
+  }
 
   const groups = Array.from(groupsMap.values())
     .sort((a, b) => a.order - b.order)
-    .map(g => ({
+    .map((g) => ({
       title: g.title,
       icon: g.icon,
-      items: g.items.sort((a, b) => a.order - b.order).map(toItem)
-    })) as NavGroup[]
+      items: g.items.sort((a, b) => a.order - b.order).map(toItem),
+    }))
 
   return {
-    items: items.sort((a, b) => a.order - b.order).map(toItem) as NavItem[],
+    items: items.sort((a, b) => a.order - b.order).map(toItem),
     groups,
   }
 }

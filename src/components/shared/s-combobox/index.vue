@@ -6,19 +6,8 @@ import { useDebounceFn } from '@vueuse/core'
 import { Check, ChevronsUpDown, X } from 'lucide-vue-next'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
-import {
-  Command,
-  CommandEmpty,
-  CommandGroup,
-  CommandInput,
-  CommandItem,
-  CommandList,
-} from '@/components/ui/command'
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from '@/components/ui/popover'
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command'
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { Badge } from '@/components/ui/badge'
 import type { ComboboxOption, ComboboxOptionGroup, RemoteSearchFn } from './types'
 
@@ -54,10 +43,10 @@ const props = withDefaults(defineProps<SComboboxProps>(), {
 
 const emit = defineEmits<{
   'update:modelValue': [value: AcceptableValue | AcceptableValue[] | undefined]
-  'change': [value: AcceptableValue | AcceptableValue[] | undefined]
+  change: [value: AcceptableValue | AcceptableValue[] | undefined]
   'visible-change': [visible: boolean]
-  'clear': []
-  'search': [query: string]
+  clear: []
+  search: [query: string]
 }>()
 
 const open = ref(false)
@@ -73,13 +62,17 @@ const displayOptions = computed(() => {
   if (props.remoteMethod && searchQuery.value) {
     return remoteOptions.value
   }
-  return props.groups ? props.groups.flatMap(g => g.options) : props.options
+  return props.groups ? props.groups.flatMap((g) => g.options) : props.options
 })
 
 // 缓存当前显示的选项
-watch(displayOptions, (opts) => {
-  opts.forEach(opt => selectedCache.set(opt.value, opt))
-}, { immediate: true })
+watch(
+  displayOptions,
+  (opts) => {
+    opts.forEach((opt) => selectedCache.set(opt.value, opt))
+  },
+  { immediate: true },
+)
 
 // 比较两个值是否相等
 function isEqual(a: AcceptableValue, b: AcceptableValue): boolean {
@@ -87,8 +80,7 @@ function isEqual(a: AcceptableValue, b: AcceptableValue): boolean {
   if (typeof props.by === 'function') return props.by(a, b)
   // by 为字符串时，比较对象属性
   const byKey = props.by as string
-  const getVal = (v: AcceptableValue) =>
-    typeof v === 'object' && v !== null ? (v as Record<string, any>)[byKey] : undefined
+  const getVal = (v: AcceptableValue) => (typeof v === 'object' && v !== null ? (v as Record<string, any>)[byKey] : undefined)
   return getVal(a) === getVal(b)
 }
 
@@ -108,7 +100,7 @@ const selectedOption = computed(() => {
 // 多选标签列表
 const selectedTags = computed(() => {
   if (!props.multiple || !Array.isArray(props.modelValue)) return []
-  return props.modelValue.map(v => findOption(v)).filter(Boolean) as ComboboxOption[]
+  return props.modelValue.map((v) => findOption(v)).filter(Boolean) as ComboboxOption[]
 })
 
 const displayTags = computed(() => selectedTags.value.slice(0, props.maxTags))
@@ -145,7 +137,7 @@ function isSelected(value: AcceptableValue): boolean {
     return selectedValuesSet.value.has(value)
   }
   const arr = Array.isArray(props.modelValue) ? props.modelValue : []
-  return arr.some(v => isEqual(v, value))
+  return arr.some((v) => isEqual(v, value))
 }
 
 // 远程搜索版本号（防止竞态）
@@ -186,8 +178,8 @@ watch(open, (isOpen) => {
 function handleSelect(value: AcceptableValue) {
   if (props.multiple) {
     const arr = Array.isArray(props.modelValue) ? props.modelValue : []
-    const exists = arr.some(v => isEqual(v, value))
-    const newValue = exists ? arr.filter(v => !isEqual(v, value)) : [...arr, value]
+    const exists = arr.some((v) => isEqual(v, value))
+    const newValue = exists ? arr.filter((v) => !isEqual(v, value)) : [...arr, value]
     emit('update:modelValue', newValue)
     emit('change', newValue)
     searchQuery.value = ''
@@ -211,7 +203,7 @@ function handleClear(e: Event) {
 
 function handleRemoveTag(value: AcceptableValue) {
   if (!props.multiple || !Array.isArray(props.modelValue)) return
-  const newValue = props.modelValue.filter(v => !isEqual(v, value))
+  const newValue = props.modelValue.filter((v) => !isEqual(v, value))
   emit('update:modelValue', newValue)
   emit('change', newValue)
 }
@@ -267,9 +259,7 @@ function handleRemoveTag(value: AcceptableValue) {
         <Command :by="by" :should-filter="!remoteMethod">
           <CommandInput v-model="searchQuery" :placeholder="searchPlaceholder" class="h-9" />
           <CommandList>
-            <div v-if="remoteLoading || loading" class="py-6 text-center text-sm text-muted-foreground">
-              加载中...
-            </div>
+            <div v-if="remoteLoading || loading" class="py-6 text-center text-sm text-muted-foreground">加载中...</div>
 
             <template v-else>
               <!-- 无选项时的空状态 -->

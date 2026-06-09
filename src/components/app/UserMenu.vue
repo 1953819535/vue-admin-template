@@ -74,9 +74,7 @@ function handleLogout() {
     <AlertDialogContent>
       <AlertDialogHeader>
         <AlertDialogTitle>确认退出</AlertDialogTitle>
-        <AlertDialogDescription>
-          您确定要退出登录吗？退出后需要重新登录才能访问系统。
-        </AlertDialogDescription>
+        <AlertDialogDescription> 您确定要退出登录吗？退出后需要重新登录才能访问系统。 </AlertDialogDescription>
       </AlertDialogHeader>
       <AlertDialogFooter>
         <AlertDialogCancel>取消</AlertDialogCancel>

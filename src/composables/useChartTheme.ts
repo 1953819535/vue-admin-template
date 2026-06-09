@@ -20,13 +20,7 @@ export function getChartColors(): ChartColors {
   const getVar = (name: string) => style.getPropertyValue(name).trim()
 
   return {
-    series: [
-      getVar('--chart-1'),
-      getVar('--chart-2'),
-      getVar('--chart-3'),
-      getVar('--chart-4'),
-      getVar('--chart-5'),
-    ],
+    series: [getVar('--chart-1'), getVar('--chart-2'), getVar('--chart-3'), getVar('--chart-4'), getVar('--chart-5')],
     background: getVar('--background'),
     foreground: getVar('--foreground'),
     mutedForeground: getVar('--muted-foreground'),
@@ -49,7 +43,7 @@ export function useChartTheme() {
         refreshKey.value++
       })
     },
-    { immediate: false }
+    { immediate: false },
   )
 
   const chartColors = computed(() => {

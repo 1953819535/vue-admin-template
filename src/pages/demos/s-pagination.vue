@@ -2,37 +2,42 @@
 /**
  * SPaginationBar 交互式示例
  */
-import type { AcceptableValue } from "reka-ui";
-import { ref, computed } from "vue";
-import { Icon } from "@iconify/vue";
-import { SPaginationBar, SSelect } from "@/components/shared";
-import { Badge } from "@/components/ui/badge";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Label } from "@/components/ui/label";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import type { AcceptableValue } from 'reka-ui'
+import { ref, computed } from 'vue'
+import { Icon } from '@iconify/vue'
+import { SPaginationBar, SSelect } from '@/components/shared'
+import { Badge } from '@/components/ui/badge'
+import { Checkbox } from '@/components/ui/checkbox'
+import { Label } from '@/components/ui/label'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+
+definePage({
+  meta: {
+    title: 'SPaginationBar 示例',
+    menuTitle: 'SPaginationBar',
+    menuIcon: 'lucide:grip-horizontal',
+    menuGroup: '组件示例',
+    menuGroupIcon: 'lucide:component',
+    menuOrder: 21,
+    requiresAuth: true,
+    roles: ['admin'],
+  },
+})
 
 // 分页状态
-const page = ref(1);
-const pageSize = ref(10);
-const total = ref(100);
+const page = ref(1)
+const pageSize = ref(10)
+const total = ref(100)
 
 // 配置项
-const showTotal = ref(true);
-const showSizeChanger = ref(true);
+const showTotal = ref(true)
+const showSizeChanger = ref(true)
 
 // 模拟数据变化
-const pageSizes = [10, 20, 50, 100];
+const pageSizes = [10, 20, 50, 100]
 
 // 选项配置
-const pageSizeOptions = computed(() =>
-  pageSizes.map(s => ({ label: String(s), value: String(s) }))
-);
+const pageSizeOptions = computed(() => pageSizes.map((s) => ({ label: String(s), value: String(s) })))
 
 const totalOptions = [
   { label: '50', value: '50' },
@@ -40,44 +45,31 @@ const totalOptions = [
   { label: '200', value: '200' },
   { label: '500', value: '500' },
   { label: '1000', value: '1000' },
-];
+]
 
 function handleChange(newPage: number, newPageSize: number) {
-  console.log("页码:", newPage, "每页条数:", newPageSize);
+  console.log('页码:', newPage, '每页条数:', newPageSize)
 }
 
 // 更新总数（演示用）
 function updateTotal(newTotal: number) {
-  total.value = newTotal;
+  total.value = newTotal
   // 重置到第一页
-  page.value = 1;
+  page.value = 1
 }
 
 function handlePageSizeChange(value: AcceptableValue | undefined) {
   if (value !== undefined) {
-    pageSize.value = Number(value);
+    pageSize.value = Number(value)
   }
 }
 
 function handleTotalChange(value: AcceptableValue | undefined) {
   if (value !== undefined) {
-    updateTotal(Number(value));
+    updateTotal(Number(value))
   }
 }
 </script>
-
-<route lang="yaml">
-meta:
-  layout: default
-  title: SPaginationBar 示例
-  menuTitle: SPaginationBar
-  menuIcon: lucide:grip-horizontal
-  menuGroup: 组件示例
-  menuGroupIcon: lucide:component
-  menuOrder: 21
-  requiresAuth: true
-  roles: [admin]
-</route>
 
 <template>
   <div class="space-y-6">
@@ -85,9 +77,7 @@ meta:
     <div class="flex items-center justify-between">
       <div>
         <h1 class="text-2xl font-semibold tracking-tight">SPaginationBar 分页条</h1>
-        <p class="text-muted-foreground mt-1.5">
-          基于 shadcn-vue Pagination 封装的分页组件
-        </p>
+        <p class="text-muted-foreground mt-1.5">基于 shadcn-vue Pagination 封装的分页组件</p>
       </div>
       <Badge variant="secondary" class="shrink-0">
         <Icon icon="lucide:sparkles" class="size-3.5 mr-1" />
@@ -124,22 +114,12 @@ meta:
 
               <div class="flex items-center gap-3">
                 <Label class="w-20 text-muted-foreground">每页条数</Label>
-                <SSelect
-                  :model-value="String(pageSize)"
-                  :options="pageSizeOptions"
-                  trigger-class="w-20 h-8"
-                  @change="handlePageSizeChange"
-                />
+                <SSelect :model-value="String(pageSize)" :options="pageSizeOptions" trigger-class="w-20 h-8" @change="handlePageSizeChange" />
               </div>
 
               <div class="flex items-center gap-3">
                 <Label class="w-20 text-muted-foreground">总条数</Label>
-                <SSelect
-                  :model-value="String(total)"
-                  :options="totalOptions"
-                  trigger-class="w-20 h-8"
-                  @change="handleTotalChange"
-                />
+                <SSelect :model-value="String(total)" :options="totalOptions" trigger-class="w-20 h-8" @change="handleTotalChange" />
               </div>
             </div>
           </div>
@@ -223,34 +203,19 @@ meta:
         <!-- 少量数据 -->
         <div class="space-y-2">
           <div class="text-sm text-muted-foreground">少量数据 (35条)</div>
-          <SPaginationBar
-            :page="1"
-            :page-size="10"
-            :total="35"
-            @update:page="(p: number) => console.log('少量数据页码:', p)"
-          />
+          <SPaginationBar :page="1" :page-size="10" :total="35" @update:page="(p: number) => console.log('少量数据页码:', p)" />
         </div>
 
         <!-- 中等数据 -->
         <div class="space-y-2">
           <div class="text-sm text-muted-foreground">中等数据 (200条)</div>
-          <SPaginationBar
-            :page="5"
-            :page-size="20"
-            :total="200"
-            @update:page="(p: number) => console.log('中等数据页码:', p)"
-          />
+          <SPaginationBar :page="5" :page-size="20" :total="200" @update:page="(p: number) => console.log('中等数据页码:', p)" />
         </div>
 
         <!-- 大量数据 -->
         <div class="space-y-2">
           <div class="text-sm text-muted-foreground">大量数据 (1000条)</div>
-          <SPaginationBar
-            :page="25"
-            :page-size="20"
-            :total="1000"
-            @update:page="(p: number) => console.log('大量数据页码:', p)"
-          />
+          <SPaginationBar :page="25" :page-size="20" :total="1000" @update:page="(p: number) => console.log('大量数据页码:', p)" />
         </div>
 
         <!-- 简洁模式 -->

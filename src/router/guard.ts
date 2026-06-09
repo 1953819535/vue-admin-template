@@ -9,20 +9,18 @@ const WHITE_LIST = ['/login', '/403', '/404']
  * 设置路由守卫
  */
 export function setupRouterGuard(router: Router) {
-  router.beforeEach(async (to, _from, next) => {
+  router.beforeEach(async (to) => {
     const authStore = useAuthStore()
     const routeStore = useRouteStore()
 
     // 白名单路由直接放行
     if (WHITE_LIST.includes(to.path) || to.meta.constant) {
-      next()
-      return
+      return true
     }
 
     // 检查登录状态
     if (!authStore.isLogin) {
-      next({ path: '/login', query: { redirect: to.fullPath } })
-      return
+      return { path: '/login', query: { redirect: to.fullPath } }
     }
 
     // 初始化用户信息（首次访问或刷新后）
@@ -33,17 +31,20 @@ export function setupRouterGuard(router: Router) {
       } catch (error) {
         console.error('获取用户信息失败:', error)
         authStore.logout()
-        next({ path: '/login', query: { redirect: to.fullPath } })
-        return
+        return { path: '/login', query: { redirect: to.fullPath } }
       }
     }
 
     // 检查路由权限
-    if (!authStore.hasAccess({ roles: to.meta.roles, permissions: to.meta.permissions })) {
-      next({ path: '/403' })
-      return
+    if (
+      !authStore.hasAccess({
+        roles: to.meta.roles,
+        permissions: to.meta.permissions,
+      })
+    ) {
+      return { path: '/403' }
     }
 
-    next()
+    return true
   })
 }

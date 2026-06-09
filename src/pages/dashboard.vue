@@ -1,41 +1,22 @@
 <script setup lang="ts">
-import { ref } from "vue";
-import { Icon } from "@iconify/vue";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { Progress } from "@/components/ui/progress";
-import { Slider } from "@/components/ui/slider";
-import { Button } from "@/components/ui/button";
-import { Switch } from "@/components/ui/switch";
-import { Label } from "@/components/ui/label";
-import { Separator } from "@/components/ui/separator";
-import { Skeleton } from "@/components/ui/skeleton";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { SChart } from "@/components/shared";
+import { ref } from 'vue'
+import { Icon } from '@iconify/vue'
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
+import { Badge } from '@/components/ui/badge'
+import { Avatar, AvatarFallback } from '@/components/ui/avatar'
+import { Progress } from '@/components/ui/progress'
+import { Slider } from '@/components/ui/slider'
+import { Button } from '@/components/ui/button'
+import { Switch } from '@/components/ui/switch'
+import { Label } from '@/components/ui/label'
+import { Separator } from '@/components/ui/separator'
+import { Skeleton } from '@/components/ui/skeleton'
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
+import { SChart } from '@/components/shared'
 import {
   revenueLineOptions,
   revenueSeries,
@@ -47,124 +28,130 @@ import {
   categorySeries,
   metricsRadarOptions,
   metricsSeries,
-} from "./dashboard-charts";
+} from './dashboard-charts'
+
+definePage({
+  meta: {
+    title: '仪表盘',
+    menuTitle: '仪表盘',
+    menuIcon: 'lucide:layout-dashboard',
+    menuOrder: 1,
+    requiresAuth: true,
+  },
+})
 
 interface StatCard {
-  title: string;
-  value: string;
-  change: string;
-  trend: "up" | "down";
-  icon: string;
+  title: string
+  value: string
+  change: string
+  trend: 'up' | 'down'
+  icon: string
 }
 
 interface Payment {
-  id: number;
-  status: "success" | "processing" | "failed" | "pending";
-  email: string;
-  amount: string;
+  id: number
+  status: 'success' | 'processing' | 'failed' | 'pending'
+  email: string
+  amount: string
 }
 
 const stats: StatCard[] = [
   {
-    title: "总收入",
-    value: "$15,231.89",
-    change: "+12.5%",
-    trend: "up",
-    icon: "lucide:dollar-sign",
+    title: '总收入',
+    value: '$15,231.89',
+    change: '+12.5%',
+    trend: 'up',
+    icon: 'lucide:dollar-sign',
   },
   {
-    title: "订阅数",
-    value: "+2,350",
-    change: "+10.2%",
-    trend: "up",
-    icon: "lucide:users",
+    title: '订阅数',
+    value: '+2,350',
+    change: '+10.2%',
+    trend: 'up',
+    icon: 'lucide:users',
   },
   {
-    title: "销售额",
-    value: "+12,234",
-    change: "+19.1%",
-    trend: "up",
-    icon: "lucide:shopping-cart",
+    title: '销售额',
+    value: '+12,234',
+    change: '+19.1%',
+    trend: 'up',
+    icon: 'lucide:shopping-cart',
   },
   {
-    title: "活跃用户",
-    value: "+572",
-    change: "-2.1%",
-    trend: "down",
-    icon: "lucide:activity",
+    title: '活跃用户',
+    value: '+572',
+    change: '-2.1%',
+    trend: 'down',
+    icon: 'lucide:activity',
   },
-];
+]
 
 const payments: Payment[] = [
-  { id: 1, status: "success", email: "ken99@example.com", amount: "$316.00" },
-  { id: 2, status: "success", email: "abe45@example.com", amount: "$242.00" },
+  { id: 1, status: 'success', email: 'ken99@example.com', amount: '$316.00' },
+  { id: 2, status: 'success', email: 'abe45@example.com', amount: '$242.00' },
   {
     id: 3,
-    status: "processing",
-    email: "monserrat44@example.com",
-    amount: "$837.00",
+    status: 'processing',
+    email: 'monserrat44@example.com',
+    amount: '$837.00',
   },
-  { id: 4, status: "failed", email: "carmella@example.com", amount: "$721.00" },
-  { id: 5, status: "pending", email: "jason78@example.com", amount: "$450.00" },
-];
+  { id: 4, status: 'failed', email: 'carmella@example.com', amount: '$721.00' },
+  { id: 5, status: 'pending', email: 'jason78@example.com', amount: '$450.00' },
+]
 
 const recentSales = [
   {
-    name: "Olivia Martin",
-    email: "olivia@email.com",
-    amount: "+$1,999.00",
-    avatar: "OM",
+    name: 'Olivia Martin',
+    email: 'olivia@email.com',
+    amount: '+$1,999.00',
+    avatar: 'OM',
   },
   {
-    name: "Jackson Lee",
-    email: "jackson@email.com",
-    amount: "+$39.00",
-    avatar: "JL",
+    name: 'Jackson Lee',
+    email: 'jackson@email.com',
+    amount: '+$39.00',
+    avatar: 'JL',
   },
   {
-    name: "Isabella Nguyen",
-    email: "isabella@email.com",
-    amount: "+$299.00",
-    avatar: "IN",
+    name: 'Isabella Nguyen',
+    email: 'isabella@email.com',
+    amount: '+$299.00',
+    avatar: 'IN',
   },
   {
-    name: "William Kim",
-    email: "will@email.com",
-    amount: "+$99.00",
-    avatar: "WK",
+    name: 'William Kim',
+    email: 'will@email.com',
+    amount: '+$99.00',
+    avatar: 'WK',
   },
-];
+]
 
-const sliderValue = ref([50]);
-const notificationsEnabled = ref(true);
-const selectedPlan = ref("pro");
-const isLoading = ref(false);
+const sliderValue = ref([50])
+const notificationsEnabled = ref(true)
+const selectedPlan = ref('pro')
+const isLoading = ref(false)
 
-const statusVariant: Record<Payment["status"], "default" | "secondary" | "destructive" | "outline"> = {
-  success: "default",
-  processing: "secondary",
-  failed: "destructive",
-  pending: "outline",
-};
+const statusVariant: Record<Payment['status'], 'default' | 'secondary' | 'destructive' | 'outline'> = {
+  success: 'default',
+  processing: 'secondary',
+  failed: 'destructive',
+  pending: 'outline',
+}
 
 const toggleLoading = () => {
-  isLoading.value = true;
-  setTimeout(() => (isLoading.value = false), 1500);
-};
+  isLoading.value = true
+  setTimeout(() => (isLoading.value = false), 1500)
+}
 </script>
 
 <template>
   <TooltipProvider>
     <div class="flex flex-col gap-6 p-4 md:p-8 max-w-[1600px] mx-auto w-full">
       <!-- Header -->
-      <div
-        class="flex flex-col md:flex-row md:items-center justify-between gap-4"
-      >
+      <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <h1 class="text-3xl font-bold tracking-tight">仪表盘</h1>
-          <p class="text-muted-foreground">
-            欢迎回来，这是您今日的业务实时概览。
-          </p>
+          <p class="text-muted-foreground">欢迎回来，这是您今日的业务实时概览。</p>
         </div>
         <div class="flex items-center gap-2">
           <Button variant="outline" size="sm" @click="toggleLoading">
@@ -180,26 +167,15 @@ const toggleLoading = () => {
 
       <!-- Stats Grid -->
       <div class="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        <Card
-          v-for="stat in stats"
-          :key="stat.title"
-          class="transition-all hover:shadow-md"
-        >
-          <CardHeader
-            class="flex flex-row items-center justify-between space-y-0 pb-2"
-          >
+        <Card v-for="stat in stats" :key="stat.title" class="transition-all hover:shadow-md">
+          <CardHeader class="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle class="text-sm font-medium">{{ stat.title }}</CardTitle>
             <Icon :icon="stat.icon" class="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div class="text-2xl font-bold">{{ stat.value }}</div>
             <p class="text-xs mt-1 flex items-center gap-1">
-              <span
-                :class="
-                  stat.trend === 'up' ? 'text-emerald-500' : 'text-rose-500'
-                "
-                class="font-medium"
-              >
+              <span :class="stat.trend === 'up' ? 'text-emerald-500' : 'text-rose-500'" class="font-medium">
                 {{ stat.change }}
               </span>
               <span class="text-muted-foreground">较上月</span>
@@ -209,15 +185,10 @@ const toggleLoading = () => {
       </div>
 
       <!-- Alert -->
-      <Alert
-        variant="destructive"
-        class="bg-destructive/5 border-destructive/20"
-      >
+      <Alert variant="destructive" class="bg-destructive/5 border-destructive/20">
         <Icon icon="lucide:alert-circle" class="h-4 w-4" />
         <AlertTitle>需要注意</AlertTitle>
-        <AlertDescription>
-          您的 Pro 订阅计划即将在 7 天后到期，请及时处理以避免业务中断。
-        </AlertDescription>
+        <AlertDescription> 您的 Pro 订阅计划即将在 7 天后到期，请及时处理以避免业务中断。 </AlertDescription>
       </Alert>
 
       <!-- Main Content Tabs -->
@@ -241,12 +212,7 @@ const toggleLoading = () => {
                 </div>
               </CardHeader>
               <CardContent>
-                <SChart
-                  type="line"
-                  :height="240"
-                  :options="revenueLineOptions"
-                  :series="revenueSeries"
-                />
+                <SChart type="line" :height="240" :options="revenueLineOptions" :series="revenueSeries" />
               </CardContent>
             </Card>
 
@@ -257,11 +223,7 @@ const toggleLoading = () => {
                 <CardDescription>本月累计成交 265 笔</CardDescription>
               </CardHeader>
               <CardContent class="space-y-6">
-                <div
-                  v-for="sale in recentSales"
-                  :key="sale.email"
-                  class="flex items-center"
-                >
+                <div v-for="sale in recentSales" :key="sale.email" class="flex items-center">
                   <Avatar class="h-9 w-9">
                     <AvatarFallback>{{ sale.avatar }}</AvatarFallback>
                   </Avatar>
@@ -303,18 +265,12 @@ const toggleLoading = () => {
                 <TableBody>
                   <TableRow v-for="p in payments" :key="p.id">
                     <TableCell>
-                      <Badge
-                        :variant="statusVariant[p.status]"
-                        class="capitalize"
-                      >
+                      <Badge :variant="statusVariant[p.status]" class="capitalize">
                         {{ p.status }}
                       </Badge>
                     </TableCell>
                     <TableCell class="font-medium">{{ p.email }}</TableCell>
-                    <TableCell
-                      class="hidden md:table-cell text-muted-foreground"
-                      >#INV-00{{ p.id }}</TableCell
-                    >
+                    <TableCell class="hidden md:table-cell text-muted-foreground">#INV-00{{ p.id }}</TableCell>
                     <TableCell class="text-right">{{ p.amount }}</TableCell>
                   </TableRow>
                 </TableBody>
@@ -333,12 +289,7 @@ const toggleLoading = () => {
                 <CardDescription>近6个月新增用户趋势</CardDescription>
               </CardHeader>
               <CardContent>
-                <SChart
-                  type="area"
-                  :height="200"
-                  :options="userAreaOptions"
-                  :series="userSeries"
-                />
+                <SChart type="area" :height="200" :options="userAreaOptions" :series="userSeries" />
               </CardContent>
             </Card>
 
@@ -349,12 +300,7 @@ const toggleLoading = () => {
                 <CardDescription>各产品本月销售对比</CardDescription>
               </CardHeader>
               <CardContent>
-                <SChart
-                  type="bar"
-                  :height="200"
-                  :options="salesBarOptions"
-                  :series="salesSeries"
-                />
+                <SChart type="bar" :height="200" :options="salesBarOptions" :series="salesSeries" />
               </CardContent>
             </Card>
 
@@ -365,12 +311,7 @@ const toggleLoading = () => {
                 <CardDescription>各类别销售额分布</CardDescription>
               </CardHeader>
               <CardContent>
-                <SChart
-                  type="donut"
-                  :height="200"
-                  :options="categoryDonutOptions"
-                  :series="categorySeries"
-                />
+                <SChart type="donut" :height="200" :options="categoryDonutOptions" :series="categorySeries" />
               </CardContent>
             </Card>
           </div>
@@ -382,12 +323,7 @@ const toggleLoading = () => {
               <CardDescription>本月与上月关键指标对比</CardDescription>
             </CardHeader>
             <CardContent>
-              <SChart
-                type="radar"
-                :height="280"
-                :options="metricsRadarOptions"
-                :series="metricsSeries"
-              />
+              <SChart type="radar" :height="280" :options="metricsRadarOptions" :series="metricsSeries" />
             </CardContent>
           </Card>
 
@@ -400,9 +336,7 @@ const toggleLoading = () => {
               <CardContent class="space-y-6">
                 <div class="space-y-2">
                   <div class="flex justify-between text-sm">
-                    <span class="text-muted-foreground"
-                      >月度营收目标 ($50k)</span
-                    >
+                    <span class="text-muted-foreground">月度营收目标 ($50k)</span>
                     <span class="font-medium">85%</span>
                   </div>
                   <Progress :model-value="85" class="h-2" />
@@ -424,18 +358,14 @@ const toggleLoading = () => {
                 <div class="space-y-4">
                   <div class="flex justify-between">
                     <Label>基础预算百分比</Label>
-                    <span class="text-sm font-mono bg-muted px-2 rounded"
-                      >{{ sliderValue[0] }}%</span
-                    >
+                    <span class="text-sm font-mono bg-muted px-2 rounded">{{ sliderValue[0] }}%</span>
                   </div>
                   <Slider v-model="sliderValue" :max="100" :step="1" />
                 </div>
                 <div class="flex items-center justify-between">
                   <div class="space-y-0.5">
                     <Label>自动优化</Label>
-                    <p class="text-xs text-muted-foreground">
-                      根据 AI 模型自动调整预算分配
-                    </p>
+                    <p class="text-xs text-muted-foreground">根据 AI 模型自动调整预算分配</p>
                   </div>
                   <Switch />
                 </div>
@@ -448,57 +378,40 @@ const toggleLoading = () => {
           <Card class="max-w-2xl">
             <CardHeader>
               <CardTitle>个人与通知偏好</CardTitle>
-              <CardDescription
-                >设置您接收消息的方式和账户安全配置。</CardDescription
-              >
+              <CardDescription>设置您接收消息的方式和账户安全配置。</CardDescription>
             </CardHeader>
             <CardContent class="space-y-6">
               <div class="flex items-center justify-between space-x-2">
                 <Label class="flex flex-col space-y-1">
                   <span>邮件营销通知</span>
-                  <span class="font-normal text-xs text-muted-foreground"
-                    >接收有关产品更新和优惠的邮件。</span
-                  >
+                  <span class="font-normal text-xs text-muted-foreground">接收有关产品更新和优惠的邮件。</span>
                 </Label>
                 <Switch v-model:checked="notificationsEnabled" />
               </div>
               <Separator />
               <div class="space-y-4">
                 <Label>当前订阅方案</Label>
-                <RadioGroup
-                  v-model="selectedPlan"
-                  class="grid grid-cols-1 md:grid-cols-2 gap-4"
-                >
+                <RadioGroup v-model="selectedPlan" class="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <Label
                     v-for="plan in ['free', 'pro']"
                     :key="plan"
                     :class="[
                       'flex items-center justify-between p-4 rounded-xl border-2 cursor-pointer transition-all',
-                      selectedPlan === plan
-                        ? 'border-primary bg-primary/5'
-                        : 'hover:bg-muted',
+                      selectedPlan === plan ? 'border-primary bg-primary/5' : 'hover:bg-muted',
                     ]"
                   >
                     <div class="flex items-center gap-3">
                       <RadioGroupItem :value="plan" />
-                      <span class="capitalize font-medium"
-                        >{{ plan }} Plan</span
-                      >
+                      <span class="capitalize font-medium">{{ plan }} Plan</span>
                     </div>
-                    <span class="text-sm text-muted-foreground"
-                      >{{ plan === "free" ? "$0" : "$29" }}/mo</span
-                    >
+                    <span class="text-sm text-muted-foreground">{{ plan === 'free' ? '$0' : '$29' }}/mo</span>
                   </Label>
                 </RadioGroup>
               </div>
             </CardContent>
             <CardFooter class="bg-muted/50 border-t px-6 py-4">
               <Button :disabled="isLoading" @click="toggleLoading">
-                <Icon
-                  v-if="isLoading"
-                  icon="lucide:loader-2"
-                  class="mr-2 h-4 w-4 animate-spin"
-                />
+                <Icon v-if="isLoading" icon="lucide:loader-2" class="mr-2 h-4 w-4 animate-spin" />
                 保存所有更改
               </Button>
             </CardFooter>
@@ -520,23 +433,15 @@ const toggleLoading = () => {
             <div class="flex -space-x-2 overflow-hidden py-2">
               <Tooltip v-for="i in 4" :key="i">
                 <TooltipTrigger>
-                  <Avatar
-                    class="inline-block border-2 border-background h-8 w-8"
-                  >
+                  <Avatar class="inline-block border-2 border-background h-8 w-8">
                     <AvatarFallback>U{{ i }}</AvatarFallback>
                   </Avatar>
                 </TooltipTrigger>
                 <TooltipContent>团队成员 {{ i }}</TooltipContent>
               </Tooltip>
-              <div
-                class="flex items-center justify-center h-8 w-8 rounded-full bg-muted text-[10px] font-medium border-2 border-background"
-              >
-                +12
-              </div>
+              <div class="flex items-center justify-center h-8 w-8 rounded-full bg-muted text-[10px] font-medium border-2 border-background">+12</div>
             </div>
-            <p class="text-xs text-muted-foreground mt-4 italic">
-              “当前项目共有 16 名活跃协作者”
-            </p>
+            <p class="text-xs text-muted-foreground mt-4 italic">“当前项目共有 16 名活跃协作者”</p>
           </CardContent>
         </Card>
 
@@ -604,13 +509,3 @@ const toggleLoading = () => {
     </div>
   </TooltipProvider>
 </template>
-
-<route lang="yaml">
-meta:
-  layout: default
-  title: 仪表盘
-  menuTitle: 仪表盘
-  menuIcon: lucide:layout-dashboard
-  menuOrder: 1
-  requiresAuth: true
-</route>

@@ -37,13 +37,7 @@ onMounted(() => {
 
 <template>
   <Transition name="fade">
-    <Button
-      v-if="visible"
-      variant="secondary"
-      size="icon"
-      class="fixed bottom-6 right-6 z-50 shadow-md"
-      @click="scrollToTop"
-    >
+    <Button v-if="visible" variant="secondary" size="icon" class="fixed bottom-6 right-6 z-50 shadow-md" @click="scrollToTop">
       <ArrowUp class="size-4" />
     </Button>
   </Transition>

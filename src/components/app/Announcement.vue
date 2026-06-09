@@ -41,7 +41,7 @@ const { pause: pauseRotation, resume: resumeRotation } = useIntervalFn(
     currentIndex.value = (currentIndex.value + 1) % announcements.value.length
   },
   ROTATION_INTERVAL_MS,
-  { immediate: false }
+  { immediate: false },
 )
 
 watch(isHovered, (hovered) => {
@@ -92,31 +92,18 @@ function close() {
       :class="typeConfig[current?.type ?? 'info'].style"
     >
       <div class="container mx-auto px-4 py-2 flex items-center gap-3">
-        <Icon
-          :icon="typeConfig[current?.type ?? 'info'].icon"
-          class="shrink-0 text-lg"
-        />
+        <Icon :icon="typeConfig[current?.type ?? 'info'].icon" class="shrink-0 text-lg" />
 
         <div class="flex-1 overflow-hidden">
-          <TransitionGroup
-            name="announcement"
-            tag="div"
-            class="relative"
-          >
-            <div
-              :key="current?.id"
-              class="flex items-center gap-2 whitespace-nowrap"
-            >
+          <TransitionGroup name="announcement" tag="div" class="relative">
+            <div :key="current?.id" class="flex items-center gap-2 whitespace-nowrap">
               <span class="font-medium">{{ current?.title }}</span>
               <span class="opacity-70">{{ current?.content }}</span>
             </div>
           </TransitionGroup>
         </div>
 
-        <div
-          v-if="announcements.length > 1"
-          class="shrink-0 flex items-center gap-1"
-        >
+        <div v-if="announcements.length > 1" class="shrink-0 flex items-center gap-1">
           <span
             v-for="(item, index) in announcements"
             :key="item.id"
@@ -125,10 +112,7 @@ function close() {
           />
         </div>
 
-        <button
-          class="shrink-0 p-1 rounded-md hover:bg-foreground/5 transition-colors"
-          @click="close"
-        >
+        <button class="shrink-0 p-1 rounded-md hover:bg-foreground/5 transition-colors" @click="close">
           <Icon icon="lucide:x" class="text-lg" />
         </button>
       </div>

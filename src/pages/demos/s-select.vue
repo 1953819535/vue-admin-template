@@ -2,67 +2,74 @@
 /**
  * SSelect 交互式示例
  */
-import type { AcceptableValue } from "reka-ui";
-import { ref } from "vue";
-import { Icon } from "@iconify/vue";
-import { SSelect } from "@/components/shared";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Label } from "@/components/ui/label";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { Separator } from "@/components/ui/separator";
-import { Search, User } from "lucide-vue-next";
+import type { AcceptableValue } from 'reka-ui'
+import { ref } from 'vue'
+import { Icon } from '@iconify/vue'
+import { SSelect } from '@/components/shared'
+import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
+import { Label } from '@/components/ui/label'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Separator } from '@/components/ui/separator'
+import { Search, User } from 'lucide-vue-next'
+
+definePage({
+  meta: {
+    title: 'SSelect 示例',
+    menuTitle: 'SSelect',
+    menuIcon: 'lucide:list-filter',
+    menuGroup: '组件示例',
+    menuGroupIcon: 'lucide:component',
+    menuOrder: 22,
+    requiresAuth: true,
+    roles: ['admin'],
+  },
+})
 
 // ========== 基础用法 ==========
-const basicValue = ref<string>();
+const basicValue = ref<string>()
 const basicOptions = [
   { label: 'Vue', value: 'vue' },
   { label: 'React', value: 'react' },
   { label: 'Angular', value: 'angular' },
   { label: 'Svelte', value: 'svelte' },
-];
+]
 
 // ========== 不同尺寸 ==========
-const sizeValue = ref('md');
+const sizeValue = ref('md')
 const sizeOptions = [
   { label: '小尺寸', value: 'sm' },
   { label: '默认尺寸', value: 'md' },
-];
+]
 
 // ========== 可清空 ==========
-const clearableValue = ref('vue');
+const clearableValue = ref('vue')
 const clearableOptions = [
   { label: 'Vue', value: 'vue' },
   { label: 'React', value: 'react' },
   { label: 'Angular', value: 'angular' },
-];
+]
 
 function handleClear() {
-  console.log('已清空');
+  console.log('已清空')
 }
 
 // ========== 禁用状态 ==========
-const disabledValue = ref('vue');
+const disabledValue = ref('vue')
 const disabledOptions = [
   { label: 'Vue', value: 'vue' },
   { label: 'React', value: 'react' },
   { label: 'Angular', value: 'angular' },
-];
+]
 const disabledItemOptions = [
   { label: 'Vue', value: 'vue' },
   { label: 'React (禁用)', value: 'react', disabled: true },
   { label: 'Angular', value: 'angular' },
   { label: 'Svelte (禁用)', value: 'svelte', disabled: true },
-];
+]
 
 // ========== 分组选项 ==========
-const groupValue = ref<string>();
+const groupValue = ref<string>()
 const cityGroups = [
   {
     label: '华北地区',
@@ -86,141 +93,133 @@ const cityGroups = [
       { label: '深圳', value: 'sz' },
     ],
   },
-];
+]
 
 // ========== 前缀插槽 ==========
-const prefixValue = ref<string>();
+const prefixValue = ref<string>()
 const searchOptions = [
   { label: '用户管理', value: 'user' },
   { label: '角色管理', value: 'role' },
   { label: '权限管理', value: 'permission' },
-];
+]
 
 // ========== 自定义选中项显示 ==========
-const customLabelValue = ref<string>();
+const customLabelValue = ref<string>()
 const statusOptions = [
   { label: '待审核', value: 'pending' },
   { label: '已通过', value: 'approved' },
   { label: '已拒绝', value: 'rejected' },
-];
+]
 
 const statusColors: Record<string, string> = {
   pending: 'bg-yellow-500',
   approved: 'bg-green-500',
   rejected: 'bg-red-500',
-};
+}
 
 // ========== 空状态 ==========
-const emptyValue = ref<string>();
-const emptyOptions: { label: string; value: string }[] = [];
+const emptyValue = ref<string>()
+const emptyOptions: { label: string; value: string }[] = []
 
 // ========== 事件监听 ==========
-const eventValue = ref<string>();
+const eventValue = ref<string>()
 const eventOptions = [
   { label: '选项一', value: '1' },
   { label: '选项二', value: '2' },
   { label: '选项三', value: '3' },
-];
-const eventLog = ref<string[]>([]);
+]
+const eventLog = ref<string[]>([])
 
 function handleEventChange(value: AcceptableValue | undefined) {
-  eventLog.value.unshift(`change: ${value ?? 'undefined'}`);
-  if (eventLog.value.length > 5) eventLog.value.pop();
+  eventLog.value.unshift(`change: ${value ?? 'undefined'}`)
+  if (eventLog.value.length > 5) eventLog.value.pop()
 }
 
 function handleEventVisibleChange(visible: boolean) {
-  eventLog.value.unshift(`visible-change: ${visible}`);
-  if (eventLog.value.length > 5) eventLog.value.pop();
+  eventLog.value.unshift(`visible-change: ${visible}`)
+  if (eventLog.value.length > 5) eventLog.value.pop()
 }
 
 // ========== 头部底部插槽 ==========
-const slotValue = ref<string>();
+const slotValue = ref<string>()
 const slotOptions = [
   { label: '张三', value: 'zhangsan' },
   { label: '李四', value: 'lisi' },
   { label: '王五', value: 'wangwu' },
-];
+]
 
 // ========== 自定义选项插槽 ==========
-const userOptionValue = ref<string>();
+const userOptionValue = ref<string>()
 const userOptions = [
-  { label: '张三', value: 'zhangsan', email: 'zhangsan@example.com', avatar: 'Z' },
+  {
+    label: '张三',
+    value: 'zhangsan',
+    email: 'zhangsan@example.com',
+    avatar: 'Z',
+  },
   { label: '李四', value: 'lisi', email: 'lisi@example.com', avatar: 'L' },
   { label: '王五', value: 'wangwu', email: 'wangwu@example.com', avatar: 'W' },
-];
+]
 
 // ========== 自定义样式 ==========
-const customStyleValue = ref<string>();
+const customStyleValue = ref<string>()
 const customStyleOptions = [
   { label: '红色主题', value: 'red' },
   { label: '蓝色主题', value: 'blue' },
   { label: '绿色主题', value: 'green' },
-];
+]
 
 // ========== 多选模式 ==========
-const multipleValue = ref<string[]>(['vue', 'react']);
+const multipleValue = ref<string[]>(['vue', 'react'])
 const multipleOptions = [
   { label: 'Vue', value: 'vue' },
   { label: 'React', value: 'react' },
   { label: 'Angular', value: 'angular' },
   { label: 'Svelte', value: 'svelte' },
   { label: 'Solid', value: 'solid' },
-];
+]
 
 // ========== 多选 + 清空 ==========
-const multipleClearableValue = ref<string[]>([]);
+const multipleClearableValue = ref<string[]>([])
 const multipleClearableOptions = [
   { label: '用户管理', value: 'user' },
   { label: '角色管理', value: 'role' },
   { label: '权限管理', value: 'permission' },
   { label: '系统设置', value: 'system' },
-];
+]
 
 // ========== 大量选项多选 ==========
-const largeValue = ref<string[]>([]);
+const largeValue = ref<string[]>([])
 const largeOptions = Array.from({ length: 50 }, (_, i) => ({
   label: `选项 ${i + 1}`,
   value: `opt-${i + 1}`,
-}));
+}))
 
 function handleSelectAll() {
-  largeValue.value = largeOptions.map(o => o.value);
+  largeValue.value = largeOptions.map((o) => o.value)
 }
 
 function handleClearAll() {
-  largeValue.value = [];
+  largeValue.value = []
 }
 
 // ========== 对象比较 (by) ==========
 interface UserItem {
-  id: number;
-  name: string;
-  email: string;
+  id: number
+  name: string
+  email: string
 }
-const userObjectValue = ref<UserItem | undefined>();
+const userObjectValue = ref<UserItem | undefined>()
 const userObjectOptions: UserItem[] = [
   { id: 1, name: '张三', email: 'zhangsan@example.com' },
   { id: 2, name: '李四', email: 'lisi@example.com' },
   { id: 3, name: '王五', email: 'wangwu@example.com' },
-];
-const userObjectSelectOptions = userObjectOptions.map(u => ({
+]
+const userObjectSelectOptions = userObjectOptions.map((u) => ({
   label: u.name,
   value: u as Record<string, any>,
-}));
+}))
 </script>
-
-<route lang="yaml">
-meta:
-  layout: default
-  title: SSelect 示例
-  menuTitle: SSelect
-  menuIcon: lucide:list-filter
-  menuGroup: 组件示例
-  menuGroupIcon: lucide:component
-  menuOrder: 22
-  requiresAuth: true
-  roles: [admin]
-</route>
 
 <template>
   <div class="space-y-6">
@@ -228,9 +227,7 @@ meta:
     <div class="flex items-center justify-between">
       <div>
         <h1 class="text-2xl font-semibold tracking-tight">SSelect 选择器</h1>
-        <p class="text-muted-foreground mt-1.5">
-          基于 shadcn-vue Select 封装的选择器组件，支持分组、清空、插槽等功能
-        </p>
+        <p class="text-muted-foreground mt-1.5">基于 shadcn-vue Select 封装的选择器组件，支持分组、清空、插槽等功能</p>
       </div>
       <Badge variant="secondary" class="shrink-0">
         <Icon icon="lucide:sparkles" class="size-3.5 mr-1" />
@@ -248,7 +245,8 @@ meta:
         <CardContent class="space-y-4">
           <SSelect v-model="basicValue" :options="basicOptions" placeholder="请选择框架" />
           <div class="text-sm text-muted-foreground">
-            当前值: <code class="bg-muted px-1.5 py-0.5 rounded">{{ basicValue ?? '未选择' }}</code>
+            当前值:
+            <code class="bg-muted px-1.5 py-0.5 rounded">{{ basicValue ?? '未选择' }}</code>
           </div>
         </CardContent>
       </Card>
@@ -280,15 +278,10 @@ meta:
           <CardDescription>设置 clearable 属性可清空选中项</CardDescription>
         </CardHeader>
         <CardContent class="space-y-4">
-          <SSelect
-            v-model="clearableValue"
-            :options="clearableOptions"
-            clearable
-            placeholder="请选择"
-            @clear="handleClear"
-          />
+          <SSelect v-model="clearableValue" :options="clearableOptions" clearable placeholder="请选择" @clear="handleClear" />
           <div class="text-sm text-muted-foreground">
-            当前值: <code class="bg-muted px-1.5 py-0.5 rounded">{{ clearableValue ?? '未选择' }}</code>
+            当前值:
+            <code class="bg-muted px-1.5 py-0.5 rounded">{{ clearableValue ?? '未选择' }}</code>
           </div>
         </CardContent>
       </Card>
@@ -321,7 +314,8 @@ meta:
         <CardContent class="space-y-4">
           <SSelect v-model="groupValue" :groups="cityGroups" placeholder="请选择城市" />
           <div class="text-sm text-muted-foreground">
-            当前值: <code class="bg-muted px-1.5 py-0.5 rounded">{{ groupValue ?? '未选择' }}</code>
+            当前值:
+            <code class="bg-muted px-1.5 py-0.5 rounded">{{ groupValue ?? '未选择' }}</code>
           </div>
         </CardContent>
       </Card>
@@ -443,16 +437,10 @@ meta:
             <div class="p-3 bg-muted/50 rounded-lg border">
               <div class="text-sm font-medium mb-2">事件日志：</div>
               <div class="space-y-1 text-xs font-mono">
-                <div
-                  v-for="(log, index) in eventLog"
-                  :key="index"
-                  class="text-muted-foreground"
-                >
+                <div v-for="(log, index) in eventLog" :key="index" class="text-muted-foreground">
                   {{ log }}
                 </div>
-                <div v-if="eventLog.length === 0" class="text-muted-foreground">
-                  暂无事件
-                </div>
+                <div v-if="eventLog.length === 0" class="text-muted-foreground">暂无事件</div>
               </div>
             </div>
           </div>
@@ -496,14 +484,10 @@ meta:
           <CardDescription>设置 multiple 属性开启多选，以 tags 形式展示</CardDescription>
         </CardHeader>
         <CardContent class="space-y-4">
-          <SSelect
-            v-model="multipleValue"
-            :options="multipleOptions"
-            multiple
-            placeholder="请选择框架"
-          />
+          <SSelect v-model="multipleValue" :options="multipleOptions" multiple placeholder="请选择框架" />
           <div class="text-sm text-muted-foreground">
-            当前值: <code class="bg-muted px-1.5 py-0.5 rounded">{{ multipleValue.length > 0 ? multipleValue.join(', ') : '未选择' }}</code>
+            当前值:
+            <code class="bg-muted px-1.5 py-0.5 rounded">{{ multipleValue.length > 0 ? multipleValue.join(', ') : '未选择' }}</code>
           </div>
         </CardContent>
       </Card>
@@ -515,15 +499,10 @@ meta:
           <CardDescription>多选模式下支持清空所有选中项</CardDescription>
         </CardHeader>
         <CardContent class="space-y-4">
-          <SSelect
-            v-model="multipleClearableValue"
-            :options="multipleClearableOptions"
-            multiple
-            clearable
-            placeholder="请选择权限"
-          />
+          <SSelect v-model="multipleClearableValue" :options="multipleClearableOptions" multiple clearable placeholder="请选择权限" />
           <div class="text-sm text-muted-foreground">
-            当前值: <code class="bg-muted px-1.5 py-0.5 rounded">{{ multipleClearableValue.length > 0 ? multipleClearableValue.join(', ') : '未选择' }}</code>
+            当前值:
+            <code class="bg-muted px-1.5 py-0.5 rounded">{{ multipleClearableValue.length > 0 ? multipleClearableValue.join(', ') : '未选择' }}</code>
           </div>
         </CardContent>
       </Card>
@@ -539,15 +518,10 @@ meta:
             <Button size="sm" variant="outline" @click="handleSelectAll">全选</Button>
             <Button size="sm" variant="outline" @click="handleClearAll">清空</Button>
           </div>
-          <SSelect
-            v-model="largeValue"
-            :options="largeOptions"
-            multiple
-            clearable
-            placeholder="请选择"
-          />
+          <SSelect v-model="largeValue" :options="largeOptions" multiple clearable placeholder="请选择" />
           <div class="text-sm text-muted-foreground">
-            已选: <code class="bg-muted px-1.5 py-0.5 rounded">{{ largeValue.length }} / 50</code>
+            已选:
+            <code class="bg-muted px-1.5 py-0.5 rounded">{{ largeValue.length }} / 50</code>
           </div>
         </CardContent>
       </Card>
@@ -559,12 +533,7 @@ meta:
           <CardDescription>通过 by 属性指定对象比较字段，用于比较复杂对象</CardDescription>
         </CardHeader>
         <CardContent class="space-y-4">
-          <SSelect
-            v-model="userObjectValue"
-            :options="userObjectSelectOptions"
-            by="id"
-            placeholder="请选择用户"
-          >
+          <SSelect v-model="userObjectValue" :options="userObjectSelectOptions" by="id" placeholder="请选择用户">
             <template #label="{ option }">
               <div class="flex items-center gap-2">
                 <span class="w-6 h-6 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-xs">
@@ -581,7 +550,10 @@ meta:
             </template>
           </SSelect>
           <div class="text-sm text-muted-foreground">
-            当前值: <code class="bg-muted px-1.5 py-0.5 rounded">{{ userObjectValue ? `id=${userObjectValue.id}, name=${userObjectValue.name}` : '未选择' }}</code>
+            当前值:
+            <code class="bg-muted px-1.5 py-0.5 rounded">{{
+              userObjectValue ? `id=${userObjectValue.id}, name=${userObjectValue.name}` : '未选择'
+            }}</code>
           </div>
         </CardContent>
       </Card>
@@ -609,7 +581,9 @@ meta:
               <tbody class="text-muted-foreground">
                 <tr class="border-b">
                   <td class="py-2 pr-4 font-mono text-foreground">modelValue</td>
-                  <td class="py-2 pr-4"><code>AcceptableValue | AcceptableValue[]</code></td>
+                  <td class="py-2 pr-4">
+                    <code>AcceptableValue | AcceptableValue[]</code>
+                  </td>
                   <td class="py-2 pr-4">-</td>
                   <td class="py-2">当前选中值（多选时为数组）</td>
                 </tr>
@@ -657,7 +631,9 @@ meta:
                 </tr>
                 <tr class="border-b">
                   <td class="py-2 pr-4 font-mono text-foreground">by</td>
-                  <td class="py-2 pr-4"><code>string | ((a, b) => boolean)</code></td>
+                  <td class="py-2 pr-4">
+                    <code>string | ((a, b) => boolean)</code>
+                  </td>
                   <td class="py-2 pr-4">-</td>
                   <td class="py-2">对象比较字段或函数</td>
                 </tr>
@@ -731,17 +707,23 @@ meta:
                 </tr>
                 <tr class="border-b">
                   <td class="py-2 pr-4 font-mono text-foreground">label</td>
-                  <td class="py-2 pr-4"><code>{ option: SelectOption }</code></td>
+                  <td class="py-2 pr-4">
+                    <code>{ option: SelectOption }</code>
+                  </td>
                   <td class="py-2">自定义选中项显示（单选模式）</td>
                 </tr>
                 <tr class="border-b">
                   <td class="py-2 pr-4 font-mono text-foreground">tag</td>
-                  <td class="py-2 pr-4"><code>{ option: SelectOption }</code></td>
+                  <td class="py-2 pr-4">
+                    <code>{ option: SelectOption }</code>
+                  </td>
                   <td class="py-2">自定义多选 tag 显示</td>
                 </tr>
                 <tr class="border-b">
                   <td class="py-2 pr-4 font-mono text-foreground">option</td>
-                  <td class="py-2 pr-4"><code>{ option: SelectOption }</code></td>
+                  <td class="py-2 pr-4">
+                    <code>{ option: SelectOption }</code>
+                  </td>
                   <td class="py-2">自定义下拉列表中的选项</td>
                 </tr>
                 <tr class="border-b">
