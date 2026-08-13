@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ArrowUp } from 'lucide-vue-next'
-import { ref, computed, onMounted } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 import { useScroll } from '@vueuse/core'
 import { Button } from '@/components/ui/button'
 
@@ -37,7 +37,13 @@ onMounted(() => {
 
 <template>
   <Transition name="fade">
-    <Button v-if="visible" variant="secondary" size="icon" class="fixed bottom-6 right-6 z-50 shadow-md" @click="scrollToTop">
+    <Button
+      v-if="visible"
+      variant="outline"
+      size="icon"
+      class="fixed bottom-6 right-6 z-50 size-9 rounded-full bg-background/80 text-foreground shadow-lg backdrop-blur transition-all hover:scale-105 hover:bg-accent hover:text-accent-foreground"
+      @click="scrollToTop"
+    >
       <ArrowUp class="size-4" />
     </Button>
   </Transition>

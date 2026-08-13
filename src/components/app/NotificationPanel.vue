@@ -13,6 +13,14 @@ const notificationStore = useNotificationStore()
 const popoverOpen = ref(false)
 const activeTab = ref<NotificationType | 'all'>('all')
 
+// 类型图标配色（组件内定义，跟随 .dark 类切换，不依赖全局主题变量）
+const typeColor: Record<NotificationType, string> = {
+  system: 'notification-type-system',
+  todo: 'notification-type-todo',
+  notice: 'notification-type-notice',
+  message: 'notification-type-message',
+}
+
 onMounted(() => {
   notificationStore.loadNotifications()
 })
@@ -70,7 +78,7 @@ function handleClearRead() {
         </span>
       </Button>
     </PopoverTrigger>
-    <PopoverContent class="w-96 p-0">
+    <PopoverContent class="notification-panel w-96 p-0">
       <!-- 头部 -->
       <div class="flex items-center justify-between px-4 py-3 border-b">
         <h4 class="font-semibold">通知中心</h4>
@@ -132,7 +140,7 @@ function handleClearRead() {
                   <!-- 类型图标 -->
                   <div
                     class="flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center bg-muted"
-                    :class="notificationStore.notificationTypeConfig[notification.type].color"
+                    :class="typeColor[notification.type]"
                   >
                     <Icon :icon="notificationStore.notificationTypeConfig[notification.type].icon" class="size-4" />
                   </div>
@@ -166,3 +174,34 @@ function handleClearRead() {
     </PopoverContent>
   </Popover>
 </template>
+
+<style scoped>
+/* 类型配色变量（组件内自包含，跟随 .dark 类切换，不依赖全局主题变量） */
+.notification-panel {
+  --info: oklch(0.62 0.17 247);
+  --success: oklch(0.6 0.16 152);
+  --warning: oklch(0.62 0.15 70);
+}
+
+.dark .notification-panel {
+  --info: oklch(0.78 0.13 247);
+  --success: oklch(0.78 0.14 152);
+  --warning: oklch(0.8 0.13 70);
+}
+
+.notification-type-system {
+  color: var(--info);
+}
+
+.notification-type-todo {
+  color: var(--warning);
+}
+
+.notification-type-notice {
+  color: var(--success);
+}
+
+.notification-type-message {
+  color: var(--primary);
+}
+</style>

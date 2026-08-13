@@ -10,17 +10,33 @@ const props = withDefaults(defineProps<SChartProps>(), {
   height: 350,
 })
 
+// 深度合并对象配置：嵌套对象逐层合并，数组与原始值以 source 为准（source 为 undefined 时保留 target）
+function deepMerge<T extends Record<string, any>>(target: T, source: Record<string, any>): T {
+  const result: Record<string, any> = { ...target }
+  for (const key of Object.keys(source)) {
+    const sourceValue = source[key]
+    const targetValue = target[key]
+    const isPlainObject = (v: unknown): v is Record<string, any> => typeof v === 'object' && v !== null && !Array.isArray(v)
+    if (isPlainObject(targetValue) && isPlainObject(sourceValue)) {
+      result[key] = deepMerge(targetValue, sourceValue)
+    } else if (sourceValue !== undefined) {
+      result[key] = sourceValue
+    }
+  }
+  return result as T
+}
+
 const chartRef = ref<HTMLDivElement | null>(null)
 let chartInstance: ApexCharts | null = null
 
 const { isDark, chartColors } = useChartTheme()
 
-// 合并配置：用户配置 + 主题配置
-const mergedOptions = computed<ApexOptions>(() => {
+// 主题基础配置（不含 series）
+const baseOptions = computed<ApexOptions>(() => {
   const colors = chartColors.value
   const themeMode = isDark.value ? 'dark' : 'light'
 
-  const baseOptions: ApexOptions = {
+  return {
     chart: {
       type: props.type,
       width: props.width,
@@ -39,7 +55,6 @@ const mergedOptions = computed<ApexOptions>(() => {
       mode: themeMode,
     },
     colors: colors.series,
-    series: props.series,
     grid: {
       borderColor: colors.border,
     },
@@ -78,17 +93,23 @@ const mergedOptions = computed<ApexOptions>(() => {
       },
     },
   }
-
-  // 合并用户配置
-  return {
-    ...baseOptions,
-    ...props.options,
-    chart: {
-      ...baseOptions.chart,
-      ...props.options?.chart,
-    },
-  } as ApexOptions
 })
+
+// 用户配置深度合并主题配置，props.series 始终优先
+const mergedOptions = computed<ApexOptions>(() => {
+  const merged = deepMerge(baseOptions.value, props.options ?? {})
+  if (props.series) merged.series = props.series
+  return merged
+})
+
+// 不含 series 的配置部分，用于主题/配置更新（避免与 updateSeries 重复更新）
+const configOptions = computed<ApexOptions>(() => {
+  const config = { ...mergedOptions.value }
+  delete config.series
+  return config
+})
+
+const seriesData = computed<ApexOptions['series']>(() => props.series ?? props.options?.series ?? [])
 
 // 初始化图表
 onMounted(async () => {
@@ -99,12 +120,12 @@ onMounted(async () => {
   }
 })
 
-// 监听配置变化更新图表
+// 监听配置/主题变化更新图表（关闭动画，避免主题切换时闪烁）
 watch(
-  mergedOptions,
+  configOptions,
   (newOptions) => {
     if (chartInstance) {
-      chartInstance.updateOptions(newOptions, true, true, false)
+      chartInstance.updateOptions(newOptions, true, false)
     }
   },
   { deep: true },
@@ -112,7 +133,7 @@ watch(
 
 // 监听数据变化
 watch(
-  () => props.series,
+  seriesData,
   (newSeries) => {
     if (chartInstance && newSeries) {
       chartInstance.updateSeries(newSeries)

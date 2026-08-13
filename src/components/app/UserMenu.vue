@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { computed, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { Icon } from '@iconify/vue'
 import { toast } from 'vue-sonner'
@@ -29,12 +29,12 @@ const router = useRouter()
 const authStore = useAuthStore()
 const logoutDialogOpen = ref(false)
 
-// 从 authStore 获取用户信息
-const user = {
+// 从 authStore 获取用户信息（响应式，用户信息变化时自动刷新）
+const user = computed(() => ({
   name: authStore.displayName,
   email: authStore.userInfo?.email || '',
   avatar: authStore.userInfo?.avatar || '',
-}
+}))
 
 function handleLogout() {
   authStore.logout()

@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { Icon } from '@iconify/vue'
+
 defineProps<{
   title?: string
   variant?: 'default' | 'sidebar'
@@ -13,7 +15,9 @@ defineProps<{
       variant === 'sidebar' ? 'text-sidebar-foreground hover:text-sidebar-foreground/80' : 'text-foreground hover:text-foreground/80',
     ]"
   >
-    <img src="/favicon.svg" alt="Logo" class="w-7 h-7" />
+    <span class="flex size-7 shrink-0 items-center justify-center rounded-lg bg-primary text-primary-foreground shadow-sm">
+      <Icon icon="lucide:box" class="size-4" />
+    </span>
     {{ title || '后台管理' }}
   </RouterLink>
 </template>

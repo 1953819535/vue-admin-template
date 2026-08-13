@@ -1,11 +1,10 @@
 <script setup lang="ts">
 import type { AcceptableValue } from 'reka-ui'
 import type { HTMLAttributes } from 'vue'
-import { computed, ref, useAttrs } from 'vue'
-import { X } from 'lucide-vue-next'
+import { computed, ref } from 'vue'
 import { cn } from '@/lib/utils'
 import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { Badge } from '@/components/ui/badge'
+import { SelectClearButton, SelectTagList } from '@/components/shared/select-parts'
 import type { SelectOption, SelectOptionGroup } from './types'
 
 defineOptions({ inheritAttrs: false })
@@ -42,7 +41,6 @@ const emit = defineEmits<{
   clear: []
 }>()
 
-const attrs = useAttrs()
 const open = ref(false)
 
 // 所有选项
@@ -66,9 +64,6 @@ const selectedTags = computed(() => {
   if (!props.multiple || !Array.isArray(props.modelValue)) return []
   return props.modelValue.map((v) => optionsMap.value.get(v)).filter(Boolean) as SelectOption[]
 })
-
-const displayTags = computed(() => selectedTags.value.slice(0, props.maxTags))
-const remainingCount = computed(() => Math.max(0, selectedTags.value.length - props.maxTags))
 
 const hasOptions = computed(() => allOptions.value?.length > 0)
 
@@ -97,9 +92,7 @@ function handleOpenChange(value: boolean) {
   emit('visible-change', value)
 }
 
-function handleClear(e: Event) {
-  e.stopPropagation()
-  e.preventDefault()
+function handleClear() {
   const newValue = props.multiple ? [] : undefined
   emit('update:modelValue', newValue)
   emit('change', newValue)
@@ -115,7 +108,7 @@ function handleRemoveTag(value: AcceptableValue) {
 </script>
 
 <template>
-  <div :class="cn('relative group', props.class, attrs.class as string)">
+  <div :class="cn('group', props.class)">
     <Select
       :model-value="modelValue"
       :disabled="disabled"
@@ -131,24 +124,17 @@ function handleRemoveTag(value: AcceptableValue) {
         </span>
 
         <!-- 多选 -->
-        <template v-if="multiple">
-          <div class="flex flex-wrap gap-1 flex-1 min-w-0">
-            <template v-if="selectedTags.length">
-              <Badge v-for="opt in displayTags" :key="String(opt.value)" variant="secondary" class="gap-1 pr-1">
-                <slot name="tag" :option="opt">{{ opt.label }}</slot>
-                <span
-                  class="hover:bg-secondary-foreground/20 rounded-sm cursor-pointer"
-                  @pointerdown.stop.prevent="handleRemoveTag(opt.value)"
-                  @click.stop.prevent
-                >
-                  <X class="size-3" />
-                </span>
-              </Badge>
-              <Badge v-if="remainingCount > 0" variant="secondary">+{{ remainingCount }}</Badge>
-            </template>
-            <span v-else class="text-muted-foreground">{{ placeholder }}</span>
-          </div>
-        </template>
+        <SelectTagList
+          v-if="multiple"
+          :options="selectedTags"
+          :max="maxTags"
+          :placeholder="placeholder"
+          @remove="handleRemoveTag"
+        >
+          <template #tag="{ option }">
+            <slot name="tag" :option="option">{{ option.label }}</slot>
+          </template>
+        </SelectTagList>
 
         <!-- 单选 -->
         <template v-else>
@@ -160,6 +146,8 @@ function handleRemoveTag(value: AcceptableValue) {
             </SelectValue>
           </span>
         </template>
+
+        <SelectClearButton v-if="showClear" class="mr-1" @clear="handleClear" />
       </SelectTrigger>
 
       <SelectContent :class="contentClass">
@@ -191,14 +179,5 @@ function handleRemoveTag(value: AcceptableValue) {
         <slot name="footer" />
       </SelectContent>
     </Select>
-
-    <span
-      v-if="showClear"
-      class="absolute right-8 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 cursor-pointer"
-      @pointerdown.stop.prevent="handleClear"
-      @click.stop.prevent
-    >
-      <X class="size-4 opacity-50 hover:opacity-100" />
-    </span>
   </div>
 </template>

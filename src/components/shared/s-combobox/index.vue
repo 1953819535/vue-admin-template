@@ -3,12 +3,12 @@ import type { AcceptableValue } from 'reka-ui'
 import type { HTMLAttributes } from 'vue'
 import { computed, ref, watch } from 'vue'
 import { useDebounceFn } from '@vueuse/core'
-import { Check, ChevronsUpDown, X } from 'lucide-vue-next'
+import { Check, ChevronsUpDown } from 'lucide-vue-next'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
-import { Badge } from '@/components/ui/badge'
+import { SelectClearButton, SelectTagList } from '@/components/shared/select-parts'
 import type { ComboboxOption, ComboboxOptionGroup, RemoteSearchFn } from './types'
 
 defineOptions({ inheritAttrs: false })
@@ -103,9 +103,6 @@ const selectedTags = computed(() => {
   return props.modelValue.map((v) => findOption(v)).filter(Boolean) as ComboboxOption[]
 })
 
-const displayTags = computed(() => selectedTags.value.slice(0, props.maxTags))
-const remainingCount = computed(() => Math.max(0, selectedTags.value.length - props.maxTags))
-
 const showClear = computed(() => {
   if (!props.clearable || props.disabled) return false
   if (props.multiple) return Array.isArray(props.modelValue) && props.modelValue.length > 0
@@ -192,9 +189,7 @@ function handleSelect(value: AcceptableValue) {
   }
 }
 
-function handleClear(e: Event) {
-  e.stopPropagation()
-  e.preventDefault()
+function handleClear() {
   const newValue = props.multiple ? [] : undefined
   emit('update:modelValue', newValue)
   emit('change', newValue)
@@ -210,7 +205,7 @@ function handleRemoveTag(value: AcceptableValue) {
 </script>
 
 <template>
-  <div class="relative group">
+  <div class="group">
     <Popover v-model:open="open" :disabled="disabled">
       <PopoverTrigger as-child>
         <Button
@@ -219,31 +214,26 @@ function handleRemoveTag(value: AcceptableValue) {
           :aria-expanded="open"
           :disabled="disabled"
           :size="size"
-          :class="cn('w-full justify-between font-normal', showClear && 'pr-12', triggerClass)"
+          :class="cn('w-full justify-between font-normal', triggerClass)"
         >
           <span v-if="$slots.prefix" class="mr-2 shrink-0">
             <slot name="prefix" />
           </span>
 
-          <template v-if="multiple">
-            <div class="flex flex-wrap gap-1 flex-1 min-w-0">
-              <template v-if="selectedTags.length">
-                <Badge v-for="opt in displayTags" :key="getOptionKey(opt)" variant="secondary" class="gap-1 pr-1">
-                  <slot name="tag" :option="opt">{{ opt.label }}</slot>
-                  <span
-                    class="hover:bg-secondary-foreground/20 rounded-sm cursor-pointer"
-                    @pointerdown.stop.prevent="handleRemoveTag(opt.value)"
-                    @click.stop.prevent
-                  >
-                    <X class="size-3" />
-                  </span>
-                </Badge>
-                <Badge v-if="remainingCount > 0" variant="secondary">+{{ remainingCount }}</Badge>
-              </template>
-              <span v-else class="text-muted-foreground">{{ placeholder }}</span>
-            </div>
-          </template>
+          <!-- 多选 -->
+          <SelectTagList
+            v-if="multiple"
+            :options="selectedTags"
+            :max="maxTags"
+            :placeholder="placeholder"
+            @remove="handleRemoveTag"
+          >
+            <template #tag="{ option }">
+              <slot name="tag" :option="option">{{ option.label }}</slot>
+            </template>
+          </SelectTagList>
 
+          <!-- 单选 -->
           <template v-else>
             <span v-if="selectedOption" class="flex-1 truncate">
               <slot name="label" :option="selectedOption">{{ selectedOption.label }}</slot>
@@ -251,6 +241,7 @@ function handleRemoveTag(value: AcceptableValue) {
             <span v-else class="text-muted-foreground flex-1 truncate">{{ placeholder }}</span>
           </template>
 
+          <SelectClearButton v-if="showClear" class="mr-1" @clear="handleClear" />
           <ChevronsUpDown class="ml-2 size-4 shrink-0 opacity-50" />
         </Button>
       </PopoverTrigger>
@@ -307,14 +298,5 @@ function handleRemoveTag(value: AcceptableValue) {
         </Command>
       </PopoverContent>
     </Popover>
-
-    <span
-      v-if="showClear"
-      class="absolute right-8 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 cursor-pointer"
-      @pointerdown.stop.prevent="handleClear"
-      @click.stop.prevent
-    >
-      <X class="size-4 opacity-50 hover:opacity-100" />
-    </span>
   </div>
 </template>

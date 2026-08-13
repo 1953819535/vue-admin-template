@@ -18,23 +18,11 @@ const isHovered = useElementHover(containerRef)
 const closedAt = useLocalStorage<string | null>(STORAGE_KEY, null)
 
 const typeConfig = {
-  info: {
-    style: 'bg-sky-500/10 border-sky-500/30 text-sky-700 dark:text-sky-300',
-    icon: 'lucide:info',
-  },
-  warning: {
-    style: 'bg-amber-500/10 border-amber-500/30 text-amber-700 dark:text-amber-300',
-    icon: 'lucide:alert-triangle',
-  },
-  success: {
-    style: 'bg-emerald-500/10 border-emerald-500/30 text-emerald-700 dark:text-emerald-300',
-    icon: 'lucide:check-circle',
-  },
-  error: {
-    style: 'bg-red-500/10 border-red-500/30 text-red-700 dark:text-red-300',
-    icon: 'lucide:x-circle',
-  },
-} satisfies Record<AnnouncementItem['type'], { style: string; icon: string }>
+  info: { variant: 'announcement-info', icon: 'lucide:info' },
+  warning: { variant: 'announcement-warning', icon: 'lucide:alert-triangle' },
+  success: { variant: 'announcement-success', icon: 'lucide:check-circle' },
+  error: { variant: 'announcement-error', icon: 'lucide:x-circle' },
+} satisfies Record<AnnouncementItem['type'], { variant: string; icon: string }>
 
 const { pause: pauseRotation, resume: resumeRotation } = useIntervalFn(
   () => {
@@ -88,8 +76,8 @@ function close() {
     <div
       v-if="visible && announcements.length > 0"
       ref="containerRef"
-      class="relative overflow-hidden border-b"
-      :class="typeConfig[current?.type ?? 'info'].style"
+      class="announcement-bar relative overflow-hidden border-b"
+      :class="typeConfig[current?.type ?? 'info'].variant"
     >
       <div class="container mx-auto px-4 py-2 flex items-center gap-3">
         <Icon :icon="typeConfig[current?.type ?? 'info'].icon" class="shrink-0 text-lg" />
@@ -121,6 +109,43 @@ function close() {
 </template>
 
 <style scoped>
+/* 状态色变量（组件内自包含，跟随 .dark 类切换，不依赖全局主题变量） */
+.announcement-bar {
+  --info: oklch(0.62 0.17 247);
+  --success: oklch(0.6 0.16 152);
+  --warning: oklch(0.62 0.15 70);
+}
+
+.dark .announcement-bar {
+  --info: oklch(0.78 0.13 247);
+  --success: oklch(0.78 0.14 152);
+  --warning: oklch(0.8 0.13 70);
+}
+
+.announcement-info {
+  background-color: color-mix(in oklab, var(--info) 10%, transparent);
+  border-color: color-mix(in oklab, var(--info) 30%, transparent);
+  color: var(--info);
+}
+
+.announcement-success {
+  background-color: color-mix(in oklab, var(--success) 10%, transparent);
+  border-color: color-mix(in oklab, var(--success) 30%, transparent);
+  color: var(--success);
+}
+
+.announcement-warning {
+  background-color: color-mix(in oklab, var(--warning) 10%, transparent);
+  border-color: color-mix(in oklab, var(--warning) 30%, transparent);
+  color: var(--warning);
+}
+
+.announcement-error {
+  background-color: color-mix(in oklab, var(--destructive) 10%, transparent);
+  border-color: color-mix(in oklab, var(--destructive) 30%, transparent);
+  color: var(--destructive);
+}
+
 .announcement-enter-active,
 .announcement-leave-active {
   transition: all 0.3s ease;
